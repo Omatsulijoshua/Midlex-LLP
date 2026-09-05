@@ -1,26 +1,14 @@
 function resolveApiUrl() {
   const fromEnv = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/+$/, "");
 
   if (typeof window !== "undefined") {
     const protocol = window.location.protocol || "http:";
     const hostname = window.location.hostname || "localhost";
+    const apiHost = hostname === "localhost" ? "127.0.0.1" : hostname;
 
-    // When running locally on standard localhost or local LAN IP, prioritize local backend server
-    if (
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname.startsWith("192.168.") ||
-      hostname.startsWith("10.")
-    ) {
-      if (fromEnv && (fromEnv.includes("localhost") || fromEnv.includes("127.0.0.1"))) {
-        return fromEnv.replace(/\/+$/, "");
-      }
-      const apiHost = hostname === "localhost" ? "127.0.0.1" : hostname;
-      return `${protocol}//${apiHost}:3001`;
-    }
+    return `${protocol}//${apiHost}:3001`;
   }
-
-  if (fromEnv) return fromEnv.replace(/\/+$/, "");
 
   return "http://localhost:3001";
 }

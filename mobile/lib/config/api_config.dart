@@ -1,16 +1,5 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
-
 class ApiConfig {
-  static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:3001';
-    }
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:3001';
-    }
-    return 'http://localhost:3001';
-  }
+  static const String baseUrl = 'https://midlex-backend-162806540060.us-central1.run.app';
 
   // Auth
   static String get login => '$baseUrl/auth/login';
