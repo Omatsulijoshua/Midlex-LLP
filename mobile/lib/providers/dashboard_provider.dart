@@ -1,0 +1,87 @@
+import 'package:flutter/material.dart';
+import '../models/case_model.dart';
+import '../models/payment_model.dart';
+import '../models/court_date_model.dart';
+import '../models/inquiry_model.dart';
+import '../services/api_service.dart';
+import '../config/api_config.dart';
+
+class DashboardProvider extends ChangeNotifier {
+  List<CaseModel> _cases = [];
+  List<PaymentModel> _payments = [];
+  List<CourtDateModel> _courtDates = [];
+  List<InquiryModel> _inquiries = [];
+  bool _isLoading = false;
+
+  List<CaseModel> get cases => _cases;
+  List<PaymentModel> get payments => _payments;
+  List<CourtDateModel> get courtDates => _courtDates;
+  List<InquiryModel> get inquiries => _inquiries;
+  bool get isLoading => _isLoading;
+
+  Future<void> fetchDashboardData() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final casesData = await ApiService.get(ApiConfig.cases);
+      if (casesData is List) {
+        _cases = casesData.map((e) => CaseModel.fromJson(e)).toList();
+      }
+
+      final paymentsData = await ApiService.get(ApiConfig.payments);
+      if (paymentsData is List) {
+        _payments = paymentsData.map((e) => PaymentModel.fromJson(e)).toList();
+      }
+
+      final datesData = await ApiService.get(ApiConfig.courtDates);
+      if (datesData is List) {
+        _courtDates = datesData.map((e) => CourtDateModel.fromJson(e)).toList();
+      }
+    } catch (e) {
+      debugPrint('Error fetching dashboard data: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchInquiries() async {
+    try {
+      final data = await ApiService.get(ApiConfig.inquiries);
+      if (data is List) {
+        _inquiries = data.map((e) => InquiryModel.fromJson(e)).toList();
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error fetching inquiries: $e');
+    }
+  }
+
+  Future<void> createCase({
+    required String title,
+    required String description,
+  }) async {
+    await ApiService.post(ApiConfig.cases, {
+      'title': title,
+      'description': description,
+    });
+    await fetchDashboardData();
+  }
+
+  Future<void> createInquiry({
+    required String name,
+    required String email,
+    required String message,
+    String? phone,
+    String? serviceNeeded,
+  }) async {
+    await ApiService.post(ApiConfig.inquiries, {
+      'name': name,
+      'email': email,
+      'message': message,
+      'phone': phone,
+      'serviceNeeded': serviceNeeded,
+    });
+  }
+}
