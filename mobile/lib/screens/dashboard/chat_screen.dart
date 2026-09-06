@@ -151,7 +151,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         itemBuilder: (context, index) {
                           final msg = _messages[index];
                           final isMe = msg.senderId == currentUser?.id;
-                          final isSystem = msg.senderId == 'system' || msg.content.contains('taken over');
+                          final isSystem = msg.senderId == 'system' || (msg.content ?? '').contains('taken over');
                           
                           if (isSystem) {
                             return Container(
@@ -163,7 +163,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 border: Border.all(color: Colors.amber.shade300),
                               ),
                               child: Text(
-                                msg.content,
+                                msg.content ?? '',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.amber.shade900),
                               ),
@@ -188,7 +188,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.secondary),
                                     ),
                                   Text(
-                                    msg.content,
+                                    msg.content ?? '',
                                     style: TextStyle(color: isMe ? Colors.white : AppTheme.textDark, fontSize: 14),
                                   ),
                                 ],

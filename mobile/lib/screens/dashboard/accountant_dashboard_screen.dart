@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/theme.dart';
+import '../../config/api_config.dart';
 import '../../services/api_service.dart';
 
 class AccountantDashboardScreen extends StatefulWidget {
@@ -10,7 +11,6 @@ class AccountantDashboardScreen extends StatefulWidget {
 }
 
 class _AccountantDashboardScreenState extends State<AccountantDashboardScreen> {
-  final ApiService _apiService = ApiService();
   bool _isLoading = true;
   List<dynamic> _allocations = [];
   List<dynamic> _payments = [];
@@ -24,8 +24,8 @@ class _AccountantDashboardScreenState extends State<AccountantDashboardScreen> {
   Future<void> _fetchAccountantData() async {
     setState(() => _isLoading = true);
     try {
-      final allocData = await _apiService.get('/cases/allocations');
-      final payData = await _apiService.get('/payments');
+      final allocData = await ApiService.get('${ApiConfig.cases}/allocations');
+      final payData = await ApiService.get(ApiConfig.payments);
       setState(() {
         _allocations = allocData is List ? allocData : [];
         _payments = payData is List ? payData : [];
@@ -43,7 +43,7 @@ class _AccountantDashboardScreenState extends State<AccountantDashboardScreen> {
 
   Future<void> _verifyPayment(String paymentId, String status) async {
     try {
-      await _apiService.patch('/payments/$paymentId/verify', {
+      await ApiService.patch('${ApiConfig.payments}/$paymentId/verify', {
         'status': status,
         'note': 'Verified via Mobile Accountant Portal',
       });
@@ -176,7 +176,7 @@ class _AccountantDashboardScreenState extends State<AccountantDashboardScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.between,
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: Text(
@@ -227,7 +227,7 @@ class _AccountantDashboardScreenState extends State<AccountantDashboardScreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.between,
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           'Paid: ₦${paid.toStringAsFixed(2)}',
