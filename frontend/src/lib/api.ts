@@ -1,6 +1,10 @@
 function resolveApiUrl() {
   const fromEnv = process.env.NEXT_PUBLIC_API_URL?.trim();
-  if (fromEnv) return fromEnv.replace(/\/+$/, "");
+
+  // If NEXT_PUBLIC_API_URL points to old broken Cloud Run url or is empty, use live Render backend
+  if (fromEnv && !fromEnv.includes("run.app")) {
+    return fromEnv.replace(/\/+$/, "");
+  }
 
   return "https://midlex-backend.onrender.com";
 }
