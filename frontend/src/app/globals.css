@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light !important;
   --background: #ffffff;
   --foreground: #1a2e1a;
   --primary: #1b4d2e; /* Midlex Dark Green */
@@ -27,36 +28,52 @@
   --font-mono: var(--font-geist-mono);
 }
 
-html {
+html, body {
+  color-scheme: light !important;
   scroll-behavior: smooth;
-}
-
-body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   overflow-x: hidden;
 }
 
-/* Crisp dark black text for all inputs */
-input, select, textarea {
-  color: #0f172a !important;
-  -webkit-text-fill-color: #0f172a !important;
-  font-weight: 600 !important;
+/* Forced 100% solid pitch black text for all inputs & forms across all devices, themes & dark modes */
+html body input,
+html body select,
+html body textarea,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="search"],
+input[type="number"] {
+  color-scheme: light !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+  caret-color: #000000 !important;
+  font-weight: 700 !important;
 }
 
-input::placeholder, textarea::placeholder {
-  color: #64748b !important;
-  -webkit-text-fill-color: #64748b !important;
+/* Placeholder text color */
+input::placeholder,
+textarea::placeholder {
+  color: #475569 !important;
+  -webkit-text-fill-color: #475569 !important;
+  opacity: 1 !important;
 }
 
-/* Chrome / Safari / Edge Autofill Text & Background Fix */
+/* Chrome / Safari / Edge / Mobile Webkit Autofill Overrides */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
-  -webkit-text-fill-color: #0f172a !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #000000 !important;
+  color: #000000 !important;
+  caret-color: #000000 !important;
 }
 
 ::selection {

@@ -78,8 +78,7 @@ export default function LoginClient() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                style={{ color: '#000000', backgroundColor: '#ffffff', WebkitTextFillColor: '#000000' }}
-                className="w-full bg-white border-2 border-gray-300 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 font-semibold placeholder:text-gray-400"
+                className="w-full bg-white border-2 border-slate-400 text-slate-900 font-bold rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-gray-400"
                 placeholder="name@example.com"
                 required
               />
@@ -94,8 +93,7 @@ export default function LoginClient() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                style={{ color: '#000000', backgroundColor: '#ffffff', WebkitTextFillColor: '#000000' }}
-                className="w-full bg-white border-2 border-gray-300 rounded-2xl py-4 pl-12 pr-12 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 font-semibold placeholder:text-gray-400"
+                className="w-full bg-white border-2 border-slate-400 text-slate-900 font-bold rounded-2xl py-4 pl-12 pr-12 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-gray-400"
                 placeholder="••••••••"
                 required
               />
