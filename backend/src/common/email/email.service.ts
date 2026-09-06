@@ -65,4 +65,32 @@ export class EmailService {
 
     return true;
   }
+
+  async sendChatMessageEmailNotification(params: {
+    recipientEmail: string;
+    recipientName: string;
+    senderName: string;
+    caseTitle: string;
+    caseId: string;
+    messageContent: string;
+  }) {
+    const frontendUrl =
+      process.env.FRONTEND_URL ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      'https://midlex-llplawfirm.vercel.app';
+    const caseUrl = `${frontendUrl.replace(/\/+$/, '')}/dashboard/cases/${params.caseId}`;
+
+    console.log(`[EMAIL] To: ${params.recipientEmail}`);
+    console.log(`[EMAIL] Subject: New Message on Case: ${params.caseTitle}`);
+    console.log(`[EMAIL] Body: Hello ${params.recipientName},
+
+${params.senderName} has sent a new message regarding case "${params.caseTitle}":
+
+"${params.messageContent}"
+
+Click here to view and respond in your Midlex portal:
+${caseUrl}`);
+
+    return true;
+  }
 }
