@@ -26,9 +26,10 @@ export default function ChatWidget({ caseId, status }: { caseId: string, status:
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [aiMode, setAiMode] = useState<boolean>(true);
+
   useEffect(() => {
     if (!token) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setConnectionStatus('disconnected');
       setConnectionError(null);
       setMessages([]);
@@ -37,7 +38,6 @@ export default function ChatWidget({ caseId, status }: { caseId: string, status:
 
     socketRef.current = io(getApiBaseUrl(), {
       auth: { token },
-      // Some mobile networks / proxies block WebSockets; polling is more reliable for LAN testing.
       transports: ['polling'],
       reconnection: true,
       reconnectionAttempts: 10,
@@ -68,10 +68,24 @@ export default function ChatWidget({ caseId, status }: { caseId: string, status:
       setMessages((prev) => [...prev, message]);
     });
 
+    socket.on('aiModeChanged', (data: { aiMode: boolean; takenOverBy?: string }) => {
+      setAiMode(data.aiMode);
+    });
+
     return () => {
       socket.disconnect();
     };
   }, [caseId, token]);
+
+  const handleTakeover = () => {
+    if (!socketRef.current || !user) return;
+    socketRef.current.emit('takeoverChat', {
+      caseId,
+      userRole: user.role,
+      userName: user.name,
+    });
+    setAiMode(false);
+  };
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -170,15 +184,35 @@ export default function ChatWidget({ caseId, status }: { caseId: string, status:
           </div>
         </div>
       )}
-      <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-        <h3 className="font-bold text-primary flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          Case Discussion
-        </h3>
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">
-          {connectionLabel}
-          {connectionError ? <span className="block normal-case font-medium text-gray-400/80">{connectionError}</span> : null}
-        </span>
+      <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex flex-wrap justify-between items-center gap-2">
+        <div>
+          <h3 className="font-bold text-primary flex items-center gap-2">
+            <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
+            Case Discussion
+          </h3>
+          <div className="flex items-center gap-2 mt-1">
+            <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+              aiMode ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'
+            }`}>
+              {aiMode ? '🤖 AI Assistant Responding' : '👨‍⚖️ Lawyer Active'}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {aiMode && (user?.role === 'ADMIN' || user?.role === 'LAWYER') && (
+            <button
+              onClick={handleTakeover}
+              className="px-3.5 py-1.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md"
+            >
+              👨‍⚖️ Take Over Chat
+            </button>
+          )}
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">
+            {connectionLabel}
+            {connectionError ? <span className="block normal-case font-medium text-gray-400/80">{connectionError}</span> : null}
+          </span>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">

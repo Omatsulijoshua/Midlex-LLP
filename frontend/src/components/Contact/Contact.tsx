@@ -139,7 +139,8 @@ export default function Contact() {
                     required
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all"
+                    style={{ color: "#000000", WebkitTextFillColor: "#000000", backgroundColor: "#ffffff" }}
+                    className="w-full px-6 py-4 bg-white border-2 border-slate-300 text-slate-900 font-bold rounded-2xl focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition-all placeholder:text-gray-400"
                     placeholder="John Doe"
                   />
                 </div>
@@ -150,7 +151,8 @@ export default function Contact() {
                     required
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all"
+                    style={{ color: "#000000", WebkitTextFillColor: "#000000", backgroundColor: "#ffffff" }}
+                    className="w-full px-6 py-4 bg-white border-2 border-slate-300 text-slate-900 font-bold rounded-2xl focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition-all placeholder:text-gray-400"
                     placeholder="john@example.com"
                   />
                 </div>
@@ -161,7 +163,8 @@ export default function Contact() {
                   type="text"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all"
+                  style={{ color: "#000000", WebkitTextFillColor: "#000000", backgroundColor: "#ffffff" }}
+                  className="w-full px-6 py-4 bg-white border-2 border-slate-300 text-slate-900 font-bold rounded-2xl focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition-all placeholder:text-gray-400"
                   placeholder="+234 ..."
                 />
               </div>
@@ -170,7 +173,8 @@ export default function Contact() {
                 <select
                   value={form.serviceNeeded}
                   onChange={(e) => setForm({ ...form, serviceNeeded: e.target.value })}
-                  className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all appearance-none"
+                  style={{ color: "#000000", WebkitTextFillColor: "#000000", backgroundColor: "#ffffff" }}
+                  className="w-full px-6 py-4 bg-white border-2 border-slate-300 text-slate-900 font-bold rounded-2xl focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition-all appearance-none"
                 >
                   <option>Corporate Advisory</option>
                   <option>Litigation & Dispute Resolution</option>
@@ -185,7 +189,8 @@ export default function Contact() {
                   required
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all"
+                  style={{ color: "#000000", WebkitTextFillColor: "#000000", backgroundColor: "#ffffff" }}
+                  className="w-full px-6 py-4 bg-white border-2 border-slate-300 text-slate-900 font-bold rounded-2xl focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition-all placeholder:text-gray-400"
                   placeholder="Tell us about your case..."
                 />
               </div>

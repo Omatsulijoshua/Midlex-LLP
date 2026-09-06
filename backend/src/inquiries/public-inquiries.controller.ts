@@ -20,6 +20,12 @@ export class PublicInquiriesController {
       message: body.message,
     });
 
+    const aiAutoResponse = this.inquiriesService.generateAiResponse(
+      body.message,
+      body.serviceNeeded,
+      body.name,
+    );
+
     await this.emailService.sendAdminInquiryNotification({
       name: inquiry.name,
       email: inquiry.email,
@@ -27,6 +33,12 @@ export class PublicInquiriesController {
       serviceNeeded: inquiry.serviceNeeded ?? undefined,
     });
 
-    return { ok: true, id: inquiry.id };
+    return {
+      ok: true,
+      id: inquiry.id,
+      aiAutoResponse,
+      aiMode: true,
+      message: 'Inquiry submitted. Midlex AI Legal Assistant is now assisting you until counsel takes over.',
+    };
   }
 }
