@@ -5,6 +5,7 @@ import { getStorage } from 'firebase-admin/storage';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as bcrypt from 'bcrypt';
 
 type ModelName =
   | 'user'
@@ -77,9 +78,60 @@ export class PrismaService implements OnModuleInit {
     }
   }
 
-  onModuleInit() {
+  async onModuleInit() {
     if (this.isOffline) {
       this.loadLocalStore();
+    }
+    await this.seedDefaultUsers();
+  }
+
+  private async seedDefaultUsers() {
+    try {
+      const defaultUsers = [
+        {
+          email: 'midlexllp01@gmail.com',
+          name: 'Super Admin',
+          password: 'Admin@123',
+          role: 'ADMIN',
+        },
+        {
+          email: 'lawyer1@midlex.com',
+          name: 'Barr. Adebayo',
+          password: 'admin123',
+          role: 'LAWYER',
+          phone: '08012345678',
+        },
+      ];
+
+      for (const u of defaultUsers) {
+        const existing = await this.findUnique('user', { where: { email: u.email } });
+        if (!existing) {
+          const hashedPassword = await bcrypt.hash(u.password, 10);
+          await this.create('user', {
+            data: {
+              email: u.email,
+              name: u.name,
+              password: hashedPassword,
+              role: u.role,
+              phone: u.phone || null,
+            },
+          });
+          console.log(`[PrismaService] Auto-seeded default user: ${u.email}`);
+        } else {
+          // Update password hash to ensure exact password match
+          const passwordMatch = await bcrypt.compare(u.password, existing.password);
+          if (!passwordMatch) {
+            const hashedPassword = await bcrypt.hash(u.password, 10);
+            await this.update('user', {
+              where: { id: existing.id },
+              data: { password: hashedPassword },
+            });
+            console.log(`[PrismaService] Updated password hash for default user: ${u.email}`);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[PrismaService] Auto-seed default users error:', err);
     }
   }
 
