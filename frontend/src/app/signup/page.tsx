@@ -78,7 +78,8 @@ export default function SignupPage() {
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                style={{ color: '#000000', backgroundColor: '#ffffff', WebkitTextFillColor: '#000000' }}
+                className="w-full bg-white border border-gray-300 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 font-semibold"
                 placeholder="John Doe"
                 required
               />
@@ -93,7 +94,8 @@ export default function SignupPage() {
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                style={{ color: '#000000', backgroundColor: '#ffffff', WebkitTextFillColor: '#000000' }}
+                className="w-full bg-white border border-gray-300 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 font-semibold"
                 placeholder="john@example.com"
                 required
               />
@@ -108,7 +110,8 @@ export default function SignupPage() {
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                style={{ color: '#000000', backgroundColor: '#ffffff', WebkitTextFillColor: '#000000' }}
+                className="w-full bg-white border border-gray-300 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 font-semibold"
                 placeholder="+234 800 000 0000"
                 required
               />
@@ -123,7 +126,8 @@ export default function SignupPage() {
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                style={{ color: '#000000', backgroundColor: '#ffffff', WebkitTextFillColor: '#000000' }}
+                className="w-full bg-white border border-gray-300 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 font-semibold"
                 placeholder="••••••••"
                 required
               />
