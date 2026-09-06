@@ -32,7 +32,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+          <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-900">
             {[
               { label: "About", href: "/about" },
               { label: "Practice Areas", href: "/practice-areas" },
@@ -48,7 +48,7 @@ export default function Navbar() {
               >
                 <Link 
                   href={item.href} 
-                  className="hover:text-secondary transition-colors relative group"
+                  className="text-slate-900 hover:text-secondary transition-colors relative group"
                 >
                   {item.label}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-secondary transition-all group-hover:w-full" />
@@ -103,7 +103,7 @@ export default function Navbar() {
                   <Link 
                     href={item.href} 
                     onClick={() => setIsOpen(false)} 
-                    className="block py-3 hover:text-secondary transition-colors"
+                    className="block py-3 text-slate-900 hover:text-secondary transition-colors"
                   >
                     {item.label}
                   </Link>
