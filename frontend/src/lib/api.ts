@@ -2,15 +2,7 @@ function resolveApiUrl() {
   const fromEnv = process.env.NEXT_PUBLIC_API_URL?.trim();
   if (fromEnv) return fromEnv.replace(/\/+$/, "");
 
-  if (typeof window !== "undefined") {
-    const protocol = window.location.protocol || "http:";
-    const hostname = window.location.hostname || "localhost";
-    const apiHost = hostname === "localhost" ? "127.0.0.1" : hostname;
-
-    return `${protocol}//${apiHost}:3001`;
-  }
-
-  return "http://localhost:3001";
+  return "https://midlex-backend.onrender.com";
 }
 
 export function getApiBaseUrl() {

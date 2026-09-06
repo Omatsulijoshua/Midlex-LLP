@@ -1,5 +1,5 @@
 class ApiConfig {
-  static const String baseUrl = 'https://midlex-backend-162806540060.us-central1.run.app';
+  static const String baseUrl = 'https://midlex-backend.onrender.com';
 
   // Auth
   static String get login => '$baseUrl/auth/login';
