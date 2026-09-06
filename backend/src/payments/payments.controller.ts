@@ -59,7 +59,7 @@ export class PaymentsController {
 
   @Post('request')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.LAWYER)
+  @Roles(Role.ADMIN, Role.LAWYER, Role.ACCOUNTANT)
   createRequest(@Body() body: any, @Request() req: any) {
     return this.paymentsService.createPaymentRequest({
       amount: body.amount,
@@ -75,7 +75,7 @@ export class PaymentsController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.LAWYER)
+  @Roles(Role.ADMIN, Role.LAWYER, Role.ACCOUNTANT)
   findAll(@Request() req: any) {
     return this.paymentsService.findAllForUser({
       userId: req.user.id,
@@ -138,7 +138,7 @@ export class PaymentsController {
 
   @Patch(':id/verify')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.ACCOUNTANT)
   async verifyManualPayment(
     @Param('id') id: string,
     @Body() body: any,

@@ -39,9 +39,16 @@ export class CasesController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.ACCOUNTANT)
   async findAll() {
     return this.casesService.findAll();
+  }
+
+  @Get('allocations')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  async getAllocations() {
+    return this.casesService.getAllocations();
   }
 
   @Get('my-cases')

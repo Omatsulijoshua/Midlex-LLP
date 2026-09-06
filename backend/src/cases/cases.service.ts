@@ -95,4 +95,41 @@ export class CasesService {
       documents: caseData.documents || [],
     };
   }
+
+  async getAllocations(): Promise<any[]> {
+    const cases = await this.prisma.case.findMany({
+      include: {
+        client: true,
+        lawyer: true,
+        payments: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return cases.map((c: any) => {
+      const payments = c.payments || [];
+      const totalPaid = payments
+        .filter((p: any) => p.status === 'SUCCESS')
+        .reduce((acc: number, p: any) => acc + (p.amount || 0), 0);
+      const totalPending = payments
+        .filter((p: any) => p.status === 'PENDING')
+        .reduce((acc: number, p: any) => acc + (p.amount || 0), 0);
+
+      return {
+        id: c.id,
+        title: c.title,
+        status: c.status,
+        createdAt: c.createdAt,
+        client: c.client
+          ? { id: c.client.id, name: c.client.name, email: c.client.email, phone: c.client.phone }
+          : { name: 'Client', email: '-' },
+        lawyer: c.lawyer
+          ? { id: c.lawyer.id, name: c.lawyer.name, email: c.lawyer.email, phone: c.lawyer.phone }
+          : { name: 'Unassigned', email: 'Awaiting Lawyer' },
+        totalPaid,
+        totalPending,
+        paymentCount: payments.length,
+      };
+    });
+  }
 }
