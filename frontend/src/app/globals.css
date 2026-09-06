@@ -38,13 +38,25 @@ body {
   overflow-x: hidden;
 }
 
+/* Crisp dark black text for all inputs */
 input, select, textarea {
-  color: #111827 !important;
-  font-weight: 500;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  font-weight: 600 !important;
 }
 
 input::placeholder, textarea::placeholder {
-  color: #9ca3af !important;
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+}
+
+/* Chrome / Safari / Edge Autofill Text & Background Fix */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: #0f172a !important;
 }
 
 ::selection {

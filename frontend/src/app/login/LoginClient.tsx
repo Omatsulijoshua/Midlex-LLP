@@ -73,12 +73,12 @@ export default function LoginClient() {
           <div>
             <label className="block text-sm font-bold text-primary mb-2">Email Address</label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={20} />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-gray-900 font-medium placeholder:text-gray-400"
+                className="w-full bg-white border-2 border-gray-300 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 font-semibold placeholder:text-gray-400"
                 placeholder="name@example.com"
                 required
               />
@@ -88,19 +88,19 @@ export default function LoginClient() {
           <div>
             <label className="block text-sm font-bold text-primary mb-2">Password</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={20} />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 pl-12 pr-12 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-gray-900 font-medium placeholder:text-gray-400"
+                className="w-full bg-white border-2 border-gray-300 rounded-2xl py-4 pl-12 pr-12 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 font-semibold placeholder:text-gray-400"
                 placeholder="••••••••"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-primary hover:text-secondary transition-colors"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
