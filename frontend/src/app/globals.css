@@ -27,13 +27,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 html {
   scroll-behavior: smooth;
 }
@@ -43,6 +36,15 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   overflow-x: hidden;
+}
+
+input, select, textarea {
+  color: #111827 !important;
+  font-weight: 500;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #9ca3af !important;
 }
 
 ::selection {
@@ -66,4 +68,3 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--secondary);
 }
-
