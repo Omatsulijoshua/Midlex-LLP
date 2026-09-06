@@ -47,6 +47,24 @@ export default function LoginClient() {
 
   return (
     <main className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4">
+      <style dangerouslySetInnerHTML={{ __html: `
+        input,
+        input:focus,
+        input:active,
+        input:hover,
+        input:not(:placeholder-shown),
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+          color: #000000 !important;
+          -webkit-text-fill-color: #000000 !important;
+          background-color: #ffffff !important;
+          caret-color: #000000 !important;
+          opacity: 1 !important;
+          font-weight: 700 !important;
+        }
+      ` }} />
+
       <div className="absolute inset-0 z-0 opacity-5">
         <div className="absolute top-0 left-0 w-96 h-96 bg-primary rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2" />
       </div>
@@ -78,6 +96,7 @@ export default function LoginClient() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                style={{ color: "#000000", WebkitTextFillColor: "#000000", backgroundColor: "#ffffff" }}
                 className="w-full bg-white border-2 border-slate-400 text-slate-900 font-bold rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-gray-400"
                 placeholder="name@example.com"
                 required
@@ -93,6 +112,7 @@ export default function LoginClient() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                style={{ color: "#000000", WebkitTextFillColor: "#000000", backgroundColor: "#ffffff" }}
                 className="w-full bg-white border-2 border-slate-400 text-slate-900 font-bold rounded-2xl py-4 pl-12 pr-12 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-gray-400"
                 placeholder="••••••••"
                 required

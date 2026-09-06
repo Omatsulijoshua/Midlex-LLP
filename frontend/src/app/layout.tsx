@@ -53,6 +53,11 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport = {
+  themeColor: "#ffffff",
+  colorScheme: "light",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -61,11 +66,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased light`}
+      style={{ colorScheme: "light" }}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+      <head>
+        <meta name="color-scheme" content="light" />
+        <meta name="supported-color-schemes" content="light" />
+      </head>
+      <body className="min-h-full flex flex-col bg-white text-slate-900" style={{ colorScheme: "light" }} suppressHydrationWarning>
         <AuthProvider>
           <PageTransition>
             {children}
