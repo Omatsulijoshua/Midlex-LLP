@@ -104,30 +104,27 @@ export class PrismaService implements OnModuleInit {
       ];
 
       for (const u of defaultUsers) {
-        const existing = await this.findUnique('user', { where: { email: u.email } });
+        const normalizedEmail = u.email.trim().toLowerCase();
+        const existing = await this.findUnique('user', { where: { email: normalizedEmail } });
+        const hashedPassword = await bcrypt.hash(u.password, 10);
+
         if (!existing) {
-          const hashedPassword = await bcrypt.hash(u.password, 10);
           await this.create('user', {
             data: {
-              email: u.email,
+              email: normalizedEmail,
               name: u.name,
               password: hashedPassword,
               role: u.role,
               phone: u.phone || null,
             },
           });
-          console.log(`[PrismaService] Auto-seeded default user: ${u.email}`);
+          console.log(`[PrismaService] Auto-seeded default user: ${normalizedEmail}`);
         } else {
-          // Update password hash to ensure exact password match
-          const passwordMatch = await bcrypt.compare(u.password, existing.password);
-          if (!passwordMatch) {
-            const hashedPassword = await bcrypt.hash(u.password, 10);
-            await this.update('user', {
-              where: { id: existing.id },
-              data: { password: hashedPassword },
-            });
-            console.log(`[PrismaService] Updated password hash for default user: ${u.email}`);
-          }
+          await this.update('user', {
+            where: { id: existing.id },
+            data: { password: hashedPassword, role: u.role, name: u.name },
+          });
+          console.log(`[PrismaService] Updated credentials for default user: ${normalizedEmail}`);
         }
       }
     } catch (err) {
