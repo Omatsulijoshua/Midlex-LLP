@@ -1,65 +1,114 @@
-# Midlex LLP
+# 🏛️ Midlex LLP - Full-Stack Legal Platform & Mobile Application
 
-Law firm website and dashboard.
+[![Vercel](https://img.shields.io/badge/Vercel-Frontend_Live-000000?style=for-the-badge&logo=vercel)](https://midlex-llplawfirm.vercel.app)
+[![Render](https://img.shields.io/badge/Render-Backend_Live-46E3B7?style=for-the-badge&logo=render)](https://midlex-backend.onrender.com)
+[![Flutter](https://img.shields.io/badge/Flutter-Mobile_App-02569B?style=for-the-badge&logo=flutter)](./mobile)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=for-the-badge&logo=next.js)](./frontend)
+[![NestJS](https://img.shields.io/badge/NestJS-11.0-E0234E?style=for-the-badge&logo=nestjs)](./backend)
 
-## Vercel + Firebase deployment
+**Midlex LLP** is a modern, enterprise-grade full-stack legal management platform and cross-platform mobile application designed for law firms in Nigeria. It features a public-facing corporate website, consultation booking engine, client portal, lawyer dashboard, administrative panel, real-time case discussions via WebSockets, and a Flutter mobile app.
 
-This project now uses Vercel for the frontend and Firebase services for backend data/files:
+---
 
-- Firestore stores users, cases, documents, messages, payments, payment accounts, court dates, and inquiries.
-- Firebase Storage is used first for document/payment-proof uploads when `FIREBASE_STORAGE_BUCKET` is configured.
-- Firebase rules are locked down because the NestJS backend uses Firebase Admin SDK.
-- Vercel hosts the Next.js frontend from `frontend`.
+## 🌟 Key Features
 
-The frontend is a Next.js app and the backend is a NestJS Node API. Because the app has server-rendered dynamic routes and secure backend logic, the realistic low-cost deployment is:
+### 🌐 Public Marketing Website
+- **Hero & Firm Overview**: Professional landing page highlighting firm legal capabilities, partners, and core values.
+- **Practice Areas & Service Breakdown**: Interactive pages for Real Estate & Property Law, Corporate Advisory, Commercial Litigation, Energy Law, Tax Advisory, and Intellectual Property.
+- **Legal Team Directory**: Profiles for partners, senior associates, and counsel.
+- **Legal Insights Reader**: Articles and blog posts on legal developments.
+- **Consultation Booking Engine**: Online scheduling for initial client consultations.
 
-- Firebase/Google Cloud project on Blaze with budget alerts.
-- Firestore + Storage free quotas for normal small-client usage.
-- Backend on Cloud Run using `backend/Dockerfile`.
-- Frontend on Vercel.
+### 💼 Client, Lawyer & Admin Dashboards
+- **Role-Based Portals**:
+  - **Client Portal**: View active legal cases, track case progress, upload documents, communicate with assigned lawyers, and view fee payment history.
+  - **Lawyer Dashboard**: Manage assigned cases, review client files, schedule court hearing dates, and communicate with clients.
+  - **Admin Panel**: Firm analytics, client directory, lawyer assignments, payment verification, and website inquiry management.
+- **Real-Time Messaging**: Case discussion widget supporting live messaging and file attachments.
+- **Document Vault**: Upload, organize, and view legal contracts and case files.
+- **Court Schedule Calendar**: Track upcoming court appearances, locations, and hearing summaries.
 
-Firebase Spark can host static sites for free, but this app is not fully static. Vercel is a better fit for the frontend.
+### 📱 Flutter Mobile Application (`mobile/`)
+- **Native Cross-Platform**: Android and iOS client application mirroring website and dashboard functionality.
+- **Animated Splash Screen**: Custom branded launch screen with animated logo and automatic auth routing.
+- **Real-Time Data Sync**: Directly integrated with backend REST API endpoints.
 
-See `DEPLOYMENT.md` for the full deployment checklist.
+---
 
-## Environment files
+## 🏗️ Architecture & Tech Stack
 
-Copy the examples and fill them in:
-
-```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env.local
+```text
+Midlex-LLP/
+├── frontend/             # Next.js 16 (React 19, Tailwind CSS v4, Framer Motion)
+├── backend/              # NestJS 11 (TypeScript, Socket.io, JWT Auth, Local/Firebase DB)
+├── mobile/               # Flutter Mobile App (Dart, Provider, Material 3)
+└── start-offline.bat     # One-click offline local launcher
 ```
 
-For Cloud Run, use `FIREBASE_SERVICE_ACCOUNT_BASE64` instead of raw JSON when possible.
+| Layer | Technologies Used |
+| :--- | :--- |
+| **Web Frontend** | Next.js 16, React 19, Tailwind CSS v4, Lucide Icons, Framer Motion |
+| **Mobile App** | Flutter 3, Dart, Provider State Management, Google Fonts |
+| **Backend API** | NestJS 11, Node.js, Socket.io WebSockets, JWT Authentication |
+| **Database** | Firebase Firestore / Local File Store JSON (Offline Mode) |
+| **Hosting & Cloud** | Vercel (Frontend), Render.com (Backend API), Firebase Storage |
 
-## Seed Firebase
+---
 
-From `backend`:
+## 🚀 Live Deployment Links
 
-```bash
-npm run seed:firebase
-```
+- 🌐 **Web Application**: [https://midlex-llplawfirm.vercel.app](https://midlex-llplawfirm.vercel.app)
+- 🔒 **Client & Staff Login**: [https://midlex-llplawfirm.vercel.app/login](https://midlex-llplawfirm.vercel.app/login)
+- ⚙️ **API Service**: [https://midlex-backend.onrender.com](https://midlex-backend.onrender.com)
 
-Default seed users:
+---
 
-- `midlexllp01@gmail.com` / `Admin@123`
-- `lawyer1@midlex.com` / `admin123`
+## 🔑 Default Test Accounts
 
-Change these passwords before giving the app to a client.
+Use these default credentials to test the platform role features:
 
-## Verify locally
+| Role | Email Address | Default Password |
+| :--- | :--- | :--- |
+| **Super Admin** | `midlexllp01@gmail.com` | `Admin@123` |
+| **Senior Lawyer** | `lawyer1@midlex.com` | `admin123` |
 
+---
+
+## ⚙️ Local Development & Setup
+
+### Prerequisites
+- [Node.js v20+](https://nodejs.org/)
+- [Flutter SDK v3+](https://flutter.dev/) (For mobile app)
+
+### 1. Backend Setup (`backend/`)
 ```bash
 cd backend
 npm install
-npm run build
 npm run start:dev
 ```
+Backend server starts on `http://localhost:3001`.
 
+### 2. Frontend Setup (`frontend/`)
 ```bash
 cd frontend
 npm install
-npm run build
 npm run dev
 ```
+Frontend web application starts on `http://localhost:3000`.
+
+### 3. Flutter Mobile App Setup (`mobile/`)
+```bash
+cd mobile
+flutter pub get
+flutter run
+```
+
+### ⚡ 1-Click Offline Local Launcher (Windows)
+Double-click `start-offline.bat` to automatically launch both backend and frontend servers in separate command windows.
+
+---
+
+## 📜 License & Copyright
+
+© Midlex LLP. All Rights Reserved.  
+Headquartered in Benin City, Edo State, Nigeria.
