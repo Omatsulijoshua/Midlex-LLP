@@ -4,6 +4,7 @@ import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 
+import 'accountant_dashboard_screen.dart';
 import 'cases_list_screen.dart';
 import 'payments_screen.dart';
 import 'schedule_screen.dart';
@@ -58,10 +59,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     final List<Widget> pages = [
-      _buildOverviewTab(context, user),
+      if (user.isAccountant)
+        const AccountantDashboardScreen()
+      else
+        _buildOverviewTab(context, user),
       const CasesListScreen(),
       const PaymentsScreen(),
-      const ScheduleScreen(),
+      if (user.isAccountant || user.isAdmin) const AccountantDashboardScreen() else const ScheduleScreen(),
       if (user.isAdmin) const InquiriesScreen(),
     ];
 
@@ -89,9 +93,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: pages[_currentIndex],
+      body: pages[_currentIndex < pages.length ? _currentIndex : 0],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
+        currentIndex: _currentIndex < pages.length ? _currentIndex : 0,
         selectedItemColor: AppTheme.primary,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
@@ -100,7 +104,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Overview'),
           const BottomNavigationBarItem(icon: Icon(Icons.folder), label: 'Cases'),
           const BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payments'),
-          const BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Schedule'),
+          if (user.isAccountant || user.isAdmin)
+            const BottomNavigationBarItem(icon: Icon(Icons.account_balance), label: 'Accountant')
+          else
+            const BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Schedule'),
           if (user.isAdmin)
             const BottomNavigationBarItem(icon: Icon(Icons.inbox), label: 'Inquiries'),
         ],

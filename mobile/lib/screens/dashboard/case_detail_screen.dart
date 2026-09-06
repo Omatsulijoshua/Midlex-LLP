@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../config/theme.dart';
 import '../../models/case_model.dart';
 import '../../widgets/status_chip.dart';
@@ -123,6 +124,31 @@ class CaseDetailScreen extends StatelessWidget {
                     ),
                   )),
             const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      final shareUrl = 'https://midlex-llplawfirm.vercel.app/share/case/${caseModel.id}';
+                      Clipboard.setData(ClipboardData(text: shareUrl));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Shareable Case Link copied to clipboard!\n$shareUrl'),
+                          backgroundColor: AppTheme.primary,
+                          duration: const Duration(seconds: 4),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.share),
+                    label: const Text('Share Case Files Link'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.secondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
