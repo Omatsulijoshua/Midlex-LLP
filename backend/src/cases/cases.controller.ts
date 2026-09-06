@@ -15,11 +15,16 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { Role, CaseStatus } from '@prisma/client';
 
 @Controller('cases')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class CasesController {
   constructor(private casesService: CasesService) {}
 
+  @Get('public-share/:id')
+  async getPublicShare(@Param('id') id: string) {
+    return this.casesService.findPublicShare(id);
+  }
+
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.CLIENT)
   async create(@Body() body: any, @Request() req: any) {
     // If client is creating, automatically set them as the client
@@ -33,12 +38,14 @@ export class CasesController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async findAll() {
     return this.casesService.findAll();
   }
 
   @Get('my-cases')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async findMyCases(@Request() req: any) {
     if (req.user.role === Role.ADMIN) {
       return this.casesService.findAll();
@@ -50,11 +57,13 @@ export class CasesController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async findOne(@Param('id') id: string) {
     return this.casesService.findOne(id);
   }
 
   @Patch(':id/status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.LAWYER)
   async updateStatus(
     @Param('id') id: string,
@@ -64,6 +73,7 @@ export class CasesController {
   }
 
   @Patch(':id/assign')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async assign(@Param('id') id: string, @Body('lawyerId') lawyerId: string) {
     return this.casesService.assignLawyer(id, lawyerId);

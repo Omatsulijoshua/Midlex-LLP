@@ -71,4 +71,28 @@ export class CasesService {
       include: { lawyer: true },
     });
   }
+
+  async findPublicShare(id: string): Promise<any> {
+    const caseData = await this.prisma.case.findUnique({
+      where: { id },
+      include: {
+        client: { select: { name: true } },
+        lawyer: { select: { name: true } },
+        documents: true,
+      },
+    });
+
+    if (!caseData) return null;
+
+    return {
+      id: caseData.id,
+      title: caseData.title,
+      description: caseData.description,
+      status: caseData.status,
+      createdAt: caseData.createdAt,
+      clientName: (caseData as any).client?.name || 'Client',
+      lawyerName: (caseData as any).lawyer?.name || 'Midlex Legal Counsel',
+      documents: caseData.documents || [],
+    };
+  }
 }

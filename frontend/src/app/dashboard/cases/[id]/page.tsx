@@ -82,11 +82,25 @@ export default function CaseDetailsPage({ params }: { params: Promise<{ id: stri
           <h2 className="text-3xl font-bold text-primary">{caseData.title}</h2>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => {
+              const link = `${window.location.origin}/share/case/${caseData.id}`;
+              navigator.clipboard.writeText(link);
+              alert(`Shareable Case File Link copied!\n\nLink: ${link}`);
+            }}
+            className="flex items-center gap-2 px-6 py-4 bg-secondary text-white font-bold rounded-2xl shadow-xl shadow-secondary/20 hover:bg-secondary/90 transition-all text-sm"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-5.368 3 3 0 000 5.368zm0 9.5a3 3 0 100-5.368 3 3 0 000 5.368z" />
+            </svg>
+            Share Case Files Link
+          </button>
+
           {user?.role === 'ADMIN' && (
              <button 
                onClick={() => setIsAssignModalOpen(true)}
-               className="px-8 py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all"
+               className="px-8 py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all text-sm"
              >
                Assign Lawyer
              </button>
@@ -99,8 +113,8 @@ export default function CaseDetailsPage({ params }: { params: Promise<{ id: stri
                    onClick={() => handleStatusUpdate(status)}
                    className={`px-4 py-2 rounded-xl font-bold text-xs transition-all ${
                      caseData.status === status 
-                       ? 'bg-secondary text-white shadow-lg shadow-secondary/20' 
-                       : 'bg-white border border-gray-100 text-gray-400 hover:border-secondary/20'
+                       ? 'bg-primary text-white shadow-lg' 
+                       : 'bg-white border border-gray-200 text-gray-600 hover:border-secondary/20'
                    }`}
                  >
                    {status.replace('_', ' ')}
