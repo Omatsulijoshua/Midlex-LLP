@@ -34,6 +34,52 @@ export class ChatGateway {
     return { event: 'joined', data: data.caseId };
   }
 
+  @SubscribeMessage('joinTeamRoom')
+  handleJoinTeamRoom(
+    @MessageBody() data: { teamName: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const room = `team_${data.teamName}`;
+    client.join(room);
+    return { event: 'joinedTeam', data: data.teamName };
+  }
+
+  @SubscribeMessage('sendTeamMessage')
+  async handleSendTeamMessage(
+    @MessageBody()
+    data: {
+      teamName: string;
+      senderId: string;
+      content: string;
+      fileUrl?: string;
+    },
+  ) {
+    const message = await this.prisma.message.create({
+      data: {
+        content: data.content,
+        fileUrl: data.fileUrl,
+        teamName: data.teamName,
+        senderId: data.senderId,
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            profileImage: true,
+            litigationTeam: true,
+          },
+        },
+      },
+    });
+
+    const room = `team_${data.teamName}`;
+    this.server.to(room).emit('teamMessage', message);
+    return message;
+  }
+
   @SubscribeMessage('takeoverChat')
   async handleTakeoverChat(
     @MessageBody() data: { caseId: string; userRole: string; userName: string },

@@ -49,6 +49,7 @@ model User {
   address       String?
   otherInfo     String?
   profileImage  String?
+  litigationTeam String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -108,8 +109,10 @@ model Message {
   content   String?
   fileUrl   String?
   
-  caseId    String
-  case      Case     @relation(fields: [caseId], references: [id])
+  caseId    String?
+  case      Case?    @relation(fields: [caseId], references: [id])
+
+  teamName  String?
   
   senderId  String
   sender    User     @relation(fields: [senderId], references: [id])

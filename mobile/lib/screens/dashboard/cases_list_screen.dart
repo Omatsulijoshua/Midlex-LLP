@@ -8,6 +8,7 @@ import '../../services/directory_service.dart';
 import '../../widgets/status_chip.dart';
 import 'case_detail_screen.dart';
 import 'new_case_screen.dart';
+import 'team_chat_screen.dart';
 
 class CasesListScreen extends StatefulWidget {
   const CasesListScreen({super.key});
@@ -610,29 +611,49 @@ class _CasesListScreenState extends State<CasesListScreen> {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: _openManageTeamsDialog,
-                          icon: const Icon(Icons.shield_outlined, color: AppTheme.secondary, size: 16),
+                          icon: const Icon(Icons.shield_outlined, color: AppTheme.secondary, size: 14),
                           label: Text(
                             'Teams (${_teams.length})',
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                           ),
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: AppTheme.secondary),
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.symmetric(vertical: 6),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: _openManageCourtsDialog,
-                          icon: const Icon(Icons.account_balance_outlined, color: Colors.white, size: 16),
+                          icon: const Icon(Icons.account_balance_outlined, color: Colors.white, size: 14),
                           label: Text(
                             'Courts (${_courts.length})',
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                           ),
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Colors.white70),
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const TeamChatScreen()),
+                            );
+                          },
+                          icon: const Icon(Icons.forum_outlined, color: Colors.white, size: 14),
+                          label: const Text(
+                            'Team Chat',
+                            style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.secondary,
+                            padding: const EdgeInsets.symmetric(vertical: 6),
                           ),
                         ),
                       ),

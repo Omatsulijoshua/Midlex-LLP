@@ -109,4 +109,51 @@ export class UsersService {
       data: { password: hashedPassword },
     });
   }
+
+  async sendTeamMessage(data: {
+    teamName: string;
+    senderId: string;
+    content?: string;
+    fileUrl?: string;
+  }): Promise<any> {
+    return this.prisma.message.create({
+      data: {
+        teamName: data.teamName,
+        senderId: data.senderId,
+        content: data.content,
+        fileUrl: data.fileUrl,
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            profileImage: true,
+            litigationTeam: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getTeamMessages(teamName: string): Promise<any[]> {
+    return this.prisma.message.findMany({
+      where: { teamName },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            profileImage: true,
+            litigationTeam: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
 }

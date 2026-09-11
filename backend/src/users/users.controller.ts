@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Param,
   Body,
   UseGuards,
   Request,
@@ -68,6 +69,37 @@ export class UsersController {
       name: body.name,
       role: Role.LAWYER,
       phone: body.phone,
+      litigationTeam: body.litigationTeam || 'TEAM ANCHOR',
+    });
+  }
+
+  @Patch('lawyers/:id/team')
+  @Roles(Role.ADMIN)
+  async updateLawyerTeam(
+    @Param('id') id: string,
+    @Body('litigationTeam') litigationTeam: string,
+  ) {
+    return this.usersService.update(id, { litigationTeam });
+  }
+
+  @Get('team-messages/:teamName')
+  @Roles(Role.ADMIN, Role.LAWYER)
+  async getTeamMessages(@Param('teamName') teamName: string) {
+    return this.usersService.getTeamMessages(teamName);
+  }
+
+  @Post('team-messages/:teamName')
+  @Roles(Role.ADMIN, Role.LAWYER)
+  async sendTeamMessage(
+    @Param('teamName') teamName: string,
+    @Request() req: any,
+    @Body() body: any,
+  ) {
+    return this.usersService.sendTeamMessage({
+      teamName,
+      senderId: req.user.id,
+      content: body.content,
+      fileUrl: body.fileUrl,
     });
   }
 
