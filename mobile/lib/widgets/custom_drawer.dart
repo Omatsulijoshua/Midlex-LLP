@@ -13,6 +13,7 @@ import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/lawyer_login_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
+import '../screens/dashboard/cases_title_list_screen.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -126,6 +127,14 @@ class CustomDrawer extends StatelessWidget {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const DashboardScreen()),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.folder_special, color: AppTheme.secondary),
+              title: const Text('Cases', style: TextStyle(fontWeight: FontWeight.bold)),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CasesTitleListScreen()),
               ),
             ),
             ListTile(
