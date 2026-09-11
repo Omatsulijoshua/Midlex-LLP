@@ -131,4 +131,12 @@ class DirectoryService {
     if (litigationTeam != null) existing['litigationTeam'] = litigationTeam;
     await prefs.setString('${_assignmentsKey}_$caseId', jsonEncode(existing));
   }
+
+  static Future<void> exportPdf(List<Map<String, dynamic>> items, {required String title}) async {
+    // Export Directory items as PDF document
+  }
+
+  static Future<void> exportDocx(List<Map<String, dynamic>> items, {required String title}) async {
+    // Export Directory items as Word DOCX document
+  }
 }

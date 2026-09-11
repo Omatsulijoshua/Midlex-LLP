@@ -154,4 +154,19 @@ class DashboardProvider extends ChangeNotifier {
       debugPrint('Error marking notifications read: $e');
     }
   }
+
+  Future<void> addCourtDate({
+    required String caseId,
+    required String location,
+    required String date,
+    String? description,
+  }) async {
+    await ApiService.post(ApiConfig.courtDates, {
+      'caseId': caseId,
+      'location': location,
+      'date': date,
+      if (description != null) 'description': description,
+    });
+    await fetchDashboardData();
+  }
 }
