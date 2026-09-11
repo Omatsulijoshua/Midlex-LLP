@@ -18,13 +18,7 @@ class _LawyerLoginScreenState extends State<LawyerLoginScreen> {
   bool _obscurePassword = true;
   String? _errorMessage;
 
-  void _quickFill(String email, String pass) {
-    setState(() {
-      _emailController.text = email;
-      _passwordController.text = pass;
-      _errorMessage = null;
-    });
-  }
+
 
   Future<void> _handleStaffLogin() async {
     final email = _emailController.text.trim();
@@ -229,43 +223,6 @@ class _LawyerLoginScreenState extends State<LawyerLoginScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
                         ),
-                      ),
-
-                      const SizedBox(height: 20),
-                      const Divider(),
-                      const SizedBox(height: 8),
-
-                      // Quick Demo Credentials presets
-                      const Text(
-                        'Quick Demo Accounts:',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textMuted,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          ActionChip(
-                            avatar: const Icon(Icons.admin_panel_settings, size: 16, color: AppTheme.primary),
-                            label: const Text('Admin', style: TextStyle(fontSize: 12)),
-                            onPressed: () => _quickFill('midlexllp01@gmail.com', 'Admin@123'),
-                          ),
-                          ActionChip(
-                            avatar: const Icon(Icons.gavel, size: 16, color: AppTheme.secondary),
-                            label: const Text('Lawyer', style: TextStyle(fontSize: 12)),
-                            onPressed: () => _quickFill('lawyer@midlex.com', 'lawyer123'),
-                          ),
-                          ActionChip(
-                            avatar: const Icon(Icons.account_balance_wallet, size: 16, color: Colors.green),
-                            label: const Text('Accountant', style: TextStyle(fontSize: 12)),
-                            onPressed: () => _quickFill('accountant@midlex.com', 'accountant123'),
-                          ),
-                        ],
                       ),
                     ],
                   ),
