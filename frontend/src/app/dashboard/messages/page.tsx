@@ -8,6 +8,8 @@ import DashboardSearchBar from '@/components/Dashboard/DashboardSearchBar';
 
 const defaultTeams = ['TEAM ANCHOR', 'TEAM SAPPHIRE', 'TEAM GEMSTONE'];
 
+import MonthPickerFilter, { getCurrentMonthStr, isItemInMonth } from '@/components/Dashboard/MonthPickerFilter';
+
 export default function MessagesPage() {
   const { user } = useAuth();
   const [cases, setCases] = useState<any[]>([]);
@@ -15,6 +17,7 @@ export default function MessagesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
+  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonthStr());
 
   const isStaff = user?.role === 'ADMIN' || user?.role === 'LAWYER';
   const [activeTab, setActiveTab] = useState<'CASE_CHATS' | 'TEAM_GROUP_CHAT'>('CASE_CHATS');
@@ -54,13 +57,15 @@ export default function MessagesPage() {
   if (isLoading) return <div className="h-full bg-white rounded-[40px] animate-pulse" />;
 
   const normalizedQuery = deferredQuery.trim().toLowerCase();
-  const filteredCases = normalizedQuery
-    ? cases.filter((c) =>
-        [c.title, c.description, c.status, c.client?.name]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(normalizedQuery)),
-      )
-    : cases;
+  const filteredCases = cases.filter((c) => {
+    if (!isItemInMonth(c.createdAt, selectedMonth)) {
+      return false;
+    }
+    if (!normalizedQuery) return true;
+    return [c.title, c.description, c.status, c.client?.name]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(normalizedQuery));
+  });
 
   const activeSelectedCase =
     filteredCases.find((c) => c.id === selectedCaseId) ||
@@ -99,6 +104,13 @@ export default function MessagesPage() {
           </div>
         )}
       </div>
+
+      <MonthPickerFilter
+        selectedMonth={selectedMonth}
+        onChange={setSelectedMonth}
+        totalCount={filteredCases.length}
+        countLabel="active case conversations"
+      />
 
       {activeTab === 'TEAM_GROUP_CHAT' && isStaff ? (
         <div className="space-y-4 flex-1">

@@ -7,10 +7,13 @@ import { useAuth } from '@/context/AuthContext';
 import { AnimatePresence } from 'framer-motion';
 import DashboardSearchBar from '@/components/Dashboard/DashboardSearchBar';
 
+import MonthPickerFilter, { getCurrentMonthStr, isItemInMonth } from '@/components/Dashboard/MonthPickerFilter';
+
 export default function ClientsPage() {
   const { user } = useAuth();
   const [clients, setClients] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonthStr());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '' });
   const [tempPassword, setTempPassword] = useState<string | null>(null);
@@ -66,13 +69,15 @@ export default function ClientsPage() {
   </div>;
 
   const normalizedQuery = deferredQuery.trim().toLowerCase();
-  const filteredClients = normalizedQuery
-    ? clients.filter((client) =>
-        [client.name, client.email, client.phone]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(normalizedQuery)),
-      )
-    : clients;
+  const filteredClients = clients.filter((client) => {
+    if (!isItemInMonth(client.createdAt, selectedMonth)) {
+      return false;
+    }
+    if (!normalizedQuery) return true;
+    return [client.name, client.email, client.phone]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(normalizedQuery));
+  });
 
   return (
     <div className="space-y-8">
@@ -96,6 +101,13 @@ export default function ClientsPage() {
           </button>
         )}
       </div>
+
+      <MonthPickerFilter
+        selectedMonth={selectedMonth}
+        onChange={setSelectedMonth}
+        totalCount={filteredClients.length}
+        countLabel="registered clients"
+      />
 
       {tempPassword && (
         <div className="bg-white border border-gray-100 rounded-[32px] p-6">

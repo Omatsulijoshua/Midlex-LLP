@@ -57,12 +57,15 @@ const defaultCourts = [
   'HIGH COURT EHOR',
 ];
 
+import MonthPickerFilter, { getCurrentMonthStr, isItemInMonth } from '@/components/Dashboard/MonthPickerFilter';
+
 export default function CasesPage() {
   const { user } = useAuth();
   const [cases, setCases] = useState<Case[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
+  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonthStr());
 
   const [teams, setTeams] = useState<string[]>(defaultTeams);
   const [courts, setCourts] = useState<string[]>(defaultCourts);
@@ -183,6 +186,10 @@ export default function CasesPage() {
     const suit = ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`;
     const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
     const teamName = ov.litigationTeam || c.litigationTeam || 'TEAM ANCHOR';
+
+    if (!isItemInMonth(c.createdAt, selectedMonth)) {
+      return false;
+    }
 
     if (selectedCourtFilter !== 'ALL' && courtName !== selectedCourtFilter) {
       return false;
@@ -312,6 +319,13 @@ export default function CasesPage() {
           )
         )}
       </div>
+
+      <MonthPickerFilter
+        selectedMonth={selectedMonth}
+        onChange={setSelectedMonth}
+        totalCount={filteredCases.length}
+        countLabel="cases in directory"
+      />
 
       {/* Very Bold Team Case Directory Section */}
       {isStaff && (

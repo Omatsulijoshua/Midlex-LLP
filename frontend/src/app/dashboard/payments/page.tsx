@@ -46,10 +46,13 @@ interface PaymentAccount {
   currency: string;
 }
 
+import MonthPickerFilter, { getCurrentMonthStr, isItemInMonth } from '@/components/Dashboard/MonthPickerFilter';
+
 export default function PaymentsPage() {
   const { user, token } = useAuth();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonthStr());
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [cases, setCases] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<PaymentAccount[]>([]);
@@ -823,9 +826,33 @@ export default function PaymentsPage() {
     );
   };
 
-  if (isLoading) return <div className="animate-pulse space-y-4">
-    {[1, 2, 3].map(i => <div key={i} className="h-24 bg-gray-100 rounded-3xl" />)}
-  </div>;
+  const normalizedQuery = deferredQuery.trim().toLowerCase();
+  const filteredPayments = payments.filter((p) => {
+    if (!isItemInMonth(p.createdAt || p.paidAt, selectedMonth)) {
+      return false;
+    }
+    if (!normalizedQuery) return true;
+    const searchTargets = [
+      p.txRef,
+      p.case?.title,
+      p.client?.name,
+      p.client?.email,
+      p.paymentProvider,
+      p.status,
+      p.description,
+    ].filter(Boolean);
+    return searchTargets.some((val) => String(val).toLowerCase().includes(normalizedQuery));
+  });
+
+  const totalPaid = filteredPayments
+    .filter((p) => p.status === 'SUCCESS')
+    .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+
+  const outstanding = filteredPayments
+    .filter((p) => p.status !== 'SUCCESS')
+    .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+
+  const currency = filteredPayments[0]?.currency || 'NGN';
 
   return (
     <div className="space-y-8">
@@ -843,11 +870,18 @@ export default function PaymentsPage() {
         </div>
       </div>
 
+      <MonthPickerFilter
+        selectedMonth={selectedMonth}
+        onChange={setSelectedMonth}
+        totalCount={filteredPayments.length}
+        countLabel="payment transactions"
+      />
+
       <div className="grid gap-6 md:grid-cols-3 lg:gap-8">
         {[
-          { label: 'Total Paid', value: `${currency} ${totalPaid.toLocaleString()}`, color: 'text-primary' },
-          { label: 'Outstanding', value: `${currency} ${outstanding.toLocaleString()}`, color: 'text-secondary' },
-          { label: 'Transactions', value: payments.length, color: 'text-primary' }
+          { label: 'Total Paid (This Month)', value: `${currency} ${totalPaid.toLocaleString()}`, color: 'text-primary' },
+          { label: 'Outstanding (This Month)', value: `${currency} ${outstanding.toLocaleString()}`, color: 'text-secondary' },
+          { label: 'Transactions', value: filteredPayments.length, color: 'text-primary' }
         ].map((stat, i) => (
           <div key={i} className="rounded-[28px] border border-gray-100 bg-white p-6 shadow-sm sm:rounded-[32px] sm:p-8">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{stat.label}</p>

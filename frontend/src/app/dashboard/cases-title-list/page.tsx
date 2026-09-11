@@ -15,6 +15,8 @@ interface CaseItem {
   createdAt: string;
 }
 
+import MonthPickerFilter, { getCurrentMonthStr, isItemInMonth } from '@/components/Dashboard/MonthPickerFilter';
+
 export default function CasesTitleListPage() {
   const { user } = useAuth();
   const [cases, setCases] = useState<CaseItem[]>([]);
@@ -22,6 +24,7 @@ export default function CasesTitleListPage() {
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
   const [selectedCaseId, setSelectedCaseId] = useState<string | 'ALL'>('ALL');
+  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonthStr());
 
   useEffect(() => {
     const fetchCases = async () => {
@@ -50,6 +53,9 @@ export default function CasesTitleListPage() {
 
   const normalizedQuery = deferredQuery.trim().toLowerCase();
   const filteredCases = cases.filter((c) => {
+    if (!isItemInMonth(c.createdAt, selectedMonth)) {
+      return false;
+    }
     if (selectedCaseId !== 'ALL' && c.id !== selectedCaseId) {
       return false;
     }
@@ -80,6 +86,13 @@ export default function CasesTitleListPage() {
           </p>
         </div>
       </div>
+
+      <MonthPickerFilter
+        selectedMonth={selectedMonth}
+        onChange={setSelectedMonth}
+        totalCount={filteredCases.length}
+        countLabel="cases in registry"
+      />
 
       {/* Case Titles Sidebar / Selector List */}
       <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm space-y-4">

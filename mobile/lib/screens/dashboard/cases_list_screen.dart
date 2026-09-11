@@ -25,6 +25,7 @@ class _CasesListScreenState extends State<CasesListScreen> {
   List<String> _courts = [];
   String _selectedCourtFilter = 'ALL';
   String _selectedTeamFilter = 'ALL';
+  String _selectedMonthFilter = 'ALL';
   Map<String, Map<String, String>> _caseOverrides = {};
 
   @override
@@ -727,6 +728,12 @@ class _CasesListScreenState extends State<CasesListScreen> {
       final court = override['court'] ?? item.courtName;
       final team = override['litigationTeam'] ?? item.litigationTeam;
 
+      if (_selectedMonthFilter != 'ALL' && item.createdAt != null) {
+        if (!item.createdAt!.startsWith(_selectedMonthFilter)) {
+          return false;
+        }
+      }
+
       if (_selectedCourtFilter != 'ALL' && court != _selectedCourtFilter) {
         return false;
       }
@@ -1024,6 +1031,59 @@ class _CasesListScreenState extends State<CasesListScreen> {
                     ),
                   ),
                 ],
+
+                const SizedBox(height: 12),
+                // Month Filter Row
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.calendar_month, color: AppTheme.primary, size: 18),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Month:',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.textDark),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _selectedMonthFilter,
+                            isExpanded: true,
+                            icon: const Icon(Icons.arrow_drop_down, color: AppTheme.primary, size: 20),
+                            style: const TextStyle(color: AppTheme.textDark, fontSize: 11, fontWeight: FontWeight.bold),
+                            items: const [
+                              DropdownMenuItem(value: 'ALL', child: Text('🗓️ All Recorded Months')),
+                              DropdownMenuItem(value: '2026-09', child: Text('🗓️ September 2026 (Current)')),
+                              DropdownMenuItem(value: '2026-08', child: Text('🗓️ August 2026')),
+                              DropdownMenuItem(value: '2026-07', child: Text('🗓️ July 2026')),
+                              DropdownMenuItem(value: '2026-06', child: Text('🗓️ June 2026')),
+                              DropdownMenuItem(value: '2026-05', child: Text('🗓️ May 2026')),
+                              DropdownMenuItem(value: '2026-04', child: Text('🗓️ April 2026')),
+                              DropdownMenuItem(value: '2026-03', child: Text('🗓️ March 2026')),
+                              DropdownMenuItem(value: '2026-02', child: Text('🗓️ February 2026')),
+                              DropdownMenuItem(value: '2026-01', child: Text('🗓️ January 2026')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                setState(() => _selectedMonthFilter = val);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      if (_selectedMonthFilter != 'ALL')
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 16, color: Colors.red),
+                          onPressed: () => setState(() => _selectedMonthFilter = 'ALL'),
+                        ),
+                    ],
+                  ),
+                ),
 
                 const SizedBox(height: 12),
                 // Filter Dropdowns Row

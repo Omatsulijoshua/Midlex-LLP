@@ -17,6 +17,7 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedCaseId = 'ALL';
+  String _selectedMonth = 'ALL';
 
   @override
   void dispose() {
@@ -30,6 +31,11 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
     final List<CaseModel> cases = dashboard.cases;
 
     final List<CaseModel> filteredCases = cases.where((item) {
+      if (_selectedMonth != 'ALL' && item.createdAt != null) {
+        if (!item.createdAt!.startsWith(_selectedMonth)) {
+          return false;
+        }
+      }
       if (_selectedCaseId != 'ALL' && item.id != _selectedCaseId) {
         return false;
       }
@@ -188,7 +194,59 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  // Month Filter Row
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.border),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_month, color: AppTheme.primary, size: 18),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Filter Month:',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.textDark),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _selectedMonth,
+                              isExpanded: true,
+                              icon: const Icon(Icons.arrow_drop_down, color: AppTheme.primary, size: 20),
+                              style: const TextStyle(color: AppTheme.textDark, fontSize: 11, fontWeight: FontWeight.bold),
+                              items: const [
+                                DropdownMenuItem(value: 'ALL', child: Text('🗓️ All Recorded Months')),
+                                DropdownMenuItem(value: '2026-09', child: Text('🗓️ September 2026 (Current)')),
+                                DropdownMenuItem(value: '2026-08', child: Text('🗓️ August 2026')),
+                                DropdownMenuItem(value: '2026-07', child: Text('🗓️ July 2026')),
+                                DropdownMenuItem(value: '2026-06', child: Text('🗓️ June 2026')),
+                                DropdownMenuItem(value: '2026-05', child: Text('🗓️ May 2026')),
+                                DropdownMenuItem(value: '2026-04', child: Text('🗓️ April 2026')),
+                                DropdownMenuItem(value: '2026-03', child: Text('🗓️ March 2026')),
+                                DropdownMenuItem(value: '2026-02', child: Text('🗓️ February 2026')),
+                                DropdownMenuItem(value: '2026-01', child: Text('🗓️ January 2026')),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) {
+                                  setState(() => _selectedMonth = val);
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                        if (_selectedMonth != 'ALL')
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 16, color: Colors.red),
+                            onPressed: () => setState(() => _selectedMonth = 'ALL'),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
 
                   // Search Bar
                   TextField(

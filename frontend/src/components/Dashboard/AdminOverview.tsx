@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { DollarSign, FileText, TrendingUp, Users } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 
+import MonthPickerFilter, { getCurrentMonthStr, isItemInMonth } from './MonthPickerFilter';
+
 interface AdminStats {
   totalCases: number;
   activeLawyers: number;
@@ -15,6 +17,7 @@ interface AdminStats {
 interface ActivityItem {
   id: string;
   title: string;
+  createdAt?: string;
   client?: { name: string };
 }
 
@@ -26,18 +29,25 @@ const fallbackStats: AdminStats = {
 };
 
 export default function AdminOverview() {
-  const [stats, setStats] = useState<AdminStats>(fallbackStats);
+  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonthStr());
+  const [allCases, setAllCases] = useState<any[]>([]);
+  const [allPayments, setAllPayments] = useState<any[]>([]);
+  const [allClients, setAllClients] = useState<any[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchOverview = async () => {
       try {
-        const [statsData, activityData] = await Promise.all([
-          apiFetch<AdminStats>('/admin/stats'),
-          apiFetch<ActivityItem[]>('/admin/recent-activity'),
+        const [casesData, paymentsData, clientsData, activityData] = await Promise.all([
+          apiFetch('/cases').catch(() => []),
+          apiFetch('/payments').catch(() => []),
+          apiFetch('/users/clients').catch(() => []),
+          apiFetch<ActivityItem[]>('/admin/recent-activity').catch(() => []),
         ]);
-        setStats(statsData);
+        setAllCases(Array.isArray(casesData) ? casesData : []);
+        setAllPayments(Array.isArray(paymentsData) ? paymentsData : []);
+        setAllClients(Array.isArray(clientsData) ? clientsData : []);
         setActivity(Array.isArray(activityData) ? activityData : []);
       } catch (error) {
         console.error('Error fetching admin overview:', error);
@@ -49,11 +59,19 @@ export default function AdminOverview() {
     fetchOverview();
   }, []);
 
+  const filteredCases = allCases.filter(c => isItemInMonth(c.createdAt, selectedMonth));
+  const filteredPayments = allPayments.filter(p => isItemInMonth(p.createdAt || p.paidAt, selectedMonth));
+  const filteredClients = allClients.filter(cl => isItemInMonth(cl.createdAt, selectedMonth));
+  const filteredActivity = activity.filter(a => isItemInMonth(a.createdAt, selectedMonth));
+
+  const totalRevenue = filteredPayments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const pendingPaymentsCount = filteredPayments.filter(p => p.status === 'PENDING').length;
+
   const statCards = [
-    { label: 'Total Cases', value: stats.totalCases, icon: <FileText size={22} />, color: 'bg-blue-500' },
-    { label: 'Active Lawyers', value: stats.activeLawyers, icon: <Users size={22} />, color: 'bg-green-500' },
-    { label: 'Pending Payments', value: stats.pendingPayments, icon: <DollarSign size={22} />, color: 'bg-amber-500' },
-    { label: 'Total Revenue', value: `NGN ${stats.totalRevenue.toLocaleString()}`, icon: <TrendingUp size={22} />, color: 'bg-emerald-500' },
+    { label: 'Cases (This Month)', value: filteredCases.length, icon: <FileText size={22} />, color: 'bg-blue-500' },
+    { label: 'Clients Registered', value: filteredClients.length, icon: <Users size={22} />, color: 'bg-green-500' },
+    { label: 'Pending Payments', value: pendingPaymentsCount, icon: <DollarSign size={22} />, color: 'bg-amber-500' },
+    { label: 'Monthly Revenue', value: `NGN ${totalRevenue.toLocaleString()}`, icon: <TrendingUp size={22} />, color: 'bg-emerald-500' },
   ];
 
   const quickActions = [
@@ -78,6 +96,13 @@ export default function AdminOverview() {
 
   return (
     <div className="space-y-8">
+      <MonthPickerFilter
+        selectedMonth={selectedMonth}
+        onChange={setSelectedMonth}
+        totalCount={filteredCases.length}
+        countLabel="cases this month"
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {statCards.map((stat) => (
           <div key={stat.label} className="bg-white rounded-[28px] border border-gray-100 p-8 shadow-sm">
