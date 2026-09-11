@@ -91,7 +91,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                     const Text('Status Milestone', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
-                      value: selectedStatus,
+                      initialValue: selectedStatus,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -143,18 +143,21 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                             );
                             return;
                           }
+                          final messenger = ScaffoldMessenger.of(context);
+                          final navigator = Navigator.of(dialogContext);
+                          final provider = Provider.of<DashboardProvider>(context, listen: false);
                           setDialogState(() => isSubmitting = true);
                           try {
-                            await Provider.of<DashboardProvider>(context, listen: false).addTimelineEvent(
+                            await provider.addTimelineEvent(
                               caseId: widget.caseModel.id,
                               title: title,
                               description: descController.text.trim(),
                               status: selectedStatus,
                             );
                             if (mounted) {
-                              Navigator.pop(dialogContext);
+                              navigator.pop();
                               _fetchTimeline();
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.showSnackBar(
                                 const SnackBar(
                                   content: Text('Timeline update added successfully!'),
                                   backgroundColor: Colors.green,
@@ -163,7 +166,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                             }
                           } catch (e) {
                             setDialogState(() => isSubmitting = false);
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            messenger.showSnackBar(
                               SnackBar(content: Text('Failed to add timeline: $e')),
                             );
                           }
@@ -485,7 +488,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: AppTheme.secondary.withOpacity(0.1),
+                                          color: AppTheme.secondary.withAlpha(25),
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
