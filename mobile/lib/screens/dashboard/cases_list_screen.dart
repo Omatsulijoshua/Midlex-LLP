@@ -4,6 +4,7 @@ import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../models/case_model.dart';
+import '../../services/directory_service.dart';
 import '../../widgets/status_chip.dart';
 import 'case_detail_screen.dart';
 import 'new_case_screen.dart';
@@ -19,10 +20,411 @@ class _CasesListScreenState extends State<CasesListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
+  List<String> _teams = [];
+  List<String> _courts = [];
+  Map<String, Map<String, String>> _caseOverrides = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDirectoryData();
+  }
+
+  Future<void> _loadDirectoryData() async {
+    final t = await DirectoryService.getTeams();
+    final c = await DirectoryService.getCourts();
+    setState(() {
+      _teams = t;
+      _courts = c;
+    });
+  }
+
+  Future<Map<String, String>> _getOverrideForCase(String caseId) async {
+    if (_caseOverrides.containsKey(caseId)) {
+      return _caseOverrides[caseId]!;
+    }
+    final assignment = await DirectoryService.getCaseAssignment(caseId);
+    final map = <String, String>{
+      if (assignment['suitNumber'] != null) 'suitNumber': assignment['suitNumber'].toString(),
+      if (assignment['court'] != null) 'court': assignment['court'].toString(),
+      if (assignment['litigationTeam'] != null) 'litigationTeam': assignment['litigationTeam'].toString(),
+    };
+    _caseOverrides[caseId] = map;
+    return map;
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  // Dialog to manage Litigation Teams (TEAM ANCHOR, TEAM SAPPHIRE, TEAM GEMSTONE, etc.)
+  void _openManageTeamsDialog() {
+    final addController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.shield_outlined, color: AppTheme.primary),
+                SizedBox(width: 8),
+                Text('Litigation Teams Directory'),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Manage legal litigation teams assigned to case matters.',
+                    style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: addController,
+                          style: const TextStyle(color: AppTheme.textDark, fontSize: 13),
+                          decoration: const InputDecoration(
+                            hintText: 'New Team Name (e.g. TEAM TITAN)',
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (addController.text.trim().isNotEmpty) {
+                            await DirectoryService.addTeam(addController.text);
+                            addController.clear();
+                            final updated = await DirectoryService.getTeams();
+                            setDialogState(() {
+                              _teams = updated;
+                            });
+                            setState(() {});
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          backgroundColor: AppTheme.primary,
+                        ),
+                        child: const Text('Add'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: _teams.map((t) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentLight,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: AppTheme.border),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.group, size: 16, color: AppTheme.primary),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      t,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                        color: AppTheme.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                  onPressed: () async {
+                                    await DirectoryService.removeTeam(t);
+                                    final updated = await DirectoryService.getTeams();
+                                    setDialogState(() {
+                                      _teams = updated;
+                                    });
+                                    setState(() {});
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // Dialog to manage Courts Directory (HIGH COURT BENIN CITY, etc.)
+  void _openManageCourtsDialog() {
+    final addController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.account_balance_outlined, color: AppTheme.secondary),
+                SizedBox(width: 8),
+                Text('Courts Directory'),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Manage jurisdiction courts available for litigation matters.',
+                    style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: addController,
+                          style: const TextStyle(color: AppTheme.textDark, fontSize: 13),
+                          decoration: const InputDecoration(
+                            hintText: 'New Court Name (e.g. HIGH COURT UROMI)',
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (addController.text.trim().isNotEmpty) {
+                            await DirectoryService.addCourt(addController.text);
+                            addController.clear();
+                            final updated = await DirectoryService.getCourts();
+                            setDialogState(() {
+                              _courts = updated;
+                            });
+                            setState(() {});
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          backgroundColor: AppTheme.secondary,
+                        ),
+                        child: const Text('Add'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: _courts.map((c) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.shade50.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.amber.shade200),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.gavel_outlined, size: 16, color: AppTheme.secondary),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          c,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                            color: AppTheme.textDark,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: Colors.red, size: 18),
+                                  onPressed: () async {
+                                    await DirectoryService.removeCourt(c);
+                                    final updated = await DirectoryService.getCourts();
+                                    setDialogState(() {
+                                      _courts = updated;
+                                    });
+                                    setState(() {});
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // Dialog to Edit Matter Attributes (Suit No, Court, Team) for a Case
+  void _openEditMatterDialog(CaseModel caseModel) async {
+    final overrides = await _getOverrideForCase(caseModel.id);
+    final suitController = TextEditingController(
+      text: overrides['suitNumber'] ?? caseModel.suitNumber,
+    );
+    String selectedCourt = overrides['court'] ??
+        (_courts.contains(caseModel.courtName) ? caseModel.courtName : (_courts.isNotEmpty ? _courts.first : 'HIGH COURT BENIN CITY'));
+    String selectedTeam = overrides['litigationTeam'] ??
+        (_teams.contains(caseModel.litigationTeam)
+            ? caseModel.litigationTeam
+            : (_teams.isNotEmpty ? _teams.first : 'TEAM ANCHOR'));
+
+    if (!_courts.contains(selectedCourt) && selectedCourt.isNotEmpty) {
+      _courts.add(selectedCourt);
+    }
+    if (!_teams.contains(selectedTeam) && selectedTeam.isNotEmpty) {
+      _teams.add(selectedTeam);
+    }
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Text(
+              'Assign Directory Details\n(${caseModel.title})',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Suit Number / File Ref:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 4),
+                  TextField(
+                    controller: suitController,
+                    style: const TextStyle(color: AppTheme.textDark, fontSize: 13),
+                    decoration: const InputDecoration(
+                      hintText: 'SUIT NO: HCB/102/2026',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  const Text('Assigned Court:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 4),
+                  DropdownButtonFormField<String>(
+                    value: _courts.contains(selectedCourt) ? selectedCourt : null,
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    items: _courts.map((c) {
+                      return DropdownMenuItem(
+                        value: c,
+                        child: Text(c, style: const TextStyle(fontSize: 12)),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setDialogState(() => selectedCourt = val);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 14),
+
+                  const Text('Assigned Litigation Team:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 4),
+                  DropdownButtonFormField<String>(
+                    value: _teams.contains(selectedTeam) ? selectedTeam : null,
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    items: _teams.map((t) {
+                      return DropdownMenuItem(
+                        value: t,
+                        child: Text(t, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setDialogState(() => selectedTeam = val);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  await DirectoryService.saveCaseAssignment(
+                    caseModel.id,
+                    suitNumber: suitController.text.trim(),
+                    court: selectedCourt,
+                    litigationTeam: selectedTeam,
+                  );
+                  _caseOverrides[caseModel.id] = {
+                    'suitNumber': suitController.text.trim(),
+                    'court': selectedCourt,
+                    'litigationTeam': selectedTeam,
+                  };
+                  setState(() {});
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
+                child: const Text('Save Details'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -37,11 +439,16 @@ class _CasesListScreenState extends State<CasesListScreen> {
         ? allCases
         : allCases.where((item) {
             final query = _searchQuery.toLowerCase();
+            final override = _caseOverrides[item.id] ?? {};
+            final suit = override['suitNumber'] ?? item.suitNumber;
+            final court = override['court'] ?? item.courtName;
+            final team = override['litigationTeam'] ?? item.litigationTeam;
+
             return item.title.toLowerCase().contains(query) ||
                 item.description.toLowerCase().contains(query) ||
-                item.suitNumber.toLowerCase().contains(query) ||
-                item.courtName.toLowerCase().contains(query) ||
-                item.litigationTeam.toLowerCase().contains(query) ||
+                suit.toLowerCase().contains(query) ||
+                court.toLowerCase().contains(query) ||
+                team.toLowerCase().contains(query) ||
                 (item.client?.name.toLowerCase().contains(query) ?? false);
           }).toList();
 
@@ -70,6 +477,7 @@ class _CasesListScreenState extends State<CasesListScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -137,6 +545,43 @@ class _CasesListScreenState extends State<CasesListScreen> {
                     ),
                   ),
                 ),
+
+                if (isStaff) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _openManageTeamsDialog,
+                          icon: const Icon(Icons.shield_outlined, color: AppTheme.secondary, size: 16),
+                          label: Text(
+                            'Teams (${_teams.length})',
+                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: AppTheme.secondary),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _openManageCourtsDialog,
+                          icon: const Icon(Icons.account_balance_outlined, color: Colors.white, size: 16),
+                          label: Text(
+                            'Courts (${_courts.length})',
+                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Colors.white70),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -206,8 +651,8 @@ class _CasesListScreenState extends State<CasesListScreen> {
               ),
               child: DataTable(
                 headingRowColor: WidgetStateProperty.all(AppTheme.primary),
-                dataRowMinHeight: 60,
-                dataRowMaxHeight: 75,
+                dataRowMinHeight: 65,
+                dataRowMaxHeight: 80,
                 horizontalMargin: 16,
                 columnSpacing: 24,
                 columns: const [
@@ -252,6 +697,11 @@ class _CasesListScreenState extends State<CasesListScreen> {
                   final item = cases[index];
                   final sn = (index + 1).toString();
 
+                  final override = _caseOverrides[item.id] ?? {};
+                  final suitNo = override['suitNumber'] ?? item.suitNumber;
+                  final courtName = override['court'] ?? item.courtName;
+                  final teamName = override['litigationTeam'] ?? item.litigationTeam;
+
                   return DataRow(
                     cells: [
                       // 1. S/N
@@ -272,7 +722,7 @@ class _CasesListScreenState extends State<CasesListScreen> {
                             border: Border.all(color: AppTheme.secondary.withValues(alpha: 0.5)),
                           ),
                           child: Text(
-                            item.suitNumber,
+                            suitNo,
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -310,14 +760,14 @@ class _CasesListScreenState extends State<CasesListScreen> {
                       // 4. COURT
                       DataCell(
                         SizedBox(
-                          width: 160,
+                          width: 170,
                           child: Row(
                             children: [
                               const Icon(Icons.account_balance_outlined, size: 16, color: AppTheme.secondary),
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  item.courtName,
+                                  courtName,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(fontSize: 12, color: AppTheme.textDark),
@@ -338,12 +788,12 @@ class _CasesListScreenState extends State<CasesListScreen> {
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  item.litigationTeam,
+                                  teamName,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     fontSize: 12,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.bold,
                                     color: AppTheme.primary,
                                   ),
                                 ),
@@ -355,24 +805,34 @@ class _CasesListScreenState extends State<CasesListScreen> {
 
                       // ACTION
                       DataCell(
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CaseDetailScreen(caseModel: item),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_note, color: AppTheme.secondary),
+                              tooltip: 'Assign Team/Court',
+                              onPressed: () => _openEditMatterDialog(item),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CaseDetailScreen(caseModel: item),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primary,
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primary,
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: const Text(
-                            'Open Case',
-                            style: TextStyle(fontSize: 11, color: Colors.white),
-                          ),
+                              child: const Text(
+                                'Open',
+                                style: TextStyle(fontSize: 11, color: Colors.white),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -385,12 +845,17 @@ class _CasesListScreenState extends State<CasesListScreen> {
 
           // Cards Directory for fast mobile reference
           const Text(
-            'DIRECTORY CARDS:',
+            'DIRECTORY MATTERS CARDS:',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textMuted),
           ),
           const SizedBox(height: 10),
           ...List.generate(cases.length, (index) {
             final item = cases[index];
+            final override = _caseOverrides[item.id] ?? {};
+            final suitNo = override['suitNumber'] ?? item.suitNumber;
+            final courtName = override['court'] ?? item.courtName;
+            final teamName = override['litigationTeam'] ?? item.litigationTeam;
+
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               shape: RoundedRectangleBorder(
@@ -417,7 +882,7 @@ class _CasesListScreenState extends State<CasesListScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              item.suitNumber,
+                              suitNo,
                               style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 13),
                             ),
                           ],
@@ -438,7 +903,7 @@ class _CasesListScreenState extends State<CasesListScreen> {
                         const Text('Court: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                         Expanded(
                           child: Text(
-                            item.courtName,
+                            courtName,
                             style: const TextStyle(fontSize: 13),
                           ),
                         ),
@@ -447,36 +912,51 @@ class _CasesListScreenState extends State<CasesListScreen> {
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        const Icon(Icons.gavel, size: 16, color: AppTheme.primary),
+                        const Icon(Icons.shield_outlined, size: 16, color: AppTheme.primary),
                         const SizedBox(width: 6),
                         const Text('Litigation Team: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                         Expanded(
                           child: Text(
-                            item.litigationTeam,
+                            teamName,
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.primary),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CaseDetailScreen(caseModel: item),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _openEditMatterDialog(item),
+                            icon: const Icon(Icons.edit, size: 14, color: AppTheme.secondary),
+                            label: const Text('Edit Info', style: TextStyle(color: AppTheme.secondary, fontSize: 12)),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: AppTheme.secondary),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                             ),
-                          );
-                        },
-                        icon: const Icon(Icons.folder_open, size: 16),
-                        label: const Text('View Matter Details'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CaseDetailScreen(caseModel: item),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.folder_open, size: 14),
+                            label: const Text('View Matter', style: TextStyle(fontSize: 12)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
