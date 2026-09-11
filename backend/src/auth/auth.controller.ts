@@ -41,7 +41,7 @@ export class AuthController {
       city: body.city || body.location,
       address: body.address,
       role: Role.CLIENT,
-    });
+    } as any);
 
     let initialCase: any = null;
     const caseTitle = body.caseTitle?.trim() || body.title?.trim();

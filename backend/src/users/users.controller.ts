@@ -70,7 +70,7 @@ export class UsersController {
       role: Role.LAWYER,
       phone: body.phone,
       litigationTeam: body.litigationTeam || 'TEAM ANCHOR',
-    });
+    } as any);
   }
 
   @Patch('lawyers/:id/team')
@@ -79,7 +79,7 @@ export class UsersController {
     @Param('id') id: string,
     @Body('litigationTeam') litigationTeam: string,
   ) {
-    return this.usersService.update(id, { litigationTeam });
+    return this.usersService.update(id, { litigationTeam } as any);
   }
 
   @Get('team-messages/:teamName')
