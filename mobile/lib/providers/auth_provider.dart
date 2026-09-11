@@ -65,6 +65,11 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String password,
     String? phone,
+    String? secondaryPhone,
+    String? city,
+    String? address,
+    String? caseTitle,
+    String? caseDescription,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -75,6 +80,11 @@ class AuthProvider extends ChangeNotifier {
         'email': email,
         'password': password,
         'phone': phone,
+        'secondaryPhone': secondaryPhone,
+        'city': city,
+        'address': address,
+        'caseTitle': caseTitle,
+        'caseDescription': caseDescription,
       });
 
       _token = response['access_token'];

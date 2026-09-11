@@ -5,11 +5,14 @@ import { EmailService } from '../common/email/email.service';
 import { Role } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 
+import { CasesService } from '../cases/cases.service';
+
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
     private usersService: UsersService,
+    private casesService: CasesService,
     private emailService: EmailService,
     private notificationsService: NotificationsService,
   ) {}
@@ -25,20 +28,40 @@ export class AuthController {
 
   @Post('signup')
   async signup(@Body() body: any) {
-    // Basic validation
     if (!body.email || !body.password || !body.name) {
-      throw new UnauthorizedException('Missing required fields');
+      throw new UnauthorizedException('Full name, email, and password are required');
     }
 
-    // Clients can self-signup. Lawyers/Admins cannot.
     const newUser = await this.usersService.create({
       email: body.email,
       password: body.password,
       name: body.name,
+      phone: body.phone,
+      secondaryPhone: body.secondaryPhone || body.phone2,
+      city: body.city || body.location,
+      address: body.address,
       role: Role.CLIENT,
     });
 
-    // Notify Admin
+    let initialCase = null;
+    const caseTitle = body.caseTitle?.trim() || body.title?.trim();
+    const caseDescription = body.caseDescription?.trim() || body.description?.trim();
+
+    if (caseTitle || caseDescription) {
+      initialCase = await this.casesService.create({
+        title: caseTitle || `Legal Matter - ${newUser.name}`,
+        description: caseDescription || 'Client registered case details.',
+        clientId: newUser.id,
+      });
+
+      await this.notificationsService.notifyAdmins({
+        title: 'New Client Matter Registered',
+        message: `${newUser.name} registered a new case: "${caseTitle || 'Legal Matter'}".`,
+        link: '/dashboard/cases',
+        type: 'CASE_CREATED',
+      });
+    }
+
     await this.emailService.sendAdminSignupNotification(
       newUser.name,
       newUser.email,
@@ -51,15 +74,12 @@ export class AuthController {
       type: 'CLIENT_SIGNUP',
     });
 
-    await this.notificationsService.create({
-      recipientId: newUser.id,
-      title: 'Complete your account information',
-      message: 'Please update your profile so the legal team has your current contact and identification details.',
-      link: '/dashboard/profile',
-      type: 'PROFILE_SETUP',
-    });
-
-    return newUser;
+    const loginResult = await this.authService.login(newUser);
+    return {
+      ...loginResult,
+      user: newUser,
+      initialCase,
+    };
   }
 
   @Post('forgot-password')

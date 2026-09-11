@@ -44,6 +44,8 @@ model User {
   name          String
   role          Role      @default(CLIENT)
   phone         String?
+  secondaryPhone String?
+  city          String?
   dateOfBirth   DateTime?
   nationalId    String?
   address       String?
