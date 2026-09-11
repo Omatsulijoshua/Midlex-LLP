@@ -50,8 +50,8 @@ class _SignupScreenState extends State<SignupScreen> {
     final caseTitle = _caseTitleController.text.trim();
     final caseDescription = _caseDescriptionController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty || phone.isEmpty || secondaryPhone.isEmpty || city.isEmpty || address.isEmpty || caseTitle.isEmpty || caseDescription.isEmpty) {
-      setState(() => _errorMessage = 'Please fill in all required fields including contact numbers, location, and case details.');
+    if (name.isEmpty || email.isEmpty || password.isEmpty || phone.isEmpty || city.isEmpty || address.isEmpty || caseTitle.isEmpty || caseDescription.isEmpty) {
+      setState(() => _errorMessage = 'Please fill in all required fields including primary phone number, location, and case details.');
       return;
     }
 
@@ -159,8 +159,8 @@ class _SignupScreenState extends State<SignupScreen> {
               controller: _secondaryPhoneController,
               keyboardType: TextInputType.phone,
               decoration: const InputDecoration(
-                labelText: 'Secondary Phone Number *',
-                hintText: '+234 805 111 2222',
+                labelText: 'Secondary Phone Number (Optional)',
+                hintText: '+234 805 111 2222 (Optional)',
                 prefixIcon: Icon(Icons.phone_android_outlined, color: AppTheme.secondary),
               ),
             ),

@@ -135,7 +135,7 @@ export default function SignupPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-primary mb-1.5">Secondary Phone Number *</label>
+                <label className="block text-xs font-bold text-primary mb-1.5">Secondary Phone Number (Optional)</label>
                 <div className="relative">
                   <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary" size={18} />
                   <input
@@ -144,8 +144,7 @@ export default function SignupPage() {
                     onChange={(e) => setFormData({...formData, secondaryPhone: e.target.value})}
                     style={{ color: '#000000', backgroundColor: '#ffffff', WebkitTextFillColor: '#000000' }}
                     className="w-full bg-white border border-gray-300 rounded-2xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-slate-900 font-semibold text-sm"
-                    placeholder="+234 805 111 2222"
-                    required
+                    placeholder="+234 805 111 2222 (Optional)"
                   />
                 </div>
               </div>
