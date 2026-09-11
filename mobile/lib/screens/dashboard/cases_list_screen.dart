@@ -22,6 +22,8 @@ class _CasesListScreenState extends State<CasesListScreen> {
 
   List<String> _teams = [];
   List<String> _courts = [];
+  String _selectedCourtFilter = 'ALL';
+  String _selectedTeamFilter = 'ALL';
   Map<String, Map<String, String>> _caseOverrides = {};
 
   @override
@@ -479,22 +481,33 @@ class _CasesListScreenState extends State<CasesListScreen> {
     final dashboard = Provider.of<DashboardProvider>(context);
 
     final List<CaseModel> allCases = dashboard.cases;
-    final List<CaseModel> filteredCases = _searchQuery.trim().isEmpty
-        ? allCases
-        : allCases.where((item) {
-            final query = _searchQuery.toLowerCase();
-            final override = _caseOverrides[item.id] ?? {};
-            final suit = override['suitNumber'] ?? item.suitNumber;
-            final court = override['court'] ?? item.courtName;
-            final team = override['litigationTeam'] ?? item.litigationTeam;
+    final List<CaseModel> filteredCases = allCases.where((item) {
+      final override = _caseOverrides[item.id] ?? {};
+      final suit = override['suitNumber'] ?? item.suitNumber;
+      final court = override['court'] ?? item.courtName;
+      final team = override['litigationTeam'] ?? item.litigationTeam;
 
-            return item.title.toLowerCase().contains(query) ||
-                item.description.toLowerCase().contains(query) ||
-                suit.toLowerCase().contains(query) ||
-                court.toLowerCase().contains(query) ||
-                team.toLowerCase().contains(query) ||
-                (item.client?.name.toLowerCase().contains(query) ?? false);
-          }).toList();
+      if (_selectedCourtFilter != 'ALL' && court != _selectedCourtFilter) {
+        return false;
+      }
+
+      if (_selectedTeamFilter != 'ALL' && team != _selectedTeamFilter) {
+        return false;
+      }
+
+      if (_searchQuery.trim().isNotEmpty) {
+        final query = _searchQuery.toLowerCase();
+        final matchesQuery = item.title.toLowerCase().contains(query) ||
+            item.description.toLowerCase().contains(query) ||
+            suit.toLowerCase().contains(query) ||
+            court.toLowerCase().contains(query) ||
+            team.toLowerCase().contains(query) ||
+            (item.client?.name.toLowerCase().contains(query) ?? false);
+        if (!matchesQuery) return false;
+      }
+
+      return true;
+    }).toList();
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
@@ -626,6 +639,103 @@ class _CasesListScreenState extends State<CasesListScreen> {
                     ],
                   ),
                 ],
+
+                const SizedBox(height: 12),
+                // Filter Dropdowns Row
+                Row(
+                  children: [
+                    // Court Filter Dropdown
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _courts.contains(_selectedCourtFilter) || _selectedCourtFilter == 'ALL'
+                                ? _selectedCourtFilter
+                                : 'ALL',
+                            isExpanded: true,
+                            icon: const Icon(Icons.arrow_drop_down, color: AppTheme.primary, size: 20),
+                            style: const TextStyle(color: AppTheme.textDark, fontSize: 11, fontWeight: FontWeight.bold),
+                            items: [
+                              const DropdownMenuItem(
+                                value: 'ALL',
+                                child: Text('🏛️ All Courts', overflow: TextOverflow.ellipsis),
+                              ),
+                              ..._courts.map((c) => DropdownMenuItem(
+                                    value: c,
+                                    child: Text(c, overflow: TextOverflow.ellipsis),
+                                  )),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                setState(() => _selectedCourtFilter = val);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Team Filter Dropdown
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _teams.contains(_selectedTeamFilter) || _selectedTeamFilter == 'ALL'
+                                ? _selectedTeamFilter
+                                : 'ALL',
+                            isExpanded: true,
+                            icon: const Icon(Icons.arrow_drop_down, color: AppTheme.primary, size: 20),
+                            style: const TextStyle(color: AppTheme.textDark, fontSize: 11, fontWeight: FontWeight.bold),
+                            items: [
+                              const DropdownMenuItem(
+                                value: 'ALL',
+                                child: Text('🛡️ All Teams', overflow: TextOverflow.ellipsis),
+                              ),
+                              ..._teams.map((t) => DropdownMenuItem(
+                                    value: t,
+                                    child: Text(t, overflow: TextOverflow.ellipsis),
+                                  )),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                setState(() => _selectedTeamFilter = val);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (_selectedCourtFilter != 'ALL' || _selectedTeamFilter != 'ALL') ...[
+                      const SizedBox(width: 6),
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            _selectedCourtFilter = 'ALL';
+                            _selectedTeamFilter = 'ALL';
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade100,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.filter_alt_off, size: 18, color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ],
             ),
           ),

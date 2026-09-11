@@ -55,6 +55,9 @@ export default function CasesPage() {
   const [teams, setTeams] = useState<string[]>(defaultTeams);
   const [courts, setCourts] = useState<string[]>(defaultCourts);
 
+  const [selectedCourtFilter, setSelectedCourtFilter] = useState('ALL');
+  const [selectedTeamFilter, setSelectedTeamFilter] = useState('ALL');
+
   const [isTeamsModalOpen, setIsTeamsModalOpen] = useState(false);
   const [isCourtsModalOpen, setIsCourtsModalOpen] = useState(false);
   const [newTeamInput, setNewTeamInput] = useState('');
@@ -156,26 +159,38 @@ export default function CasesPage() {
   </div>;
 
   const normalizedQuery = deferredQuery.trim().toLowerCase();
-  const filteredCases = normalizedQuery
-    ? cases.filter((c) => {
-        const ov = overrides[c.id] || {};
-        const suit = ov.suitNumber || c.suitNumber;
-        const courtName = ov.court || c.court;
-        const teamName = ov.litigationTeam || c.litigationTeam;
-        return [
-          c.title,
-          c.description,
-          c.status,
-          c.client?.name,
-          c.lawyer?.name,
-          suit,
-          courtName,
-          teamName,
-        ]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(normalizedQuery));
-      })
-    : cases;
+  const filteredCases = cases.filter((c) => {
+    const ov = overrides[c.id] || {};
+    const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
+    const suit = ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`;
+    const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
+    const teamName = ov.litigationTeam || c.litigationTeam || 'TEAM ANCHOR';
+
+    if (selectedCourtFilter !== 'ALL' && courtName !== selectedCourtFilter) {
+      return false;
+    }
+
+    if (selectedTeamFilter !== 'ALL' && teamName !== selectedTeamFilter) {
+      return false;
+    }
+
+    if (normalizedQuery) {
+      const searchTargets = [
+        c.title,
+        c.description,
+        c.status,
+        c.client?.name,
+        c.lawyer?.name,
+        suit,
+        courtName,
+        teamName,
+      ].filter(Boolean);
+      return searchTargets.some((val) => String(val).toLowerCase().includes(normalizedQuery));
+    }
+
+    return true;
+  });
 
   return (
     <div className="space-y-8">
@@ -225,6 +240,62 @@ export default function CasesPage() {
         count={filteredCases.length}
         countLabel="matters"
       />
+
+      {/* Interactive Filter Bar for Court and Litigation Team */}
+      <div className="flex flex-wrap items-center gap-4 bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
+        <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+          <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <span>Filter Directory:</span>
+        </div>
+
+        {/* Court Filter */}
+        <div className="flex-1 min-w-[220px]">
+          <select
+            value={selectedCourtFilter}
+            onChange={(e) => setSelectedCourtFilter(e.target.value)}
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="ALL">🏛️ All Courts ({courts.length})</option>
+            {courts.map((court) => (
+              <option key={court} value={court}>
+                {court}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Litigation Team Filter */}
+        <div className="flex-1 min-w-[220px]">
+          <select
+            value={selectedTeamFilter}
+            onChange={(e) => setSelectedTeamFilter(e.target.value)}
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="ALL">🛡️ All Litigation Teams ({teams.length})</option>
+            {teams.map((team) => (
+              <option key={team} value={team}>
+                {team}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Reset Filters button */}
+        {(selectedCourtFilter !== 'ALL' || selectedTeamFilter !== 'ALL' || query !== '') && (
+          <button
+            onClick={() => {
+              setSelectedCourtFilter('ALL');
+              setSelectedTeamFilter('ALL');
+              setQuery('');
+            }}
+            className="px-4 py-2.5 bg-red-50 text-red-600 font-bold rounded-xl text-xs hover:bg-red-100 transition-all flex items-center gap-1.5"
+          >
+            <span>✕ Reset Filters</span>
+          </button>
+        )}
+      </div>
 
       <div className="bg-white rounded-[40px] border border-gray-100 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
