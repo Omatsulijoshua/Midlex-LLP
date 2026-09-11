@@ -43,7 +43,7 @@ export class AuthController {
       role: Role.CLIENT,
     });
 
-    let initialCase = null;
+    let initialCase: any = null;
     const caseTitle = body.caseTitle?.trim() || body.title?.trim();
     const caseDescription = body.caseDescription?.trim() || body.description?.trim();
 

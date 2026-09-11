@@ -21,7 +21,7 @@ export function getApiBaseUrl() {
 }
 
 export async function apiFetch<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const API_URL = resolveApiUrl();
+  let API_URL = resolveApiUrl();
   const token = typeof window !== 'undefined' ? localStorage.getItem('midlex_token') : null;
   const isFormData = options.body instanceof FormData;
   const headers = new Headers(options.headers);
@@ -41,10 +41,26 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestInit =
       headers,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    throw new Error(
-      `Network error. Can't reach API at ${API_URL} (calling ${endpoint}). ${message ? `(${message}) ` : ""}Set NEXT_PUBLIC_API_URL if needed.`,
-    );
+    const fallbackUrl = (process.env.NEXT_PUBLIC_API_URL?.trim() || "https://midlex-backend.onrender.com").replace(/\/+$/, "");
+    if (API_URL !== fallbackUrl) {
+      try {
+        API_URL = fallbackUrl;
+        response = await fetch(`${API_URL}${endpoint}`, {
+          ...options,
+          headers,
+        });
+      } catch (fallbackErr) {
+        const message = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
+        throw new Error(
+          `Network error. Can't reach API at ${API_URL} (calling ${endpoint}). ${message ? `(${message}) ` : ""}Set NEXT_PUBLIC_API_URL if needed.`,
+        );
+      }
+    } else {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(
+        `Network error. Can't reach API at ${API_URL} (calling ${endpoint}). ${message ? `(${message}) ` : ""}Set NEXT_PUBLIC_API_URL if needed.`,
+      );
+    }
   }
 
   const contentType = response.headers.get('content-type') || '';
