@@ -16,6 +16,7 @@ import { RemindersModule } from './reminders/reminders.module';
 import { ChatModule } from './chat/chat.module';
 import { PaymentAccountsModule } from './payment-accounts/payment-accounts.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { DirectoryModule } from './directory/directory.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     ChatModule,
     PaymentAccountsModule,
     NotificationsModule,
+    DirectoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

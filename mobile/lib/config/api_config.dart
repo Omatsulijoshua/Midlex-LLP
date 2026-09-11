@@ -1,11 +1,26 @@
 class ApiConfig {
-  static const String baseUrl = 'https://midlex-backend.onrender.com';
+  // Configurable base URL: Defaults to production, can be overridden via --dart-define=API_URL=... or at runtime
+  static const String _defaultUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'https://midlex-backend.onrender.com',
+  );
+
+  static String _baseUrl = _defaultUrl;
+  static String get baseUrl => _baseUrl;
+
+  static void setBaseUrl(String url) {
+    _baseUrl = url.replaceAll(RegExp(r'/+$'), '');
+  }
 
   // Auth
   static String get login => '$baseUrl/auth/login';
   static String get register => '$baseUrl/auth/register';
   static String get me => '$baseUrl/auth/me';
   static String get forgotPassword => '$baseUrl/auth/forgot-password';
+
+  // Directory (Courts & Litigation Teams from Backend)
+  static String get directoryCourts => '$baseUrl/directory/courts';
+  static String get directoryTeams => '$baseUrl/directory/teams';
 
   // Cases
   static String get cases => '$baseUrl/cases';

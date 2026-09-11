@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_service.dart';
+import '../config/api_config.dart';
 
 class DirectoryService {
   static const String _teamsKey = 'midlex_litigation_teams';
@@ -35,9 +37,18 @@ class DirectoryService {
     'HIGH COURT EHOR',
   ];
 
-  // Teams Management
+  // Teams Management (Synced with Backend DB)
   static Future<List<String>> getTeams() async {
     final prefs = await SharedPreferences.getInstance();
+    try {
+      final res = await ApiService.get(ApiConfig.directoryTeams);
+      if (res is List) {
+        final teams = res.map((e) => e.toString()).toList();
+        await prefs.setStringList(_teamsKey, teams);
+        return teams;
+      }
+    } catch (_) {}
+
     final list = prefs.getStringList(_teamsKey);
     if (list == null || list.isEmpty) {
       await prefs.setStringList(_teamsKey, defaultTeams);
@@ -49,6 +60,10 @@ class DirectoryService {
   static Future<void> addTeam(String teamName) async {
     final clean = teamName.trim().toUpperCase();
     if (clean.isEmpty) return;
+    try {
+      await ApiService.post(ApiConfig.directoryTeams, {'name': clean});
+    } catch (_) {}
+
     final teams = await getTeams();
     if (!teams.contains(clean)) {
       teams.add(clean);
@@ -58,15 +73,29 @@ class DirectoryService {
   }
 
   static Future<void> removeTeam(String teamName) async {
+    final clean = teamName.trim().toUpperCase();
+    try {
+      await ApiService.delete('${ApiConfig.directoryTeams}/${Uri.encodeComponent(clean)}');
+    } catch (_) {}
+
     final teams = await getTeams();
-    teams.removeWhere((t) => t.toUpperCase() == teamName.trim().toUpperCase());
+    teams.removeWhere((t) => t.toUpperCase() == clean);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_teamsKey, teams);
   }
 
-  // Courts Management
+  // Courts Management (Synced with Backend DB)
   static Future<List<String>> getCourts() async {
     final prefs = await SharedPreferences.getInstance();
+    try {
+      final res = await ApiService.get(ApiConfig.directoryCourts);
+      if (res is List) {
+        final courts = res.map((e) => e.toString()).toList();
+        await prefs.setStringList(_courtsKey, courts);
+        return courts;
+      }
+    } catch (_) {}
+
     final list = prefs.getStringList(_courtsKey);
     if (list == null || list.isEmpty) {
       await prefs.setStringList(_courtsKey, defaultCourts);
@@ -89,6 +118,10 @@ class DirectoryService {
   static Future<void> addCourt(String courtName) async {
     final clean = courtName.trim().toUpperCase();
     if (clean.isEmpty) return;
+    try {
+      await ApiService.post(ApiConfig.directoryCourts, {'name': clean});
+    } catch (_) {}
+
     final courts = await getCourts();
     if (!courts.contains(clean)) {
       courts.add(clean);
@@ -98,8 +131,13 @@ class DirectoryService {
   }
 
   static Future<void> removeCourt(String courtName) async {
+    final clean = courtName.trim().toUpperCase();
+    try {
+      await ApiService.delete('${ApiConfig.directoryCourts}/${Uri.encodeComponent(clean)}');
+    } catch (_) {}
+
     final courts = await getCourts();
-    courts.removeWhere((c) => c.toUpperCase() == courtName.trim().toUpperCase());
+    courts.removeWhere((c) => c.toUpperCase() == clean);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_courtsKey, courts);
   }

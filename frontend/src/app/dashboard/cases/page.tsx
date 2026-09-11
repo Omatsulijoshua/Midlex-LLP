@@ -102,6 +102,19 @@ export default function CasesPage() {
         const endpoint = user?.role === 'ADMIN' ? '/cases' : '/cases/my-cases';
         const data = await apiFetch(endpoint);
         setCases(data);
+        // Fetch directory courts & teams from backend
+        try {
+          const backendCourts = await apiFetch<string[]>('/directory/courts');
+          if (Array.isArray(backendCourts) && backendCourts.length > 0) {
+            setCourts(backendCourts);
+          }
+          const backendTeams = await apiFetch<string[]>('/directory/teams');
+          if (Array.isArray(backendTeams) && backendTeams.length > 0) {
+            setTeams(backendTeams);
+          }
+        } catch (e) {
+          console.warn('Could not fetch directory from backend, using defaults:', e);
+        }
       } catch (error) {
         console.error('Error fetching cases:', error);
       } finally {
@@ -110,16 +123,8 @@ export default function CasesPage() {
     };
     fetchCases();
 
-    // Load saved teams, courts & case overrides from localStorage if present
+    // Load saved case overrides from localStorage if present
     if (typeof window !== 'undefined') {
-      const savedTeams = localStorage.getItem('midlex_teams');
-      if (savedTeams) {
-        try { setTeams(JSON.parse(savedTeams)); } catch (e) {}
-      }
-      const savedCourts = localStorage.getItem('midlex_courts');
-      if (savedCourts) {
-        try { setCourts(JSON.parse(savedCourts)); } catch (e) {}
-      }
       const savedOverrides = localStorage.getItem('midlex_case_overrides');
       if (savedOverrides) {
         try { setOverrides(JSON.parse(savedOverrides)); } catch (e) {}
@@ -127,45 +132,59 @@ export default function CasesPage() {
     }
   }, [user]);
 
-  const handleAddTeam = () => {
+  const handleAddTeam = async () => {
     const clean = newTeamInput.trim().toUpperCase();
     if (!clean) return;
-    if (!teams.includes(clean)) {
-      const updated = [...teams, clean];
-      setTeams(updated);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('midlex_teams', JSON.stringify(updated));
-      }
+    try {
+      const updated = await apiFetch<string[]>('/directory/teams', {
+        method: 'POST',
+        body: JSON.stringify({ name: clean }),
+      });
+      if (Array.isArray(updated)) setTeams(updated);
+      else if (!teams.includes(clean)) setTeams([...teams, clean]);
+    } catch (e) {
+      if (!teams.includes(clean)) setTeams([...teams, clean]);
     }
     setNewTeamInput('');
   };
 
-  const handleRemoveTeam = (teamName: string) => {
-    const updated = teams.filter(t => t !== teamName);
-    setTeams(updated);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('midlex_teams', JSON.stringify(updated));
+  const handleRemoveTeam = async (teamName: string) => {
+    try {
+      const updated = await apiFetch<string[]>(`/directory/teams/${encodeURIComponent(teamName)}`, {
+        method: 'DELETE',
+      });
+      if (Array.isArray(updated)) setTeams(updated);
+      else setTeams(teams.filter(t => t !== teamName));
+    } catch (e) {
+      setTeams(teams.filter(t => t !== teamName));
     }
   };
 
-  const handleAddCourt = () => {
+  const handleAddCourt = async () => {
     const clean = newCourtInput.trim().toUpperCase();
     if (!clean) return;
-    if (!courts.includes(clean)) {
-      const updated = [...courts, clean];
-      setCourts(updated);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('midlex_courts', JSON.stringify(updated));
-      }
+    try {
+      const updated = await apiFetch<string[]>('/directory/courts', {
+        method: 'POST',
+        body: JSON.stringify({ name: clean }),
+      });
+      if (Array.isArray(updated)) setCourts(updated);
+      else if (!courts.includes(clean)) setCourts([...courts, clean]);
+    } catch (e) {
+      if (!courts.includes(clean)) setCourts([...courts, clean]);
     }
     setNewCourtInput('');
   };
 
-  const handleRemoveCourt = (courtName: string) => {
-    const updated = courts.filter(c => c !== courtName);
-    setCourts(updated);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('midlex_courts', JSON.stringify(updated));
+  const handleRemoveCourt = async (courtName: string) => {
+    try {
+      const updated = await apiFetch<string[]>(`/directory/courts/${encodeURIComponent(courtName)}`, {
+        method: 'DELETE',
+      });
+      if (Array.isArray(updated)) setCourts(updated);
+      else setCourts(courts.filter(c => c !== courtName));
+    } catch (e) {
+      setCourts(courts.filter(c => c !== courtName));
     }
   };
 
