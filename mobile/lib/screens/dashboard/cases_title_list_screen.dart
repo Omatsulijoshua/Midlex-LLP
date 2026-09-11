@@ -118,11 +118,11 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                '📁 REGISTERED CASE TITLES (${cases.length})',
-                                style: const TextStyle(
+                              const Text(
+                                '📁 REGISTERED CASE TITLES',
+                                style: TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.black,
+                                  fontWeight: FontWeight.bold,
                                   color: AppTheme.textMuted,
                                   letterSpacing: 0.8,
                                 ),
@@ -220,7 +220,7 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                   const SizedBox(height: 16),
 
                   // Table matching exact layout from screenshot
-                  if (filteredCases.isEmpty)
+                  if (filteredCases.isEmpty) ...[
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(32),
@@ -234,8 +234,9 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                         'No cases matched your search.',
                         style: TextStyle(color: AppTheme.textMuted, fontStyle: FontStyle.italic, fontSize: 14),
                       ),
-                    )
-                  : SingleChildScrollView(
+                    ),
+                  ] else ...[
+                    SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Card(
                         elevation: 1,
@@ -365,6 +366,7 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                         ),
                       ),
                     ),
+                  ],
                 ],
               ),
             ),
