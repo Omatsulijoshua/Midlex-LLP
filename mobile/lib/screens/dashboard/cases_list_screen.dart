@@ -384,26 +384,142 @@ class _CasesListScreenState extends State<CasesListScreen> {
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
                       headingRowColor: WidgetStateProperty.all(AppTheme.primary),
-                      dataRowMinHeight: 50,
+                      dataRowMinHeight: 65,
+                      dataRowMaxHeight: 85,
                       columns: const [
                         DataColumn(label: Text('S/N', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                        DataColumn(label: Text('CASES TITLE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
                         DataColumn(label: Text('SUIT NO.', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
-                        DataColumn(label: Text('CASE TITLE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
                         DataColumn(label: Text('COURT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
-                        DataColumn(label: Text('LITIGATION TEAM', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                        DataColumn(label: Text('CLIENT DETAILS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                        DataColumn(label: Text('STAGE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                        DataColumn(label: Text('PENDING TASK', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
                       ],
                       rows: List.generate(teamCases.length, (idx) {
                         final item = teamCases[idx];
                         final override = _caseOverrides[item.id] ?? {};
                         final suitNo = override['suitNumber'] ?? item.suitNumber;
                         final courtName = override['court'] ?? item.courtName;
+                        final stage = override['stage'] ?? 'PLEADINGS / PRE-TRIAL';
+                        final pendingTask = override['pendingTask'] ?? 'Filing of Written Address & Witness Statements';
+
+                        final client = item.client;
+                        final clientName = client?.name ?? 'N/A';
+                        final phones = [client?.phone, client?.secondaryPhone].where((p) => p != null && p.isNotEmpty).join(', ');
+                        final clientEmail = client?.email ?? 'N/A';
 
                         return DataRow(cells: [
+                          // 1. S/N
                           DataCell(Text('${idx + 1}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                          DataCell(Text(suitNo, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 12))),
-                          DataCell(Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                          DataCell(Text(courtName, style: const TextStyle(fontSize: 12))),
-                          DataCell(Text(teamName, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 12))),
+                          
+                          // 2. CASES TITLE
+                          DataCell(
+                            SizedBox(
+                              width: 160,
+                              child: Text(
+                                item.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.primary),
+                              ),
+                            ),
+                          ),
+
+                          // 3. SUIT NO.
+                          DataCell(
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppTheme.accentLight,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: AppTheme.secondary.withValues(alpha: 0.5)),
+                              ),
+                              child: Text(
+                                suitNo,
+                                style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 11),
+                              ),
+                            ),
+                          ),
+
+                          // 4. COURT
+                          DataCell(
+                            SizedBox(
+                              width: 140,
+                              child: Text(
+                                courtName,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 11, color: AppTheme.textDark),
+                              ),
+                            ),
+                          ),
+
+                          // 5. CLIENT DETAILS
+                          DataCell(
+                            SizedBox(
+                              width: 180,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    clientName,
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.primary),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '📞 ${phones.isNotEmpty ? phones : 'No Phone'}',
+                                    style: const TextStyle(fontSize: 10, color: AppTheme.textMuted),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    '✉️ $clientEmail',
+                                    style: const TextStyle(fontSize: 10, color: AppTheme.textMuted),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // 6. STAGE
+                          DataCell(
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: Colors.blue.shade200),
+                              ),
+                              child: Text(
+                                stage,
+                                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 10),
+                              ),
+                            ),
+                          ),
+
+                          // 7. PENDING TASK
+                          DataCell(
+                            SizedBox(
+                              width: 160,
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.push_pin, size: 14, color: Colors.amber),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      pendingTask,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textDark),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ]);
                       }),
                     ),
@@ -432,6 +548,13 @@ class _CasesListScreenState extends State<CasesListScreen> {
         (_teams.contains(caseModel.litigationTeam)
             ? caseModel.litigationTeam
             : (_teams.isNotEmpty ? _teams.first : 'TEAM ANCHOR'));
+
+    final stageController = TextEditingController(
+      text: overrides['stage'] ?? 'PLEADINGS / PRE-TRIAL',
+    );
+    final taskController = TextEditingController(
+      text: overrides['pendingTask'] ?? 'Filing of Written Address & Witness Statements',
+    );
 
     if (!_courts.contains(selectedCourt) && selectedCourt.isNotEmpty) {
       _courts.add(selectedCourt);
@@ -530,6 +653,30 @@ class _CasesListScreenState extends State<CasesListScreen> {
                       }
                     },
                   ),
+                  const SizedBox(height: 14),
+
+                  const Text('Litigation Stage:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 4),
+                  TextField(
+                    controller: stageController,
+                    style: const TextStyle(color: AppTheme.textDark, fontSize: 13),
+                    decoration: const InputDecoration(
+                      hintText: 'e.g. PLEADINGS / PRE-TRIAL',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  const Text('Pending Task:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 4),
+                  TextField(
+                    controller: taskController,
+                    style: const TextStyle(color: AppTheme.textDark, fontSize: 13),
+                    decoration: const InputDecoration(
+                      hintText: 'e.g. Filing of Written Address & Witness Statements',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -550,6 +697,8 @@ class _CasesListScreenState extends State<CasesListScreen> {
                     'suitNumber': suitController.text.trim(),
                     'court': selectedCourt,
                     'litigationTeam': selectedTeam,
+                    'stage': stageController.text.trim(),
+                    'pendingTask': taskController.text.trim(),
                   };
                   setState(() {});
                   if (ctx.mounted) Navigator.pop(ctx);

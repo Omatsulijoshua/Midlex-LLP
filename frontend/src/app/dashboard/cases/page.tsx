@@ -15,11 +15,18 @@ interface Case {
   title: string;
   description: string;
   status: string;
-  client: { name: string };
+  client: {
+    name: string;
+    email?: string;
+    phone?: string;
+    secondaryPhone?: string;
+  };
   lawyer?: { name: string };
   suitNumber?: string;
   court?: string;
   litigationTeam?: string;
+  stage?: string;
+  pendingTask?: string;
   createdAt: string;
 }
 
@@ -69,12 +76,14 @@ export default function CasesPage() {
   const [newTeamInput, setNewTeamInput] = useState('');
   const [newCourtInput, setNewCourtInput] = useState('');
 
-  const [overrides, setOverrides] = useState<Record<string, { suitNumber?: string; court?: string; litigationTeam?: string }>>({});
+  const [overrides, setOverrides] = useState<Record<string, { suitNumber?: string; court?: string; litigationTeam?: string; stage?: string; pendingTask?: string }>>({});
 
   const [editingCase, setEditingCase] = useState<Case | null>(null);
   const [editSuitNo, setEditSuitNo] = useState('');
   const [editCourt, setEditCourt] = useState('');
   const [editTeam, setEditTeam] = useState('');
+  const [editStage, setEditStage] = useState('');
+  const [editPendingTask, setEditPendingTask] = useState('');
 
   const isStaff = user?.role === 'ADMIN' || user?.role === 'LAWYER';
 
@@ -155,6 +164,8 @@ export default function CasesPage() {
         suitNumber: editSuitNo.trim(),
         court: editCourt,
         litigationTeam: editTeam,
+        stage: editStage.trim() || 'PLEADINGS / PRE-TRIAL',
+        pendingTask: editPendingTask.trim() || 'Filing of Written Address & Witness Statements',
       }
     }));
     setEditingCase(null);
@@ -187,6 +198,8 @@ export default function CasesPage() {
         c.description,
         c.status,
         c.client?.name,
+        c.client?.phone,
+        c.client?.email,
         c.lawyer?.name,
         suit,
         courtName,
@@ -206,14 +219,19 @@ export default function CasesPage() {
       const suitNo = ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`;
       const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
       const teamName = ov.litigationTeam || c.litigationTeam || 'TEAM ANCHOR';
+      const phones = [c.client?.phone, c.client?.secondaryPhone].filter(Boolean).join(', ');
 
       return {
         sn: index + 1,
-        suitNumber: suitNo,
         title: c.title,
+        suitNumber: suitNo,
         court: courtName,
         team: teamName,
-        clientName: c.client?.name,
+        clientName: c.client?.name || 'N/A',
+        clientPhone: phones || 'N/A',
+        clientEmail: c.client?.email || 'N/A',
+        stage: ov.stage || 'PLEADINGS / PRE-TRIAL',
+        pendingTask: ov.pendingTask || 'Filing of Written Address & Witness Statements',
         status: c.status,
       };
     });
@@ -476,13 +494,21 @@ export default function CasesPage() {
                         {isStaff && (
                           <button
                             onClick={() => {
+                              const ov = overrides[c.id] || {};
+                              const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                              const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
+                              const suitNo = ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`;
+                              const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
+                              const teamName = ov.litigationTeam || c.litigationTeam || 'TEAM ANCHOR';
                               setEditingCase(c);
                               setEditSuitNo(suitNo);
                               setEditCourt(courtName);
                               setEditTeam(teamName);
+                              setEditStage(ov.stage || 'PLEADINGS / PRE-TRIAL');
+                              setEditPendingTask(ov.pendingTask || 'Filing of Written Address & Witness Statements');
                             }}
                             className="px-3 py-2 bg-gray-100 text-gray-700 hover:bg-secondary hover:text-white rounded-xl text-xs font-bold transition-all"
-                            title="Edit Suit No., Court & Team"
+                            title="Edit Suit No., Court, Team, Stage & Pending Task"
                           >
                             Edit
                           </button>
@@ -681,6 +707,33 @@ export default function CasesPage() {
                   ))}
                 </select>
               </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1">Litigation Stage</label>
+                <select
+                  value={editStage}
+                  onChange={(e) => setEditStage(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-800 bg-white"
+                >
+                  <option value="PLEADINGS / PRE-TRIAL">PLEADINGS / PRE-TRIAL</option>
+                  <option value="TRIAL IN PROGRESS">TRIAL IN PROGRESS</option>
+                  <option value="EVIDENCE & WITNESS HEARING">EVIDENCE & WITNESS HEARING</option>
+                  <option value="WRITTEN ADDRESS">WRITTEN ADDRESS</option>
+                  <option value="JUDGMENT & SENTENCING">JUDGMENT & SENTENCING</option>
+                  <option value="APPEAL PENDING">APPEAL PENDING</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1">Pending Task</label>
+                <input
+                  type="text"
+                  value={editPendingTask}
+                  onChange={(e) => setEditPendingTask(e.target.value)}
+                  placeholder="e.g. Filing of Written Address & Witness Statements"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-800 bg-white"
+                />
+              </div>
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-2">
@@ -747,13 +800,18 @@ export default function CasesPage() {
                             const ov = overrides[c.id] || {};
                             const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
                             const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
+                            const phones = [c.client?.phone, c.client?.secondaryPhone].filter(Boolean).join(', ');
                             return {
                               sn: index + 1,
-                              suitNumber: ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`,
                               title: c.title,
+                              suitNumber: ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`,
                               court: ov.court || c.court || 'HIGH COURT BENIN CITY',
                               team: activeTeamDirectoryModal,
-                              clientName: c.client?.name,
+                              clientName: c.client?.name || 'N/A',
+                              clientPhone: phones || 'N/A',
+                              clientEmail: c.client?.email || 'N/A',
+                              stage: ov.stage || 'PLEADINGS / PRE-TRIAL',
+                              pendingTask: ov.pendingTask || 'Filing of Written Address & Witness Statements',
                               status: c.status,
                             };
                           });
@@ -774,13 +832,18 @@ export default function CasesPage() {
                             const ov = overrides[c.id] || {};
                             const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
                             const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
+                            const phones = [c.client?.phone, c.client?.secondaryPhone].filter(Boolean).join(', ');
                             return {
                               sn: index + 1,
-                              suitNumber: ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`,
                               title: c.title,
+                              suitNumber: ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`,
                               court: ov.court || c.court || 'HIGH COURT BENIN CITY',
                               team: activeTeamDirectoryModal,
-                              clientName: c.client?.name,
+                              clientName: c.client?.name || 'N/A',
+                              clientPhone: phones || 'N/A',
+                              clientEmail: c.client?.email || 'N/A',
+                              stage: ov.stage || 'PLEADINGS / PRE-TRIAL',
+                              pendingTask: ov.pendingTask || 'Filing of Written Address & Witness Statements',
                               status: c.status,
                             };
                           });
@@ -804,10 +867,12 @@ export default function CasesPage() {
                         <thead>
                           <tr className="bg-primary text-white">
                             <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">S/N</th>
+                            <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">CASES TITLE</th>
                             <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">SUIT NO.</th>
-                            <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">CASE TITLE</th>
                             <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">COURT</th>
-                            <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">LITIGATION TEAM</th>
+                            <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">CLIENT DETAILS</th>
+                            <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">STAGE</th>
+                            <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">PENDING TASK</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -817,23 +882,43 @@ export default function CasesPage() {
                             const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
                             const suitNo = ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`;
                             const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
+                            const stage = ov.stage || 'PLEADINGS / PRE-TRIAL';
+                            const pendingTask = ov.pendingTask || 'Filing of Written Address & Witness Statements';
+                            const phones = [c.client?.phone, c.client?.secondaryPhone].filter(Boolean).join(', ');
 
                             return (
                               <tr key={c.id} className="hover:bg-gray-50/50 transition-all">
                                 <td className="px-5 py-4 font-bold text-primary text-xs">{index + 1}</td>
                                 <td className="px-5 py-4">
+                                  <div className="font-bold text-primary text-sm">{c.title}</div>
+                                </td>
+                                <td className="px-5 py-4">
                                   <span className="px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-xs font-bold">
                                     {suitNo}
                                   </span>
                                 </td>
-                                <td className="px-5 py-4">
-                                  <div className="font-bold text-primary text-sm">{c.title}</div>
-                                </td>
                                 <td className="px-5 py-4 text-xs text-gray-700 font-medium">
                                   {courtName}
                                 </td>
-                                <td className="px-5 py-4 text-xs font-bold text-primary">
-                                  {activeTeamDirectoryModal}
+                                <td className="px-5 py-4 text-xs font-medium text-gray-800">
+                                  <div className="font-bold text-primary">{c.client?.name || 'N/A'}</div>
+                                  <div className="text-[11px] text-gray-500 mt-0.5">
+                                    📞 {phones || 'No Phone Registered'}
+                                  </div>
+                                  <div className="text-[11px] text-gray-500">
+                                    ✉️ {c.client?.email || 'No Email Registered'}
+                                  </div>
+                                </td>
+                                <td className="px-5 py-4">
+                                  <span className="px-2.5 py-1 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg text-[11px] font-extrabold uppercase tracking-wide">
+                                    {stage}
+                                  </span>
+                                </td>
+                                <td className="px-5 py-4 text-xs font-semibold text-amber-900">
+                                  <div className="flex items-center gap-1.5 bg-amber-50/80 border border-amber-200 px-3 py-1.5 rounded-xl">
+                                    <span className="text-amber-600">📌</span>
+                                    <span>{pendingTask}</span>
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -841,7 +926,7 @@ export default function CasesPage() {
 
                           {teamCases.length === 0 && (
                             <tr>
-                              <td colSpan={5} className="px-6 py-16 text-center">
+                              <td colSpan={7} className="px-6 py-16 text-center">
                                 <div className="space-y-2">
                                   <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto text-xl font-bold">
                                     📂

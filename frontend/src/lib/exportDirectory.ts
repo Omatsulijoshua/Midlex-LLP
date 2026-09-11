@@ -10,6 +10,10 @@ export interface DirectoryExportItem {
   court: string;
   team: string;
   clientName?: string;
+  clientPhone?: string;
+  clientEmail?: string;
+  stage?: string;
+  pendingTask?: string;
   status?: string;
 }
 
@@ -42,11 +46,16 @@ export function downloadDirectoryAsDocx(
       (item) => `
     <tr>
       <td style="border: 1px solid #d1d5db; padding: 10px; font-weight: bold; text-align: center;">${item.sn}</td>
-      <td style="border: 1px solid #d1d5db; padding: 10px; font-weight: bold; color: #1e3a8a;">${item.suitNumber}</td>
       <td style="border: 1px solid #d1d5db; padding: 10px; font-weight: bold;">${item.title}</td>
+      <td style="border: 1px solid #d1d5db; padding: 10px; font-weight: bold; color: #1e3a8a;">${item.suitNumber}</td>
       <td style="border: 1px solid #d1d5db; padding: 10px; font-size: 11px;">${item.court}</td>
-      <td style="border: 1px solid #d1d5db; padding: 10px; font-weight: bold; color: #92400e; font-size: 11px;">${item.team}</td>
-      <td style="border: 1px solid #d1d5db; padding: 10px; font-size: 11px;">${item.clientName || 'N/A'} (${item.status || 'OPEN'})</td>
+      <td style="border: 1px solid #d1d5db; padding: 10px; font-size: 11px;">
+        <strong>${item.clientName || 'N/A'}</strong><br/>
+        <span style="color: #6b7280;">Tel: ${item.clientPhone || 'N/A'}</span><br/>
+        <span style="color: #6b7280;">Email: ${item.clientEmail || 'N/A'}</span>
+      </td>
+      <td style="border: 1px solid #d1d5db; padding: 10px; font-weight: bold; color: #1d4ed8; font-size: 11px;">${item.stage || 'PLEADINGS / PRE-TRIAL'}</td>
+      <td style="border: 1px solid #d1d5db; padding: 10px; font-size: 11px; color: #b45309; font-weight: bold;">${item.pendingTask || 'Filing of Written Address & Witness Statements'}</td>
     </tr>`
     )
     .join('');
@@ -66,7 +75,7 @@ export function downloadDirectoryAsDocx(
         .meta-grid td { padding: 4px 8px; }
         .meta-label { font-weight: bold; color: #4b5563; }
         table.data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10pt; }
-        table.data-table th { background-color: #1e3a8a; color: #ffffff; padding: 12px; font-weight: bold; text-transform: uppercase; border: 1px solid #1e3a8a; text-align: left; }
+        table.data-table th { background-color: #1e3a8a; color: #ffffff; padding: 10px; font-weight: bold; text-transform: uppercase; border: 1px solid #1e3a8a; text-align: left; }
         .footer { margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 15px; text-align: center; font-size: 9pt; color: #9ca3af; }
       </style>
     </head>
@@ -101,11 +110,12 @@ export function downloadDirectoryAsDocx(
         <thead>
           <tr>
             <th style="width: 5%; text-align: center;">S/N</th>
-            <th style="width: 22%;">SUIT NO.</th>
-            <th style="width: 28%;">CASE TITLE</th>
-            <th style="width: 20%;">COURT</th>
-            <th style="width: 15%;">LITIGATION TEAM</th>
-            <th style="width: 10%;">CLIENT / STATUS</th>
+            <th style="width: 20%;">CASES TITLE</th>
+            <th style="width: 15%;">SUIT NO.</th>
+            <th style="width: 15%;">COURT</th>
+            <th style="width: 20%;">CLIENT DETAILS</th>
+            <th style="width: 12%;">STAGE</th>
+            <th style="width: 13%;">PENDING TASK</th>
           </tr>
         </thead>
         <tbody>
@@ -162,11 +172,16 @@ export function downloadDirectoryAsPdf(
       (item) => `
     <tr>
       <td style="text-align: center; font-weight: bold;">${item.sn}</td>
-      <td style="font-weight: bold; color: #1e3a8a;">${item.suitNumber}</td>
       <td style="font-weight: bold; color: #111827;">${item.title}</td>
+      <td style="font-weight: bold; color: #1e3a8a;">${item.suitNumber}</td>
       <td>${item.court}</td>
-      <td style="font-weight: bold; color: #92400e;">${item.team}</td>
-      <td>${item.clientName || 'N/A'} (${item.status || 'OPEN'})</td>
+      <td>
+        <strong>${item.clientName || 'N/A'}</strong><br/>
+        <span style="color: #6b7280; font-size: 10px;">Tel: ${item.clientPhone || 'N/A'}</span><br/>
+        <span style="color: #6b7280; font-size: 10px;">Email: ${item.clientEmail || 'N/A'}</span>
+      </td>
+      <td style="font-weight: bold; color: #1d4ed8;">${item.stage || 'PLEADINGS / PRE-TRIAL'}</td>
+      <td style="font-weight: bold; color: #b45309;">${item.pendingTask || 'Filing of Written Address & Witness Statements'}</td>
     </tr>`
     )
     .join('');
@@ -217,12 +232,13 @@ export function downloadDirectoryAsPdf(
       <table>
         <thead>
           <tr>
-            <th style="width: 5%; text-align: center;">S/N</th>
-            <th style="width: 22%;">SUIT NO.</th>
-            <th style="width: 28%;">CASE TITLE</th>
-            <th style="width: 20%;">COURT</th>
-            <th style="width: 15%;">LITIGATION TEAM</th>
-            <th style="width: 10%;">CLIENT / STATUS</th>
+            <th style="width: 4%; text-align: center;">S/N</th>
+            <th style="width: 20%;">CASES TITLE</th>
+            <th style="width: 15%;">SUIT NO.</th>
+            <th style="width: 15%;">COURT</th>
+            <th style="width: 20%;">CLIENT DETAILS</th>
+            <th style="width: 13%;">STAGE</th>
+            <th style="width: 13%;">PENDING TASK</th>
           </tr>
         </thead>
         <tbody>

@@ -4,6 +4,7 @@ class UserModel {
   final String name;
   final String role; // ADMIN, LAWYER, CLIENT
   final String? phone;
+  final String? secondaryPhone;
   final String? profileImage;
   final String? litigationTeam;
 
@@ -13,6 +14,7 @@ class UserModel {
     required this.name,
     required this.role,
     this.phone,
+    this.secondaryPhone,
     this.profileImage,
     this.litigationTeam,
   });
@@ -24,6 +26,7 @@ class UserModel {
       name: json['name'] ?? '',
       role: json['role'] ?? 'CLIENT',
       phone: json['phone'],
+      secondaryPhone: json['secondaryPhone'] ?? json['phone2'],
       profileImage: json['profileImage'],
       litigationTeam: json['litigationTeam'] ?? json['team'],
     );
@@ -36,6 +39,7 @@ class UserModel {
       'name': name,
       'role': role,
       'phone': phone,
+      'secondaryPhone': secondaryPhone,
       'profileImage': profileImage,
       'litigationTeam': litigationTeam,
     };
