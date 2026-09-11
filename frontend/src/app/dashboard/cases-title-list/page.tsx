@@ -13,6 +13,7 @@ interface CaseItem {
   client: { name: string; email?: string; phone?: string };
   lawyer?: { name: string };
   litigationTeam?: string;
+  timeline?: { status?: string; title?: string }[];
   createdAt: string;
 }
 
@@ -174,6 +175,9 @@ export default function CasesTitleListPage() {
                     })
                   : 'N/A';
 
+                const latestTimeline = c.timeline && c.timeline.length > 0 ? c.timeline[c.timeline.length - 1] : null;
+                const realStatus = (latestTimeline?.status || c.status || 'OPEN').toUpperCase();
+
                 return (
                   <tr key={c.id} className="hover:bg-gray-50/50 transition-all group">
                     <td className="px-8 py-6">
@@ -187,13 +191,17 @@ export default function CasesTitleListPage() {
                     </td>
                     <td className="px-8 py-6">
                       <span
-                        className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                          c.status === 'OPEN'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-blue-100 text-blue-700'
+                        className={`inline-block px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                          realStatus === 'OPEN' || realStatus === 'NEW'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : realStatus === 'IN_PROGRESS' || realStatus === 'HEARING'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : realStatus === 'COMPLETED' || realStatus === 'RESOLVED'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                            : 'bg-gray-100 text-gray-700 border-gray-200'
                         }`}
                       >
-                        {c.status}
+                        {realStatus.replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-8 py-6 text-sm text-gray-500 font-medium">

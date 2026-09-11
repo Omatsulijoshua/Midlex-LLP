@@ -106,17 +106,37 @@ export class CasesService {
   }
 
   async addTimelineEvent(caseId: string, data: { title: string; description?: string; status?: string; date?: string; createdById?: string; createdByName?: string }) {
+    const timelineStatus = data.status || 'IN_PROGRESS';
     const timeline = await this.prisma.caseTimeline.create({
       data: {
         caseId,
         title: data.title.trim(),
         description: data.description?.trim() || '',
-        status: data.status || 'IN_PROGRESS',
+        status: timelineStatus,
         date: data.date ? new Date(data.date) : new Date(),
         createdById: data.createdById,
         createdByName: data.createdByName,
       },
     });
+
+    // Sync Case.status in database to match real timeline status milestone
+    try {
+      const normStatus = timelineStatus.trim().toUpperCase();
+      let mappedStatus: CaseStatus | undefined;
+      if (normStatus === 'OPEN' || normStatus === 'NEW') mappedStatus = CaseStatus.OPEN;
+      else if (normStatus === 'IN_PROGRESS' || normStatus === 'HEARING' || normStatus.includes('PRE-TRIAL')) mappedStatus = CaseStatus.IN_PROGRESS;
+      else if (normStatus === 'COMPLETED' || normStatus === 'RESOLVED') mappedStatus = CaseStatus.COMPLETED;
+      else if (normStatus === 'CLOSED') mappedStatus = CaseStatus.CLOSED;
+
+      if (mappedStatus) {
+        await this.prisma.case.update({
+          where: { id: caseId },
+          data: { status: mappedStatus },
+        });
+      }
+    } catch (e) {
+      console.warn('[cases] Failed to sync case status with timeline event:', e);
+    }
 
     // Send notification to client
     try {

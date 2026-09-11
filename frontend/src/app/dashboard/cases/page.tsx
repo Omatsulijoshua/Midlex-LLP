@@ -27,6 +27,7 @@ interface Case {
   litigationTeam?: string;
   stage?: string;
   pendingTask?: string;
+  timeline?: { status?: string; title?: string }[];
   createdAt: string;
 }
 
@@ -486,6 +487,9 @@ export default function CasesPage() {
                 const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
                 const teamName = ov.litigationTeam || c.litigationTeam || 'TEAM ANCHOR';
 
+                const latestTimeline = c.timeline && c.timeline.length > 0 ? c.timeline[c.timeline.length - 1] : null;
+                const realStatus = (latestTimeline?.status || c.status || 'OPEN').toUpperCase();
+
                 return (
                   <tr key={c.id} className="hover:bg-gray-50/50 transition-all group">
                     <td className="px-6 py-5 font-bold text-primary">{index + 1}</td>
@@ -496,10 +500,16 @@ export default function CasesPage() {
                     </td>
                     <td className="px-6 py-5">
                       <div className="font-bold text-primary text-base">{c.title}</div>
-                      <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                        c.status === 'OPEN' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                      <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                        realStatus === 'OPEN' || realStatus === 'NEW'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : realStatus === 'IN_PROGRESS' || realStatus === 'HEARING'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200'
+                          : realStatus === 'COMPLETED' || realStatus === 'RESOLVED'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : 'bg-gray-100 text-gray-700 border-gray-200'
                       }`}>
-                        {c.status}
+                        {realStatus.replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-6 py-5 text-sm font-medium text-gray-800">
