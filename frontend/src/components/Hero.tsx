@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
-import { ArrowRight, ShieldCheck, Scale, Briefcase } from "lucide-react";
+import { ArrowRight, ShieldCheck, Scale, Briefcase, Smartphone, Download } from "lucide-react";
 import Link from "next/link";
 
 export default function Hero() {
@@ -74,21 +74,36 @@ export default function Hero() {
               and corporate advisory services tailored for excellence in Benin City and beyond.
             </motion.p>
             
-            <motion.div variants={itemVariants} className="flex flex-wrap gap-4">
+            <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-4">
               <Link href="/signup">
                 <motion.button
                   whileHover={{ scale: 1.05, backgroundColor: "#143a22" }}
                   whileTap={{ scale: 0.95 }}
-                  className="bg-primary text-white px-10 py-5 rounded-2xl font-bold flex items-center gap-2 shadow-xl shadow-primary/20 transition-all"
+                  className="bg-primary text-white px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-bold flex items-center gap-2 shadow-xl shadow-primary/20 transition-all"
                 >
                   Get Legal Help <ArrowRight size={20} />
                 </motion.button>
               </Link>
+              <a
+                href="https://drive.google.com/file/d/1nm0LJc1iXuLCma6rlCDyiS8sj_TIdIKL/view?usp=sharing"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <motion.button
+                  whileHover={{ scale: 1.05, backgroundColor: "#b89047" }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-secondary text-primary font-bold px-7 sm:px-8 py-4 sm:py-5 rounded-2xl flex items-center gap-2 shadow-xl shadow-secondary/20 transition-all border border-secondary"
+                >
+                  <Smartphone size={20} />
+                  <span>Download App (APK)</span>
+                  <Download size={16} />
+                </motion.button>
+              </a>
               <Link href="#services">
                 <motion.button
                   whileHover={{ scale: 1.05, borderColor: "rgba(27, 77, 46, 0.4)" }}
                   whileTap={{ scale: 0.95 }}
-                  className="bg-white text-primary border-2 border-primary/10 px-10 py-5 rounded-2xl font-bold hover:bg-gray-50 transition-all"
+                  className="bg-white text-primary border-2 border-primary/10 px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-bold hover:bg-gray-50 transition-all"
                 >
                   Our Services
                 </motion.button>

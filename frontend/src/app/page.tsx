@@ -8,6 +8,7 @@ import Testimonials from "@/components/Testimonials/Testimonials";
 import Gallery from "@/components/Gallery";
 import { Reveal } from "@/components/Reveal";
 import { motion } from "framer-motion";
+import { Smartphone, Download } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const Contact = dynamic(() => import("@/components/Contact/Contact"), { ssr: false });
@@ -122,6 +123,88 @@ export default function Home() {
       </section>
 
       <Testimonials />
+
+      {/* Mobile App Showcase Section */}
+      <section className="py-20 bg-gradient-to-b from-[#fafafa] to-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gradient-to-br from-[#1B4D2E] via-[#143a22] to-[#0d2616] rounded-[40px] p-8 sm:p-12 lg:p-16 text-white relative overflow-hidden shadow-2xl border border-secondary/20">
+            {/* Ambient Background glows */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-secondary/15 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-[80px] pointer-events-none" />
+
+            <div className="grid lg:grid-cols-12 gap-10 items-center relative z-10">
+              <div className="lg:col-span-7 space-y-6">
+                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-secondary text-sm font-semibold border border-white/10">
+                  <Smartphone size={18} />
+                  <span>Official Android Mobile Application</span>
+                </div>
+
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+                  Access Midlex LLP <br />
+                  <span className="text-secondary italic font-serif">Anytime, Anywhere</span>
+                </h2>
+
+                <p className="text-white/80 text-base sm:text-lg max-w-xl leading-relaxed">
+                  Track your cases in real-time, consult with senior legal counsel, manage invoices and court dates, and receive instant hearing alerts directly on your Android device.
+                </p>
+
+                <div className="flex flex-wrap items-center gap-4 pt-2">
+                  <a
+                    href="https://drive.google.com/file/d/1nm0LJc1iXuLCma6rlCDyiS8sj_TIdIKL/view?usp=sharing"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-3 bg-secondary hover:bg-[#b89047] text-primary font-bold px-8 py-4 rounded-2xl shadow-xl shadow-secondary/20 transition-all transform hover:scale-105"
+                  >
+                    <Download size={22} />
+                    <span>Download App (Google Drive)</span>
+                  </a>
+
+                  <div className="text-white/70 text-sm flex items-center gap-2">
+                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Direct APK Download • Android 5.0+</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-white/10 text-xs sm:text-sm text-white/70">
+                  <div className="flex items-center gap-2">
+                    <span className="text-secondary font-bold">✓</span> Real-Time Case Updates
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-secondary font-bold">✓</span> Direct Lawyer Messaging
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-secondary font-bold">✓</span> Fast & Secure Access
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-5 flex justify-center">
+                <div className="relative w-full max-w-xs bg-white/5 p-6 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-sm text-center">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-white p-2 shadow-lg flex items-center justify-center">
+                    <img src="/logo.jpg" alt="Midlex LLP" className="w-full h-full object-contain rounded-xl" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-1">Midlex Mobile</h3>
+                  <p className="text-xs text-secondary font-semibold uppercase tracking-wider mb-4">Official Legal Client App</p>
+                  <div className="bg-white/10 rounded-xl p-3 mb-4 text-xs text-white/80 text-left space-y-1.5 font-mono">
+                    <p className="flex justify-between"><span>Format:</span> <span className="text-secondary">Android APK</span></p>
+                    <p className="flex justify-between"><span>Version:</span> <span className="text-secondary">1.0.0</span></p>
+                    <p className="flex justify-between"><span>Storage:</span> <span className="text-secondary">Google Drive</span></p>
+                  </div>
+                  <a
+                    href="https://drive.google.com/file/d/1nm0LJc1iXuLCma6rlCDyiS8sj_TIdIKL/view?usp=sharing"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full py-3 bg-secondary text-primary font-bold rounded-xl text-sm hover:bg-opacity-90 transition-all shadow-md"
+                  >
+                    Download APK ↗
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Contact />
 
       {/* Footer */}
@@ -163,6 +246,16 @@ export default function Home() {
                 <li><Link href="#about" className="hover:text-secondary transition-colors">About Us</Link></li>
                 <li><Link href="#services" className="hover:text-secondary transition-colors">Services</Link></li>
                 <li><Link href="#lawyers" className="hover:text-secondary transition-colors">Our Team</Link></li>
+                <li>
+                  <a 
+                    href="https://drive.google.com/file/d/1nm0LJc1iXuLCma6rlCDyiS8sj_TIdIKL/view?usp=sharing" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-secondary font-semibold hover:underline flex items-center gap-1.5"
+                  >
+                    <span>📱 Download App (APK)</span>
+                  </a>
+                </li>
                 <li><Link href="#contact" className="hover:text-secondary transition-colors">Contact</Link></li>
               </ul>
             </div>

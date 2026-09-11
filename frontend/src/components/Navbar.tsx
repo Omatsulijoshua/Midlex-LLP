@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Smartphone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
@@ -55,13 +55,22 @@ export default function Navbar() {
                 </Link>
               </motion.div>
             ))}
-            <div className="flex items-center gap-4 ml-4">
+            <div className="flex items-center gap-3 ml-4">
+              <a
+                href="https://drive.google.com/file/d/1nm0LJc1iXuLCma6rlCDyiS8sj_TIdIKL/view?usp=sharing"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-secondary bg-primary/5 hover:bg-primary/10 border border-secondary/30 px-3.5 py-2 rounded-full transition-all"
+              >
+                <Smartphone size={14} />
+                <span>Get App (APK)</span>
+              </a>
               <Link href="/login" className="text-primary hover:text-secondary transition-colors font-bold">Login</Link>
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="/signup" className="bg-primary text-white px-8 py-3 rounded-full hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 block font-bold">
+                <Link href="/signup" className="bg-primary text-white px-7 py-3 rounded-full hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 block font-bold">
                   Get Started
                 </Link>
               </motion.div>
@@ -110,7 +119,17 @@ export default function Navbar() {
                 </motion.div>
               ))}
               <hr className="border-gray-100" />
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
+                <a
+                  href="https://drive.google.com/file/d/1nm0LJc1iXuLCma6rlCDyiS8sj_TIdIKL/view?usp=sharing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsOpen(false)}
+                  className="bg-secondary text-primary py-3.5 px-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-md text-base"
+                >
+                  <Smartphone size={18} />
+                  <span>Download App (APK)</span>
+                </a>
                 <Link href="/login" onClick={() => setIsOpen(false)} className="py-2 text-primary">Login</Link>
                 <Link href="/signup" onClick={() => setIsOpen(false)} className="bg-primary text-white py-4 rounded-2xl shadow-lg">
                   Get Started
