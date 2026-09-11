@@ -65,6 +65,7 @@ export default function CasesPage() {
 
   const [isTeamsModalOpen, setIsTeamsModalOpen] = useState(false);
   const [isCourtsModalOpen, setIsCourtsModalOpen] = useState(false);
+  const [activeTeamDirectoryModal, setActiveTeamDirectoryModal] = useState<string | null>(null);
   const [newTeamInput, setNewTeamInput] = useState('');
   const [newCourtInput, setNewCourtInput] = useState('');
 
@@ -293,6 +294,64 @@ export default function CasesPage() {
           )
         )}
       </div>
+
+      {/* Very Bold Team Case Directory Section */}
+      {isStaff && (
+        <div className="bg-slate-900 border-2 border-amber-400/40 rounded-3xl p-6 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-secondary text-white flex items-center justify-center font-black text-base shadow-md">
+                📂
+              </div>
+              <div>
+                <h3 className="text-sm font-black tracking-wider text-white uppercase">
+                  {user?.role === 'ADMIN' ? 'SUPER ADMIN LITIGATION TEAM DIRECTORIES' : `${(user as any)?.litigationTeam || 'TEAM ANCHOR'} CASE DIRECTORY`}
+                </h3>
+                <p className="text-xs text-amber-200/80 font-medium">
+                  {user?.role === 'ADMIN'
+                    ? 'Super Admin Access: Open any team case directory register below.'
+                    : 'Counsel Access: Open your assigned litigation team case directory.'}
+                </p>
+              </div>
+            </div>
+            <span className="text-[10px] bg-amber-400/10 border border-amber-400/40 text-amber-300 px-3 py-1 rounded-full font-black uppercase tracking-widest self-start sm:self-auto">
+              {user?.role === 'ADMIN' ? 'Super Admin Exclusive' : 'Litigation Team Counsel'}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {user?.role === 'ADMIN' ? (
+              teams.map((teamName) => (
+                <button
+                  key={teamName}
+                  onClick={() => setActiveTeamDirectoryModal(teamName)}
+                  className="px-6 py-3.5 bg-secondary text-white font-black rounded-2xl shadow-xl hover:bg-secondary/90 hover:scale-[1.02] transition-all text-xs tracking-wider uppercase border border-amber-300/40 flex items-center gap-2.5 group cursor-pointer"
+                >
+                  <span>📂 OPEN {teamName} CASE DIRECTORY</span>
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </button>
+              ))
+            ) : (
+              (() => {
+                const lawyerTeam = (user as any)?.litigationTeam || 'TEAM ANCHOR';
+                return (
+                  <button
+                    onClick={() => setActiveTeamDirectoryModal(lawyerTeam)}
+                    className="px-7 py-4 bg-secondary text-white font-black rounded-2xl shadow-2xl hover:bg-secondary/90 hover:scale-[1.02] transition-all text-sm tracking-wider uppercase border-2 border-amber-300/50 flex items-center gap-3 group cursor-pointer"
+                  >
+                    <span>📂 OPEN {lawyerTeam} CASE DIRECTORY</span>
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </button>
+                );
+              })()
+            )}
+          </div>
+        </div>
+      )}
 
       <DashboardSearchBar
         value={query}
@@ -636,6 +695,181 @@ export default function CasesPage() {
                 className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl text-xs shadow-lg shadow-primary/20"
               >
                 Save Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dedicated Team Directory Modal */}
+      {activeTeamDirectoryModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] max-w-4xl w-full p-6 md:p-8 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto border border-gray-100">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-secondary/10 border border-secondary text-secondary flex items-center justify-center text-xl font-bold">
+                  🛡️
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-primary tracking-wide uppercase">
+                    {activeTeamDirectoryModal}&apos;S CASE DIRECTORY
+                  </h3>
+                  <p className="text-xs text-gray-500 font-medium">
+                    Official Dedicated Legal Directory Register for {activeTeamDirectoryModal}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveTeamDirectoryModal(null)}
+                className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold flex items-center justify-center transition-all text-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            {(() => {
+              const teamCases = cases.filter((c) => {
+                const ov = overrides[c.id] || {};
+                const teamName = ov.litigationTeam || c.litigationTeam || 'TEAM ANCHOR';
+                return teamName === activeTeamDirectoryModal;
+              });
+
+              return (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      REGISTERED MATTERS: {teamCases.length}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          const items = teamCases.map((c, index) => {
+                            const ov = overrides[c.id] || {};
+                            const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                            const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
+                            return {
+                              sn: index + 1,
+                              suitNumber: ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`,
+                              title: c.title,
+                              court: ov.court || c.court || 'HIGH COURT BENIN CITY',
+                              team: activeTeamDirectoryModal,
+                              clientName: c.client?.name,
+                              status: c.status,
+                            };
+                          });
+                          downloadDirectoryAsPdf(items, {
+                            query: '',
+                            courtFilter: 'ALL',
+                            teamFilter: activeTeamDirectoryModal,
+                            totalRecords: items.length,
+                          });
+                        }}
+                        className="px-3.5 py-2 bg-red-600 text-white font-bold rounded-xl text-xs flex items-center gap-1 hover:bg-red-700 transition-all"
+                      >
+                        📄 Export PDF
+                      </button>
+                      <button
+                        onClick={() => {
+                          const items = teamCases.map((c, index) => {
+                            const ov = overrides[c.id] || {};
+                            const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                            const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
+                            return {
+                              sn: index + 1,
+                              suitNumber: ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`,
+                              title: c.title,
+                              court: ov.court || c.court || 'HIGH COURT BENIN CITY',
+                              team: activeTeamDirectoryModal,
+                              clientName: c.client?.name,
+                              status: c.status,
+                            };
+                          });
+                          downloadDirectoryAsDocx(items, {
+                            query: '',
+                            courtFilter: 'ALL',
+                            teamFilter: activeTeamDirectoryModal,
+                            totalRecords: items.length,
+                          });
+                        }}
+                        className="px-3.5 py-2 bg-blue-600 text-white font-bold rounded-xl text-xs flex items-center gap-1 hover:bg-blue-700 transition-all"
+                      >
+                        📝 Export DOCX
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="bg-primary text-white">
+                            <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">S/N</th>
+                            <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">SUIT NO.</th>
+                            <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">CASE TITLE</th>
+                            <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">COURT</th>
+                            <th className="px-5 py-4 text-xs font-bold uppercase tracking-widest">LITIGATION TEAM</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {teamCases.map((c, index) => {
+                            const ov = overrides[c.id] || {};
+                            const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                            const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
+                            const suitNo = ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`;
+                            const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
+
+                            return (
+                              <tr key={c.id} className="hover:bg-gray-50/50 transition-all">
+                                <td className="px-5 py-4 font-bold text-primary text-xs">{index + 1}</td>
+                                <td className="px-5 py-4">
+                                  <span className="px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-xs font-bold">
+                                    {suitNo}
+                                  </span>
+                                </td>
+                                <td className="px-5 py-4">
+                                  <div className="font-bold text-primary text-sm">{c.title}</div>
+                                </td>
+                                <td className="px-5 py-4 text-xs text-gray-700 font-medium">
+                                  {courtName}
+                                </td>
+                                <td className="px-5 py-4 text-xs font-bold text-primary">
+                                  {activeTeamDirectoryModal}
+                                </td>
+                              </tr>
+                            );
+                          })}
+
+                          {teamCases.length === 0 && (
+                            <tr>
+                              <td colSpan={5} className="px-6 py-16 text-center">
+                                <div className="space-y-2">
+                                  <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto text-xl font-bold">
+                                    📂
+                                  </div>
+                                  <h4 className="font-bold text-primary text-sm uppercase">
+                                    {activeTeamDirectoryModal}&apos;S CASE DIRECTORY IS EMPTY
+                                  </h4>
+                                  <p className="text-xs text-gray-400 max-w-sm mx-auto">
+                                    No legal matters have been assigned or registered under {activeTeamDirectoryModal} yet.
+                                  </p>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            <div className="text-right pt-2 border-t border-gray-100">
+              <button
+                onClick={() => setActiveTeamDirectoryModal(null)}
+                className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-2xl text-xs transition-all"
+              >
+                Close Directory
               </button>
             </div>
           </div>

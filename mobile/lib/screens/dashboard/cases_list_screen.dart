@@ -330,6 +330,96 @@ class _CasesListScreenState extends State<CasesListScreen> {
     );
   }
 
+  // Dialog to view Team Case Directory
+  void _openTeamDirectoryDialog(String teamName) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        final dashboard = Provider.of<DashboardProvider>(context, listen: false);
+        final teamCases = dashboard.cases.where((c) {
+          final override = _caseOverrides[c.id] ?? {};
+          final t = override['litigationTeam'] ?? c.litigationTeam;
+          return t == teamName;
+        }).toList();
+
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(
+            children: [
+              const Icon(Icons.shield_outlined, color: AppTheme.secondary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  "${teamName.toUpperCase()}'S CASE DIRECTORY",
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.primary),
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: teamCases.isEmpty
+                ? Container(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.folder_open, size: 48, color: AppTheme.secondary),
+                        const SizedBox(height: 12),
+                        Text(
+                          "${teamName.toUpperCase()}'S CASE DIRECTORY IS EMPTY",
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.primary),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          "No legal matters have been assigned or registered under $teamName yet.",
+                          style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                : SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      headingRowColor: WidgetStateProperty.all(AppTheme.primary),
+                      dataRowMinHeight: 50,
+                      columns: const [
+                        DataColumn(label: Text('S/N', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                        DataColumn(label: Text('SUIT NO.', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                        DataColumn(label: Text('CASE TITLE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                        DataColumn(label: Text('COURT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                        DataColumn(label: Text('LITIGATION TEAM', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                      ],
+                      rows: List.generate(teamCases.length, (idx) {
+                        final item = teamCases[idx];
+                        final override = _caseOverrides[item.id] ?? {};
+                        final suitNo = override['suitNumber'] ?? item.suitNumber;
+                        final courtName = override['court'] ?? item.courtName;
+
+                        return DataRow(cells: [
+                          DataCell(Text('${idx + 1}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                          DataCell(Text(suitNo, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 12))),
+                          DataCell(Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                          DataCell(Text(courtName, style: const TextStyle(fontSize: 12))),
+                          DataCell(Text(teamName, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 12))),
+                        ]);
+                      }),
+                    ),
+                  ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Close Directory'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // Dialog to Edit Matter Attributes (Suit No, Court, Team) for a Case
   void _openEditMatterDialog(CaseModel caseModel) async {
     final overrides = await _getOverrideForCase(caseModel.id);
@@ -658,6 +748,131 @@ class _CasesListScreenState extends State<CasesListScreen> {
                         ),
                       ),
                     ],
+                  ),
+
+                  const SizedBox(height: 12),
+                  // VERY BOLD TEAM CASE DIRECTORY BUTTONS
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade900,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppTheme.secondary, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Row(
+                              children: [
+                                Icon(Icons.folder_special, color: AppTheme.secondary, size: 18),
+                                SizedBox(width: 6),
+                                Text(
+                                  'TEAM CASE DIRECTORIES',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                    letterSpacing: 1.1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppTheme.secondary.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppTheme.secondary),
+                              ),
+                              child: Text(
+                                user?.isAdmin == true ? 'Super Admin' : 'Counsel',
+                                style: const TextStyle(
+                                  color: AppTheme.secondary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        if (user?.isAdmin == true)
+                          // Super Admin sees ALL team directories
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: _teams.map((t) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: ElevatedButton.icon(
+                                    onPressed: () => _openTeamDirectoryDialog(t),
+                                    icon: const Icon(Icons.folder_open, size: 16, color: Colors.white),
+                                    label: Text(
+                                      'OPEN $t CASE DIRECTORY',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 11,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.secondary,
+                                      elevation: 4,
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        side: const BorderSide(color: Colors.amberAccent, width: 1.5),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          )
+                        else
+                          // Lawyer sees ONLY their assigned team directory
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                final lawyerTeam = user?.litigationTeam ?? 'TEAM ANCHOR';
+                                _openTeamDirectoryDialog(lawyerTeam);
+                              },
+                              icon: const Icon(Icons.folder_open, size: 18, color: Colors.white),
+                              label: Text(
+                                'OPEN ${(user?.litigationTeam ?? 'TEAM ANCHOR').toUpperCase()} CASE DIRECTORY',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.secondary,
+                                elevation: 6,
+                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: const BorderSide(color: Colors.amberAccent, width: 2),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ],
 
