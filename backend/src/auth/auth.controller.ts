@@ -48,31 +48,43 @@ export class AuthController {
     const caseDescription = body.caseDescription?.trim() || body.description?.trim();
 
     if (caseTitle || caseDescription) {
-      initialCase = await this.casesService.create({
-        title: caseTitle || `Legal Matter - ${newUser.name}`,
-        description: caseDescription || 'Client registered case details.',
-        clientId: newUser.id,
-      });
+      try {
+        initialCase = await this.casesService.create({
+          title: caseTitle || `Legal Matter - ${newUser.name}`,
+          description: caseDescription || 'Client registered case details.',
+          clientId: newUser.id,
+        });
 
-      await this.notificationsService.notifyAdmins({
-        title: 'New Client Matter Registered',
-        message: `${newUser.name} registered a new case: "${caseTitle || 'Legal Matter'}".`,
-        link: '/dashboard/cases',
-        type: 'CASE_CREATED',
-      });
+        await this.notificationsService.notifyAdmins({
+          title: 'New Client Matter Registered',
+          message: `${newUser.name} registered a new case: "${caseTitle || 'Legal Matter'}".`,
+          link: '/dashboard/cases',
+          type: 'CASE_CREATED',
+        });
+      } catch (caseErr: any) {
+        console.warn('[auth/signup] Initial case creation warning:', caseErr?.message || caseErr);
+      }
     }
 
-    await this.emailService.sendAdminSignupNotification(
-      newUser.name,
-      newUser.email,
-    );
+    try {
+      await this.emailService.sendAdminSignupNotification(
+        newUser.name,
+        newUser.email,
+      );
+    } catch (emailErr: any) {
+      console.warn('[auth/signup] Admin email notification warning:', emailErr?.message || emailErr);
+    }
 
-    await this.notificationsService.notifyAdmins({
-      title: 'New client registered',
-      message: `${newUser.name} created a client account.`,
-      link: '/dashboard/clients',
-      type: 'CLIENT_SIGNUP',
-    });
+    try {
+      await this.notificationsService.notifyAdmins({
+        title: 'New client registered',
+        message: `${newUser.name} created a client account.`,
+        link: '/dashboard/clients',
+        type: 'CLIENT_SIGNUP',
+      });
+    } catch (notifErr: any) {
+      console.warn('[auth/signup] Admin notification warning:', notifErr?.message || notifErr);
+    }
 
     const loginResult = await this.authService.login(newUser);
     return {

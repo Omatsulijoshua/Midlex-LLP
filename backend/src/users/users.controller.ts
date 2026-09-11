@@ -117,26 +117,38 @@ export class UsersController {
       phone: body.phone,
     });
 
-    await this.emailService.sendClientWelcomeEmail({
-      name: newUser.name,
-      email: newUser.email,
-      temporaryPassword,
-    });
+    try {
+      await this.emailService.sendClientWelcomeEmail({
+        name: newUser.name,
+        email: newUser.email,
+        temporaryPassword,
+      });
+    } catch (emailErr: any) {
+      console.warn('[users/clients] Welcome email warning:', emailErr?.message || emailErr);
+    }
 
-    await this.notificationsService.notifyAdmins({
-      title: 'New client account created',
-      message: `${newUser.name} was added as a client.`,
-      link: '/dashboard/clients',
-      type: 'CLIENT_CREATED',
-    });
+    try {
+      await this.notificationsService.notifyAdmins({
+        title: 'New client account created',
+        message: `${newUser.name} was added as a client.`,
+        link: '/dashboard/clients',
+        type: 'CLIENT_CREATED',
+      });
+    } catch (notifErr: any) {
+      console.warn('[users/clients] Admin notification warning:', notifErr?.message || notifErr);
+    }
 
-    await this.notificationsService.create({
-      recipientId: newUser.id,
-      title: 'Complete your account information',
-      message: 'Please update your profile so your legal records are complete.',
-      link: '/dashboard/profile',
-      type: 'PROFILE_SETUP',
-    });
+    try {
+      await this.notificationsService.create({
+        recipientId: newUser.id,
+        title: 'Complete your account information',
+        message: 'Please update your profile so your legal records are complete.',
+        link: '/dashboard/profile',
+        type: 'PROFILE_SETUP',
+      });
+    } catch (clientNotifErr: any) {
+      console.warn('[users/clients] Client notification warning:', clientNotifErr?.message || clientNotifErr);
+    }
 
     return { ...newUser, temporaryPassword };
   }

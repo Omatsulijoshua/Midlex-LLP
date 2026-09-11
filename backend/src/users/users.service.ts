@@ -26,16 +26,22 @@ export class UsersService {
     if (!password) throw new BadRequestException('Password is required');
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    let firebaseUser: any = null;
     try {
-      const firebaseUser = await this.upsertFirebaseAuthUser({
+      firebaseUser = await this.upsertFirebaseAuthUser({
         email,
         password,
         name,
       });
+    } catch (fbErr: any) {
+      console.warn('[auth] Firebase Auth sync non-fatal warning:', fbErr?.message || fbErr);
+    }
+
+    try {
       return await this.prisma.user.create({
         data: {
           ...data,
-          ...(firebaseUser ? { id: firebaseUser.uid } : {}),
+          ...(firebaseUser?.uid ? { id: firebaseUser.uid, firebaseUid: firebaseUser.uid } : {}),
           email,
           name,
           password: hashedPassword,
