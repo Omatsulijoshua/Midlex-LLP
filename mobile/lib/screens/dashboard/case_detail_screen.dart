@@ -633,7 +633,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                       );
                     },
                     icon: const Icon(Icons.share),
-                    label: const Text('Share Case Files Link'),
+                    label: const Text('Share Case Files'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.secondary,
                     ),
