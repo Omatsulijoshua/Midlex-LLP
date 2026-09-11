@@ -1275,6 +1275,12 @@ class _CasesListScreenState extends State<CasesListScreen> {
                   ),
                   DataColumn(
                     label: Text(
+                      'CLIENT DETAILS',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
                       'COURT',
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                     ),
@@ -1351,6 +1357,32 @@ class _CasesListScreenState extends State<CasesListScreen> {
                               ),
                               const SizedBox(height: 2),
                               StatusChip(status: item.status),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // 4. CLIENT DETAILS
+                      DataCell(
+                        SizedBox(
+                          width: 150,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                item.client?.name ?? 'Client',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.primary),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (item.client?.email != null)
+                                Text(
+                                  item.client!.email,
+                                  style: const TextStyle(fontSize: 10, color: AppTheme.textMuted),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                             ],
                           ),
                         ),

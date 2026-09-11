@@ -469,6 +469,7 @@ export default function CasesPage() {
                 <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">S/N</th>
                 <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">SUIT NO.</th>
                 <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">CASE TITLE</th>
+                <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">CLIENT DETAILS</th>
                 <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">COURT</th>
                 <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">LITIGATION TEAM</th>
                 <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest text-right">ACTION</th>
@@ -498,6 +499,13 @@ export default function CasesPage() {
                       }`}>
                         {c.status}
                       </span>
+                    </td>
+                    <td className="px-6 py-5 text-sm font-medium text-gray-800">
+                      <div className="font-bold text-primary text-sm">{c.client?.name || 'Client'}</div>
+                      <div className="text-xs text-gray-500">{c.client?.email || '-'}</div>
+                      {(c.client?.phone || (c.client as any)?.secondaryPhone) && (
+                        <div className="text-xs text-gray-500 mt-0.5">📞 {[c.client?.phone, (c.client as any)?.secondaryPhone].filter(Boolean).join(', ')}</div>
+                      )}
                     </td>
                     <td className="px-6 py-5 text-sm text-gray-700 font-medium">
                       <div className="flex items-center gap-2">
@@ -556,7 +564,7 @@ export default function CasesPage() {
               })}
               {filteredCases.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-8 py-20 text-center text-gray-400 italic">
+                  <td colSpan={7} className="px-8 py-20 text-center text-gray-400 italic">
                     No case directory entries matched your search.
                   </td>
                 </tr>
