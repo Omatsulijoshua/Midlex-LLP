@@ -34,7 +34,31 @@ async function main() {
     },
   });
 
-  console.log({ lawyer1 });
+  const accountant = await prisma.user.upsert({
+    where: { email: 'accountant@midlex.com' },
+    update: {},
+    create: {
+      email: 'accountant@midlex.com',
+      name: 'Chief Accountant (Finance)',
+      password: await bcrypt.hash('accountant123', 10),
+      role: Role.ADMIN,
+      phone: '08098765432',
+    },
+  });
+
+  const client = await prisma.user.upsert({
+    where: { email: 'client@midlex.com' },
+    update: {},
+    create: {
+      email: 'client@midlex.com',
+      name: 'Demo Client (John Doe)',
+      password: await bcrypt.hash('client123', 10),
+      role: Role.CLIENT,
+      phone: '08033334444',
+    },
+  });
+
+  console.log({ admin, lawyer1, accountant, client });
 }
 
 main()

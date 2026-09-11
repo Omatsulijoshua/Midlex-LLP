@@ -168,6 +168,20 @@ async function main() {
         role: 'LAWYER',
         phone: '08012345678',
       });
+      await upsertFirebaseUser({
+        email: 'accountant@midlex.com',
+        name: 'Chief Accountant (Finance)',
+        password: 'accountant123',
+        role: 'ADMIN',
+        phone: '08098765432',
+      });
+      await upsertFirebaseUser({
+        email: 'client@midlex.com',
+        name: 'Demo Client (John Doe)',
+        password: 'client123',
+        role: 'CLIENT',
+        phone: '08033334444',
+      });
       return;
     } catch (err) {
       console.warn('[seed] Firebase connection failed, falling back to local seed...', err);
@@ -187,6 +201,20 @@ async function main() {
     password: 'admin123',
     role: 'LAWYER',
     phone: '08012345678',
+  });
+  await upsertLocalUser({
+    email: 'accountant@midlex.com',
+    name: 'Chief Accountant (Finance)',
+    password: 'accountant123',
+    role: 'ADMIN',
+    phone: '08098765432',
+  });
+  await upsertLocalUser({
+    email: 'client@midlex.com',
+    name: 'Demo Client (John Doe)',
+    password: 'client123',
+    role: 'CLIENT',
+    phone: '08033334444',
   });
 }
 

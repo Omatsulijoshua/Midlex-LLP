@@ -114,6 +114,20 @@ export class PrismaService implements OnModuleInit {
           role: 'ACCOUNTANT',
           phone: '08098765432',
         },
+        {
+          email: 'client@midlex.com',
+          name: 'Demo Client (John Doe)',
+          password: 'client123',
+          role: 'CLIENT',
+          phone: '08033334444',
+        },
+        {
+          email: 'user@midlex.com',
+          name: 'Standard User (Jane Doe)',
+          password: 'user123',
+          role: 'CLIENT',
+          phone: '08055556666',
+        },
       ];
 
       for (const u of defaultUsers) {

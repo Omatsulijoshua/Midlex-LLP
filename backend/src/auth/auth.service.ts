@@ -23,6 +23,8 @@ export class AuthService {
         'midlexllp01@gmail.com': { name: 'Super Admin', pass: 'Admin@123', role: 'ADMIN' },
         'lawyer1@midlex.com': { name: 'Barr. Adebayo', pass: 'admin123', role: 'LAWYER' },
         'accountant@midlex.com': { name: 'Chief Accountant (Finance)', pass: 'accountant123', role: 'ACCOUNTANT' },
+        'client@midlex.com': { name: 'Demo Client (John Doe)', pass: 'client123', role: 'CLIENT' },
+        'user@midlex.com': { name: 'Standard User (Jane Doe)', pass: 'user123', role: 'CLIENT' },
       };
 
       const match = defaultAccounts[normalizedEmail];

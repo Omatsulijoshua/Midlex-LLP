@@ -57,8 +57,8 @@ Midlex-LLP/
 
 ## 🚀 Live Deployment Links
 
-- 🌐 **Web Application**: [https://midlex-llplawfirm.vercel.app](https://midlex-llplawfirm.vercel.app)
-- 🔒 **Client & Staff Login**: [https://midlex-llplawfirm.vercel.app/login](https://midlex-llplawfirm.vercel.app/login)
+- 🌐 **Web Application**: [https://midlexlawfirms.vercel.app](https://midlexlawfirms.vercel.app)
+- 🔒 **Client & Staff Login**: [https://midlexlawfirms.vercel.app/login](https://midlexlawfirms.vercel.app/login)
 - ⚙️ **API Service**: [https://midlex-backend.onrender.com](https://midlex-backend.onrender.com)
 
 ---
@@ -71,6 +71,9 @@ Use these default credentials to test the platform role features:
 | :--- | :--- | :--- |
 | **Super Admin** | `midlexllp01@gmail.com` | `Admin@123` |
 | **Senior Lawyer** | `lawyer1@midlex.com` | `admin123` |
+| **Finance / Accountant** | `accountant@midlex.com` | `accountant123` |
+| **Client / User** | `client@midlex.com` | `client123` |
+| **Client / User (Alt)** | `user@midlex.com` | `user123` |
 
 ---
 
