@@ -39,10 +39,15 @@ export class CasesController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
-  async findAll() {
-    return this.casesService.findAll();
+  @UseGuards(JwtAuthGuard)
+  async findAll(@Request() req: any) {
+    if (req.user?.role === Role.ADMIN || req.user?.role === Role.ACCOUNTANT) {
+      return this.casesService.findAll();
+    }
+    if (req.user?.role === Role.LAWYER) {
+      return this.casesService.findByLawyer(req.user.id);
+    }
+    return this.casesService.findByClient(req.user.id);
   }
 
   @Get('allocations')

@@ -28,7 +28,17 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final casesData = await ApiService.get(ApiConfig.cases);
+      dynamic casesData;
+      try {
+        casesData = await ApiService.get(ApiConfig.myCases);
+      } catch (_) {
+        try {
+          casesData = await ApiService.get(ApiConfig.cases);
+        } catch (e) {
+          debugPrint('Error fetching cases: $e');
+        }
+      }
+
       if (casesData is List) {
         _cases = casesData.map((e) => CaseModel.fromJson(e)).toList();
       }

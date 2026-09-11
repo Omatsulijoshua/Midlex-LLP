@@ -9,6 +9,7 @@ class ApiConfig {
 
   // Cases
   static String get cases => '$baseUrl/cases';
+  static String get myCases => '$baseUrl/cases/my-cases';
   static String caseDetail(String id) => '$baseUrl/cases/$id';
 
   // Documents
