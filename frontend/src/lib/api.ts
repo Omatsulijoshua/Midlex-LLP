@@ -1,7 +1,14 @@
 function resolveApiUrl() {
   const fromEnv = process.env.NEXT_PUBLIC_API_URL?.trim();
 
-  // If NEXT_PUBLIC_API_URL points to old broken Cloud Run url or is empty, use live Render backend
+  // If in browser on local network/localhost, prioritize local NestJS server running on port 3001
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.')) {
+      return `${window.location.protocol}//${hostname}:3001`;
+    }
+  }
+
   if (fromEnv && !fromEnv.includes("run.app")) {
     return fromEnv.replace(/\/+$/, "");
   }
@@ -52,7 +59,11 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestInit =
     }
 
     if (typeof window !== 'undefined') {
-      console.error('[apiFetch]', { url: `${API_URL}${endpoint}`, status: response.status, message });
+      console.error(`[apiFetch Error ${response.status}] ${API_URL}${endpoint}: ${message}`);
+      if (response.status === 401) {
+        localStorage.removeItem('midlex_token');
+        localStorage.removeItem('midlex_user');
+      }
     }
 
     throw new Error(message);
