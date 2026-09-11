@@ -511,7 +511,7 @@ export default function CasesPage() {
                           ? 'bg-blue-50 text-blue-700 border-blue-200'
                           : 'bg-gray-100 text-gray-700 border-gray-200'
                       }`}>
-                        {realStatus.replace('_', ' ')}
+                        {realStatus === 'OPEN' || realStatus === 'NEW' ? 'CASE MATTER REGISTERED' : realStatus.replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-6 py-5 text-sm font-medium text-gray-800">

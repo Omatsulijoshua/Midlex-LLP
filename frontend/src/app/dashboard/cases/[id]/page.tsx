@@ -78,7 +78,7 @@ export default function CaseDetailsPage({ params }: { params: Promise<{ id: stri
             <span className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${
               caseData.status === 'OPEN' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
             }`}>
-              {caseData.status}
+              {caseData.status === 'OPEN' || caseData.status === 'NEW' ? 'CASE MATTER REGISTERED' : caseData.status.replace('_', ' ')}
             </span>
             <span className="text-sm text-gray-400 font-medium">Created on {new Date(caseData.createdAt).toLocaleDateString()}</span>
           </div>

@@ -98,7 +98,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       ),
                       items: const [
-                        DropdownMenuItem(value: 'OPEN', child: Text('Open (Filing)')),
+                        DropdownMenuItem(value: 'OPEN', child: Text('Case Matter Registered (Filing)')),
                         DropdownMenuItem(value: 'IN_PROGRESS', child: Text('In Progress')),
                         DropdownMenuItem(value: 'HEARING', child: Text('Court Hearing / Trial')),
                         DropdownMenuItem(value: 'PENDING', child: Text('Pending Review')),

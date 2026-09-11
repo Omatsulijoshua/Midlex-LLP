@@ -43,7 +43,9 @@ class StatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        status.replaceAll('_', ' '),
+        (status.toUpperCase() == 'OPEN' || status.toUpperCase() == 'NEW')
+            ? 'CASE MATTER REGISTERED'
+            : status.replaceAll('_', ' '),
         style: TextStyle(
           color: fg,
           fontSize: 12,
