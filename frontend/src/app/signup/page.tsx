@@ -58,7 +58,7 @@ export default function SignupPage() {
   };
 
   if (!mounted) {
-    return <main className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4" />;
+    return <main suppressHydrationWarning className="min-h-screen bg-[#fafafa] flex items-center justify-center p-3 sm:p-6 py-6 sm:py-12 w-full max-w-full overflow-x-hidden relative" />;
   }
 
   return (

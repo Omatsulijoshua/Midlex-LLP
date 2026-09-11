@@ -41,7 +41,7 @@ export default function LoginClient() {
 
   if (!mounted) {
     return (
-      <main className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4" />
+      <main suppressHydrationWarning className="min-h-screen bg-[#fafafa] flex items-center justify-center p-3 sm:p-6 py-6 sm:py-12 w-full max-w-full overflow-x-hidden relative" />
     );
   }
 
