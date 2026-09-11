@@ -85,6 +85,30 @@ export default function InquiriesPage() {
     setSelected((prev) => (prev?.id === id ? updated : prev));
   };
 
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [aiCustomInput, setAiCustomInput] = useState("");
+
+  const handleGenerateAiReply = async (customPrompt?: string) => {
+    if (!selected) return;
+    setIsGeneratingAi(true);
+    try {
+      const res = await apiFetch(`/inquiries/${selected.id}/ai-reply`, {
+        method: "POST",
+        body: JSON.stringify({ prompt: customPrompt || "" }),
+      });
+      if (res?.inquiry) {
+        setItems((prev) => prev.map((it) => (it.id === selected.id ? res.inquiry : it)));
+        setSelected(res.inquiry);
+      }
+      setAiCustomInput("");
+    } catch (err) {
+      console.error("AI Reply error:", err);
+      alert("Failed to generate AI auto-reply.");
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
+
   if (!canAccess) return <div className="p-10">Access Denied.</div>;
 
   if (isLoading) {
@@ -103,7 +127,7 @@ export default function InquiriesPage() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-3xl font-bold text-primary">Website Inquiries</h2>
-          <p className="text-gray-500 mt-1">New leads from the Contact form.</p>
+          <p className="text-gray-500 mt-1">New leads from the Contact form with AI Auto-Reply Chat assistance.</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="min-w-[320px] flex-1">
@@ -177,36 +201,82 @@ export default function InquiriesPage() {
                 <div>
                   <h3 className="text-2xl font-bold text-primary">{selected.name}</h3>
                   <p className="text-gray-500 mt-1">{selected.email}</p>
-                  {selected.phone && <p className="text-gray-500 text-sm mt-1">{selected.phone}</p>}
+                  {selected.phone && <p className="text-gray-500 text-sm mt-1">📞 {selected.phone}</p>}
                   {selected.serviceNeeded && (
-                    <p className="text-gray-500 text-sm mt-1">Service: {selected.serviceNeeded}</p>
+                    <p className="text-gray-500 text-sm mt-1 font-semibold text-secondary">Service Needed: {selected.serviceNeeded}</p>
                   )}
                 </div>
-                <select
-                  value={selected.status}
-                  onChange={(e) => updateInquiry(selected.id, { status: e.target.value as InquiryStatus })}
-                  className="px-4 py-3 bg-white border border-gray-100 rounded-2xl font-bold text-primary"
-                >
-                  {statusOptions.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex items-center gap-3">
+                  <select
+                    value={selected.status}
+                    onChange={(e) => updateInquiry(selected.id, { status: e.target.value as InquiryStatus })}
+                    className="px-4 py-3 bg-white border border-gray-100 rounded-2xl font-bold text-primary"
+                  >
+                    {statusOptions.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div className="p-6 bg-gray-50 rounded-[28px] border border-gray-100">
-                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{selected.message}</p>
+              <div className="p-6 bg-gray-50 rounded-[28px] border border-gray-100 space-y-2">
+                <p className="text-xs font-bold uppercase text-gray-400 tracking-wider">Client Inquiry Message</p>
+                <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed font-medium">{selected.message}</p>
+              </div>
+
+              {/* AI Auto-Reply & Interactive Chat Card */}
+              <div className="bg-primary/5 rounded-[32px] border border-primary/10 p-6 space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🤖</span>
+                    <div>
+                      <h4 className="font-bold text-primary text-sm">Midlex AI Legal Assistant</h4>
+                      <p className="text-xs text-gray-500">Auto-reply & generate responses instantly</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleGenerateAiReply()}
+                    disabled={isGeneratingAi}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-secondary text-white font-bold rounded-xl shadow-md hover:bg-secondary/90 transition-all text-xs disabled:opacity-50"
+                  >
+                    {isGeneratingAi ? "🤖 AI Thinking..." : "✨ Auto-Reply with AI"}
+                  </button>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={aiCustomInput}
+                    onChange={(e) => setAiCustomInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && aiCustomInput.trim()) {
+                        handleGenerateAiReply(aiCustomInput);
+                      }
+                    }}
+                    placeholder="Type a follow-up question or note for AI to reply..."
+                    className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-secondary/30"
+                  />
+                  <button
+                    onClick={() => handleGenerateAiReply(aiCustomInput)}
+                    disabled={isGeneratingAi || !aiCustomInput.trim()}
+                    className="px-5 py-3 bg-primary text-white font-bold rounded-xl text-xs hover:bg-primary/90 transition-all disabled:opacity-50 shrink-0"
+                  >
+                    Send & AI Reply
+                  </button>
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-primary mb-2">Internal Notes</label>
+                <label className="block text-sm font-bold text-primary mb-2">Notes & AI Conversation History</label>
                 <textarea
                   value={selected.notes || ""}
                   onChange={(e) => setSelected({ ...selected, notes: e.target.value })}
-                  className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all"
-                  rows={5}
-                  placeholder="Add notes about the call, next steps, etc."
+                  className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all text-sm font-mono"
+                  rows={6}
+                  placeholder="Notes and AI Auto-Replies appear here..."
                 />
                 <div className="flex justify-end mt-4">
                   <button
@@ -220,7 +290,7 @@ export default function InquiriesPage() {
             </div>
           ) : (
             <div className="h-full bg-white rounded-[40px] border border-dashed border-gray-200 p-10 flex items-center justify-center text-gray-500">
-              Select an inquiry to view details.
+              Select an inquiry to view details and use AI Auto-Reply.
             </div>
           )}
         </div>

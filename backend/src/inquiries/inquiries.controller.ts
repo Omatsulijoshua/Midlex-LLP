@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -36,5 +37,13 @@ export class InquiriesController {
       status: body.status,
       notes: body.notes,
     });
+  }
+
+  @Post(':id/ai-reply')
+  async generateAiReply(
+    @Param('id') id: string,
+    @Body('prompt') prompt?: string,
+  ) {
+    return this.inquiriesService.generateAndSaveAiReply(id, prompt);
   }
 }
