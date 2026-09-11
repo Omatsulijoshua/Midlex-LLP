@@ -151,27 +151,36 @@ export default function PaymentsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAccountsModalOpen]);
 
-  const totalPaid = payments.filter((p) => p.status === 'SUCCESS').reduce((sum, p) => sum + p.amount, 0);
-  const outstanding = payments.filter((p) => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0);
-  const currency = payments.find((p) => !!p.currency)?.currency || 'NGN';
   const normalizedQuery = deferredQuery.trim().toLowerCase();
-  const filteredPayments = normalizedQuery
-    ? payments.filter((p) =>
-        [
-          p.txRef,
-          p.case?.title,
-          p.client?.name,
-          p.client?.email,
-          p.status,
-          p.paymentProvider,
-          p.opayReference,
-          p.opayOrderNo,
-          p.opayStatus,
-        ]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(normalizedQuery)),
-      )
-    : payments;
+  const filteredPayments = payments.filter((p) => {
+    if (!isItemInMonth(p.createdAt || p.paidAt, selectedMonth)) {
+      return false;
+    }
+    if (!normalizedQuery) return true;
+    const searchTargets = [
+      p.txRef,
+      p.case?.title,
+      p.client?.name,
+      p.client?.email,
+      p.status,
+      p.paymentProvider,
+      p.opayReference,
+      p.opayOrderNo,
+      p.opayStatus,
+      p.description,
+    ].filter(Boolean);
+    return searchTargets.some((value) => String(value).toLowerCase().includes(normalizedQuery));
+  });
+
+  const totalPaid = filteredPayments
+    .filter((p) => p.status === 'SUCCESS')
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+  const outstanding = filteredPayments
+    .filter((p) => p.status !== 'SUCCESS')
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+  const currency = filteredPayments.find((p) => !!p.currency)?.currency || 'NGN';
 
   const startOpayCheckout = async (paymentId: string) => {
     setIsStartingCheckoutByPayment((p) => ({ ...p, [paymentId]: true }));
@@ -826,33 +835,9 @@ export default function PaymentsPage() {
     );
   };
 
-  const normalizedQuery = deferredQuery.trim().toLowerCase();
-  const filteredPayments = payments.filter((p) => {
-    if (!isItemInMonth(p.createdAt || p.paidAt, selectedMonth)) {
-      return false;
-    }
-    if (!normalizedQuery) return true;
-    const searchTargets = [
-      p.txRef,
-      p.case?.title,
-      p.client?.name,
-      p.client?.email,
-      p.paymentProvider,
-      p.status,
-      p.description,
-    ].filter(Boolean);
-    return searchTargets.some((val) => String(val).toLowerCase().includes(normalizedQuery));
-  });
-
-  const totalPaid = filteredPayments
-    .filter((p) => p.status === 'SUCCESS')
-    .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
-
-  const outstanding = filteredPayments
-    .filter((p) => p.status !== 'SUCCESS')
-    .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
-
-  const currency = filteredPayments[0]?.currency || 'NGN';
+  if (isLoading) return <div className="animate-pulse space-y-4">
+    {[1, 2, 3].map(i => <div key={i} className="h-24 bg-gray-100 rounded-3xl" />)}
+  </div>;
 
   return (
     <div className="space-y-8">
