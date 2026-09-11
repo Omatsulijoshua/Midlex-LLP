@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../dashboard/dashboard_screen.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
+import 'lawyer_login_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -56,24 +57,90 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Top Role Switcher Toggle Bar
+              Container(
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentLight,
+                  borderRadius: BorderRadius.circular(25),
+                  border: Border.all(color: AppTheme.border),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary,
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.person, color: Colors.white, size: 18),
+                            SizedBox(width: 6),
+                            Text(
+                              'Client Sign In',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LawyerLoginScreen()),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.gavel, color: AppTheme.primary, size: 18),
+                              SizedBox(width: 6),
+                              Text(
+                                'Lawyer / Admin',
+                                style: TextStyle(
+                                  color: AppTheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               Image.asset(
                 'assets/images/logo.jpg',
-                height: 80,
+                height: 75,
                 errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.gavel, size: 70, color: AppTheme.primary),
+                    const Icon(Icons.gavel, size: 65, color: AppTheme.primary),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               const Text(
-                'Welcome Back',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppTheme.primary),
+                'Customer & Client Sign In',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.primary),
               ),
               const SizedBox(height: 6),
               const Text(
-                'Enter your credentials to access your Midlex dashboard',
-                style: TextStyle(fontSize: 14, color: AppTheme.textMuted),
+                'Enter your registered client email to access your Midlex cases and direct legal portal',
+                style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
               if (_errorMessage != null)
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -96,18 +163,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                 ),
+
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
+                style: const TextStyle(color: AppTheme.textDark, fontSize: 14),
                 decoration: const InputDecoration(
-                  labelText: 'Email Address',
+                  labelText: 'Client Email Address',
                   prefixIcon: Icon(Icons.email_outlined),
                 ),
               ),
               const SizedBox(height: 16),
+
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
+                style: const TextStyle(color: AppTheme.textDark, fontSize: 14),
                 decoration: InputDecoration(
                   labelText: 'Password',
                   prefixIcon: const Icon(Icons.lock_outline),
@@ -118,6 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 12),
+
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -130,17 +202,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: const Text('Forgot password?', style: TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.bold)),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: auth.isLoading ? null : _handleLogin,
                   child: auth.isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Sign In'),
+                      : const Text('Sign In to Client Portal'),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -155,6 +229,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Text('Create one', style: TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.bold)),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+
+              // Switcher button for Lawyers & Admin
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LawyerLoginScreen()),
+                  );
+                },
+                icon: const Icon(Icons.gavel, color: AppTheme.primary, size: 18),
+                label: const Text(
+                  'Are you a Lawyer or Admin? Sign In Here',
+                  style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppTheme.primary),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
               ),
             ],
           ),

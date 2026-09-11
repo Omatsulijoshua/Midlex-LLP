@@ -11,6 +11,7 @@ import '../screens/public/contact_screen.dart';
 import '../screens/public/book_consultation_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
+import '../screens/auth/lawyer_login_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -142,11 +143,19 @@ class CustomDrawer extends StatelessWidget {
             ),
           ] else ...[
             ListTile(
-              leading: const Icon(Icons.login, color: AppTheme.primary),
-              title: const Text('Sign In'),
+              leading: const Icon(Icons.person_outline, color: AppTheme.primary),
+              title: const Text('Client Sign In'),
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const LoginScreen()),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.gavel, color: AppTheme.secondary),
+              title: const Text('Lawyer & Admin Portal'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LawyerLoginScreen()),
               ),
             ),
           ],
