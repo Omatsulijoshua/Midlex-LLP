@@ -124,7 +124,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   if (!isLastPage)
                     TextButton(
-                      onPressed: () => _completeOnboarding(const HomeScreen()),
+                      onPressed: () => _completeOnboarding(const LoginScreen()),
                       child: const Text(
                         'Skip',
                         style: TextStyle(

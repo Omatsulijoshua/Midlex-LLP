@@ -5,7 +5,7 @@ import '../config/theme.dart';
 import '../providers/auth_provider.dart';
 import '../services/storage_service.dart';
 import 'onboarding/onboarding_screen.dart';
-import 'public/home_screen.dart';
+import 'auth/login_screen.dart';
 import 'dashboard/dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -57,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         } else {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
           );
         }
       }

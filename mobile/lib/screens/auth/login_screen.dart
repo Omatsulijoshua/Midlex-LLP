@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../public/home_screen.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
 import 'lawyer_login_screen.dart';
@@ -248,6 +249,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: AppTheme.primary),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  );
+                },
+                icon: const Icon(Icons.explore_outlined, color: AppTheme.secondary, size: 18),
+                label: const Text(
+                  'Browse Public App & Practice Areas →',
+                  style: TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ),
             ],
