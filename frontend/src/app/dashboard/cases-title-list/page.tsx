@@ -187,7 +187,7 @@ export default function CasesTitleListPage() {
                       {c.client?.name || 'N/A'}
                     </td>
                     <td className="px-8 py-6 text-sm text-primary font-bold">
-                      {c.litigationTeam || c.lawyer?.name || 'TEAM ANCHOR'}
+                      {c.litigationTeam || c.lawyer?.name || '—'}
                     </td>
                     <td className="px-8 py-6">
                       <span

@@ -43,9 +43,7 @@ class CaseModel {
     if (customSuitNumber != null && customSuitNumber!.isNotEmpty) {
       return customSuitNumber!;
     }
-    final cleanId = id.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toUpperCase();
-    final shortId = cleanId.length > 4 ? cleanId.substring(0, 4) : (cleanId.isEmpty ? '102' : cleanId);
-    return 'SUIT NO: HCB/$shortId/2026';
+    return '';
   }
 
   String get courtName {
@@ -55,7 +53,7 @@ class CaseModel {
     if (courtDates.isNotEmpty && courtDates.first.location.isNotEmpty) {
       return courtDates.first.location;
     }
-    return 'High Court of Edo State';
+    return '';
   }
 
   String get litigationTeam {
@@ -63,9 +61,9 @@ class CaseModel {
       return customLitigationTeam!;
     }
     if (lawyer != null && lawyer!.name.isNotEmpty) {
-      return '${lawyer!.name} (Lead Counsel)';
+      return lawyer!.name;
     }
-    return 'Midlex Senior Advocacy Panel';
+    return '';
   }
 
   factory CaseModel.fromJson(Map<String, dynamic> json) {

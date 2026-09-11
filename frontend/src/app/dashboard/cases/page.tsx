@@ -198,11 +198,9 @@ export default function CasesPage() {
   const normalizedQuery = deferredQuery.trim().toLowerCase();
   const filteredCases = cases.filter((c) => {
     const ov = overrides[c.id] || {};
-    const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-    const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
-    const suit = ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`;
-    const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
-    const teamName = ov.litigationTeam || c.litigationTeam || 'TEAM ANCHOR';
+    const suit = ov.suitNumber || c.suitNumber || '';
+    const courtName = ov.court || c.court || '';
+    const teamName = ov.litigationTeam || c.litigationTeam || '';
 
     if (!isItemInMonth(c.createdAt, selectedMonth)) {
       return false;
@@ -238,11 +236,9 @@ export default function CasesPage() {
   const getPreparedExportItems = (): DirectoryExportItem[] => {
     return filteredCases.map((c, index) => {
       const ov = overrides[c.id] || {};
-      const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-      const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
-      const suitNo = ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`;
-      const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
-      const teamName = ov.litigationTeam || c.litigationTeam || 'TEAM ANCHOR';
+      const suitNo = ov.suitNumber || c.suitNumber || 'Unassigned / Pending';
+      const courtName = ov.court || c.court || 'Unassigned / Pending';
+      const teamName = ov.litigationTeam || c.litigationTeam || 'Unassigned / Pending';
       const phones = [c.client?.phone, c.client?.secondaryPhone].filter(Boolean).join(', ');
 
       return {
@@ -483,11 +479,9 @@ export default function CasesPage() {
             <tbody className="divide-y divide-gray-100">
               {filteredCases.map((c, index) => {
                 const ov = overrides[c.id] || {};
-                const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-                const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
-                const suitNo = ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`;
-                const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
-                const teamName = ov.litigationTeam || c.litigationTeam || 'TEAM ANCHOR';
+                const suitNo = ov.suitNumber || c.suitNumber || '';
+                const courtName = ov.court || c.court || '';
+                const teamName = ov.litigationTeam || c.litigationTeam || '';
 
                 const latestTimeline = c.timeline && c.timeline.length > 0 ? c.timeline[c.timeline.length - 1] : null;
                 const realStatus = (latestTimeline?.status || c.status || 'OPEN').toUpperCase();
@@ -496,9 +490,13 @@ export default function CasesPage() {
                   <tr key={c.id} className="hover:bg-gray-50/50 transition-all group">
                     <td className="px-6 py-5 font-bold text-primary">{index + 1}</td>
                     <td className="px-6 py-5">
-                      <span className="px-3 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-xs font-bold tracking-wide">
-                        {suitNo}
-                      </span>
+                      {suitNo ? (
+                        <span className="px-3 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-xs font-bold tracking-wide">
+                          {suitNo.startsWith('SUIT') ? suitNo : `SUIT NO: ${suitNo}`}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 font-normal italic text-xs">—</span>
+                      )}
                     </td>
                     <td className="px-6 py-5">
                       <div className="font-bold text-primary text-base">{c.title}</div>
@@ -522,20 +520,28 @@ export default function CasesPage() {
                       )}
                     </td>
                     <td className="px-6 py-5 text-sm text-gray-700 font-medium">
-                      <div className="flex items-center gap-2">
-                        <svg className="w-4 h-4 text-secondary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0v-4m0 4h4" />
-                        </svg>
-                        <span>{courtName}</span>
-                      </div>
+                      {courtName ? (
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4 text-secondary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0v-4m0 4h4" />
+                          </svg>
+                          <span>{courtName}</span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 font-normal italic text-xs">—</span>
+                      )}
                     </td>
                     <td className="px-6 py-5 text-sm text-primary font-semibold">
-                      <div className="flex items-center gap-2">
-                        <svg className="w-4 h-4 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                        <span className="font-bold text-primary">{teamName}</span>
-                      </div>
+                      {teamName ? (
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                          </svg>
+                          <span className="font-bold text-primary">{teamName}</span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 font-normal italic text-xs">—</span>
+                      )}
                     </td>
                     <td className="px-6 py-5 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -543,11 +549,9 @@ export default function CasesPage() {
                           <button
                             onClick={() => {
                               const ov = overrides[c.id] || {};
-                              const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-                              const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
-                              const suitNo = ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`;
-                              const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
-                              const teamName = ov.litigationTeam || c.litigationTeam || 'TEAM ANCHOR';
+                              const suitNo = ov.suitNumber || c.suitNumber || '';
+                              const courtName = ov.court || c.court || '';
+                              const teamName = ov.litigationTeam || c.litigationTeam || '';
                               setEditingCase(c);
                               setEditTitle(c.title || '');
                               setEditSuitNo(suitNo);
@@ -744,6 +748,7 @@ export default function CasesPage() {
                   onChange={(e) => setEditCourt(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-800 bg-white"
                 >
+                  <option value="">-- Unassigned / Select Court --</option>
                   {courts.map(c => (
                     <option key={c} value={c}>{c}</option>
                   ))}
@@ -751,7 +756,7 @@ export default function CasesPage() {
                 <div className="mt-1.5 p-2 bg-blue-50 border border-blue-100 rounded-lg flex items-start gap-2">
                   <span className="text-blue-500 text-xs">ℹ️</span>
                   <p className="text-[11px] text-blue-700 leading-tight">
-                    Notice: If your court is not available in the dropdown, click <span className="font-bold">"Courts Directory"</span> at the top right to register a new court.
+                    Notice: If your court is not available in the dropdown, click <span className="font-bold">&quot;Courts Directory&quot;</span> at the top right to register a new court.
                   </p>
                 </div>
               </div>
@@ -763,6 +768,7 @@ export default function CasesPage() {
                   onChange={(e) => setEditTeam(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-800 bg-white"
                 >
+                  <option value="">-- Unassigned / Select Litigation Team --</option>
                   {teams.map(t => (
                     <option key={t} value={t}>{t}</option>
                   ))}
@@ -1016,10 +1022,8 @@ export default function CasesPage() {
                         <tbody className="divide-y divide-gray-100">
                           {teamCases.map((c, index) => {
                             const ov = overrides[c.id] || {};
-                            const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-                            const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
-                            const suitNo = ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`;
-                            const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
+                            const suitNo = ov.suitNumber || c.suitNumber || '';
+                            const courtName = ov.court || c.court || '';
                             const stage = ov.stage || 'PLEADINGS / PRE-TRIAL';
                             const pendingTask = ov.pendingTask || 'Filing of Written Address & Witness Statements';
                             const phones = [c.client?.phone, c.client?.secondaryPhone].filter(Boolean).join(', ');
@@ -1031,12 +1035,16 @@ export default function CasesPage() {
                                   <div className="font-bold text-primary text-base">{c.title}</div>
                                 </td>
                                 <td className="px-6 py-5">
-                                  <span className="px-3 py-1.5 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-xs font-bold">
-                                    {suitNo}
-                                  </span>
+                                  {suitNo ? (
+                                    <span className="px-3 py-1.5 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-xs font-bold">
+                                      {suitNo.startsWith('SUIT') ? suitNo : `SUIT NO: ${suitNo}`}
+                                    </span>
+                                  ) : (
+                                    <span className="text-gray-400 font-normal italic text-xs">—</span>
+                                  )}
                                 </td>
                                 <td className="px-6 py-5 text-xs text-gray-700 font-medium">
-                                  {courtName}
+                                  {courtName || <span className="text-gray-400 font-normal italic text-xs">—</span>}
                                 </td>
                                 <td className="px-6 py-5 text-xs font-medium text-gray-800">
                                   <div className="font-bold text-primary text-sm">{c.client?.name || 'N/A'}</div>

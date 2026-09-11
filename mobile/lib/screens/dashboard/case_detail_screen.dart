@@ -579,7 +579,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                     ListTile(
                       leading: const Icon(Icons.shield_outlined, color: AppTheme.secondary),
                       title: const Text('Assigned Litigation Team', style: TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text(widget.caseModel.litigationTeam),
+                      subtitle: Text(widget.caseModel.litigationTeam.isEmpty ? 'Awaiting Team Allocation' : widget.caseModel.litigationTeam),
                     ),
                   ],
                 ),
