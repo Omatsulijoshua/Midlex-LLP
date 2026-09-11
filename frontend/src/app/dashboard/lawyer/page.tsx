@@ -69,6 +69,31 @@ export default function LawyerDashboard() {
         <Link href="/dashboard/schedule" className="bg-secondary text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-secondary/20 hover:bg-secondary/90 transition-all">
           <Plus size={20} /> View Schedule
         </Link>
+      {/* Assigned Litigation Team Directory Banner */}
+      <div className="bg-slate-900 border-2 border-amber-400/40 rounded-3xl p-6 shadow-xl text-white space-y-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-secondary text-white flex items-center justify-center font-black text-2xl shadow-lg">
+            🛡️
+          </div>
+          <div>
+            <span className="text-[10px] bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2.5 py-0.5 rounded-full font-black uppercase tracking-widest">
+              Allocated Litigation Team
+            </span>
+            <h2 className="text-xl font-black tracking-wide uppercase text-white mt-1">
+              {user?.litigationTeam || 'TEAM ANCHOR'}&apos;S CASE DIRECTORY
+            </h2>
+            <p className="text-xs text-gray-300">
+              Official litigation team directory allocated to you by Super Admin.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/dashboard/cases"
+          className="px-6 py-3.5 bg-secondary text-white font-black rounded-2xl shadow-xl hover:bg-secondary/90 hover:scale-[1.02] transition-all text-xs tracking-wider uppercase border border-amber-300/50 flex items-center gap-2 shrink-0 self-start md:self-auto"
+        >
+          <span>📂 OPEN {(user?.litigationTeam || 'TEAM ANCHOR').toUpperCase()} CASE DIRECTORY</span>
+          <ArrowRight size={16} />
+        </Link>
       </div>
 
       {/* Stats Grid */}

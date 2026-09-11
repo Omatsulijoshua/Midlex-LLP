@@ -7,6 +7,7 @@ interface User {
   email: string;
   name: string;
   role: 'ADMIN' | 'LAWYER' | 'CLIENT';
+  litigationTeam?: string;
 }
 
 interface AuthContextType {
