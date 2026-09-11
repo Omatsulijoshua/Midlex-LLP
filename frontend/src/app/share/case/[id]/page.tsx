@@ -200,15 +200,20 @@ export default function PublicCaseSharePage({ params }: { params: Promise<{ id: 
                   className="bg-white rounded-[24px] p-6 border border-gray-100 shadow-md hover:shadow-lg transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary font-bold flex-shrink-0">
-                      <FileText size={24} />
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary font-extrabold text-base shrink-0">
+                      #{idx + 1}
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-900 text-lg">{doc.title}</h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-bold text-slate-900 text-lg">{doc.title}</h3>
+                        <span className="text-[10px] font-extrabold px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-full uppercase tracking-wider">
+                          {doc.fileType || 'FILE'}
+                        </span>
+                      </div>
                       <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 mt-1">
-                        <span>Type: <strong className="uppercase">{doc.fileType || 'FILE'}</strong></span>
+                        <span>Shared File #{idx + 1}</span>
                         <span>•</span>
-                        <span>Uploaded: {new Date(doc.createdAt).toLocaleDateString()}</span>
+                        <span>Uploaded: {new Date(doc.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                       </div>
                     </div>
                   </div>

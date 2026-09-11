@@ -634,14 +634,36 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                 ),
               )
             else
-              ...widget.caseModel.documents.map((doc) => Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.insert_drive_file, color: AppTheme.primary),
-                      title: Text(doc.name),
-                      subtitle: Text(doc.type),
-                      trailing: const Icon(Icons.download),
+              ...widget.caseModel.documents.asMap().entries.map((entry) {
+                final idx = entry.key + 1;
+                final doc = entry.value;
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: AppTheme.primary.withAlpha(25),
+                      child: Text(
+                        '#$idx',
+                        style: const TextStyle(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
-                  )),
+                    title: Text(
+                      doc.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    subtitle: Text(
+                      '${doc.type.toUpperCase()} • Shared Case File #$idx',
+                      style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                    ),
+                    trailing: const Icon(Icons.file_download_outlined, color: AppTheme.secondary),
+                  ),
+                );
+              }),
             const SizedBox(height: 24),
             Row(
               children: [

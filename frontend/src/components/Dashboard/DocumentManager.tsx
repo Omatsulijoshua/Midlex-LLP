@@ -104,18 +104,21 @@ export default function DocumentManager({ caseId, status }: { caseId: string, st
       </div>
 
       <div className="space-y-4">
-        {documents.map((doc) => (
+        {documents.map((doc, index) => (
           <div key={doc.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-3xl border border-transparent hover:border-gray-200 transition-all group">
             <div className="flex items-center gap-5">
-              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
+              <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary font-extrabold text-sm shadow-sm shrink-0">
+                #{index + 1}
               </div>
               <div>
-                <h4 className="font-bold text-primary">{doc.name}</h4>
-                <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest font-bold">
-                  {doc.type.split('/')[1] || 'DOC'} • {new Date(doc.createdAt).toLocaleDateString()}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-bold text-primary text-base">{doc.name}</h4>
+                  <span className="text-[10px] font-extrabold px-2.5 py-0.5 bg-primary/10 text-primary rounded-full uppercase tracking-wider">
+                    {doc.type.split('/')[1] || doc.type || 'DOC'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest font-semibold">
+                  File #{index + 1} • Uploaded by {doc.uploadedBy?.name || 'Staff'} • {new Date(doc.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                 </p>
               </div>
             </div>
@@ -123,9 +126,13 @@ export default function DocumentManager({ caseId, status }: { caseId: string, st
               href={doc.url} 
               target="_blank" 
               rel="noreferrer"
-              className="px-6 py-2 bg-white border border-gray-200 text-primary font-bold rounded-xl text-sm hover:border-secondary hover:text-secondary transition-all"
+              className="px-6 py-2.5 bg-white border border-gray-200 text-primary font-bold rounded-xl text-xs hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2 shrink-0"
             >
-              View
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              View Document
             </a>
           </div>
         ))}
