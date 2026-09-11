@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
+import '../../config/api_config.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
+import '../../services/api_service.dart';
 
 import 'accountant_dashboard_screen.dart';
 import 'cases_list_screen.dart';
+import 'cases_title_list_screen.dart';
 import 'payments_screen.dart';
 import 'schedule_screen.dart';
 import 'inquiries_screen.dart';
 import 'notifications_screen.dart';
+import 'team_chat_screen.dart';
 import '../auth/login_screen.dart';
-import '../public/home_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -21,7 +24,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _currentIndex = 0;
+  int _clientIndex = 0;
+  int _staffViewIndex = 0;
 
   @override
   void initState() {
@@ -62,20 +66,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
-    final List<Widget> pages = [
-      if (user.isAccountant)
-        const AccountantDashboardScreen()
-      else
-        _buildOverviewTab(context, user),
+    final isStaff = user.isAdmin || user.isLawyer || user.isAccountant;
+
+    // Staff Views list matching Web Sidebar items
+    final List<Widget> staffPages = [
+      _buildOverviewTab(context, user),           // 0. Overview
+      const CasesTitleListScreen(),               // 1. Cases
+      const AccountantDashboardScreen(),           // 2. Accountant Portal
+      const CasesListScreen(),                     // 3. MIDLEX CASE DIRECTORY
+      _buildUserDirectoryView('CLIENT'),           // 4. Clients
+      _buildUserDirectoryView('LAWYER'),           // 5. Lawyers
+      _buildUserDirectoryView('ADMIN'),            // 6. Admins
+      const TeamChatScreen(),                      // 7. Messages
+      const PaymentsScreen(),                      // 8. Payments
+      const InquiriesScreen(),                     // 9. Inquiries
+      const NotificationsScreen(),                 // 10. Notifications
+    ];
+
+    // Client Views (Clean 4 tabs)
+    final List<Widget> clientPages = [
+      _buildOverviewTab(context, user),
       const CasesListScreen(),
       const PaymentsScreen(),
-      if (user.isAccountant || user.isAdmin) const AccountantDashboardScreen() else const ScheduleScreen(),
-      if (user.isAdmin) const InquiriesScreen(),
+      const ScheduleScreen(),
+    ];
+
+    final staffTitles = [
+      'Overview',
+      'Cases',
+      'Accountant Portal',
+      'MIDLEX CASE DIRECTORY',
+      'Clients',
+      'Lawyers',
+      'Admins',
+      'Messages',
+      'Payments',
+      'Inquiries',
+      'Notifications',
     ];
 
     return Scaffold(
+      drawer: isStaff ? _buildStaffSidebar(context, user) : null,
       appBar: AppBar(
-        title: Text('${user.role} Dashboard'),
+        title: Text(isStaff ? staffTitles[_staffViewIndex < staffTitles.length ? _staffViewIndex : 0] : 'Client Dashboard'),
         actions: [
           IconButton(
             icon: Stack(
@@ -116,41 +149,114 @@ class _DashboardScreenState extends State<DashboardScreen> {
               dashboard.fetchNotifications();
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await auth.logout();
-              if (mounted) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                );
-              }
-            },
-          ),
         ],
       ),
-      body: pages[_currentIndex < pages.length ? _currentIndex : 0],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex < pages.length ? _currentIndex : 0,
-        selectedItemColor: AppTheme.primary,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        onTap: (index) => setState(() => _currentIndex = index),
-        items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Overview'),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.folder_special),
-            label: (user.isAdmin || user.isLawyer) ? 'MIDLEX CASE DIRECTORY' : 'Cases',
+      body: isStaff
+          ? staffPages[_staffViewIndex < staffPages.length ? _staffViewIndex : 0]
+          : clientPages[_clientIndex < clientPages.length ? _clientIndex : 0],
+      bottomNavigationBar: isStaff
+          ? null
+          : BottomNavigationBar(
+              currentIndex: _clientIndex < clientPages.length ? _clientIndex : 0,
+              selectedItemColor: AppTheme.primary,
+              unselectedItemColor: Colors.grey,
+              type: BottomNavigationBarType.fixed,
+              onTap: (index) => setState(() => _clientIndex = index),
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Overview'),
+                BottomNavigationBarItem(icon: Icon(Icons.folder), label: 'My Cases'),
+                BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payments'),
+                BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Schedule'),
+              ],
+            ),
+    );
+  }
+
+  // Sidebar Drawer matching Web Sidebar Menu exactly
+  Widget _buildStaffSidebar(BuildContext context, dynamic user) {
+    return Drawer(
+      child: Container(
+        color: const Color(0xFF1B4D2E), // Dark Green matching Web Sidebar
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            UserAccountsDrawerHeader(
+              decoration: const BoxDecoration(color: Color(0xFF0C2B18)),
+              accountName: Text(
+                user.name,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+              ),
+              accountEmail: Text(
+                '${user.role} • ${user.email}',
+                style: const TextStyle(color: AppTheme.secondary, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: AppTheme.secondary,
+                child: Text(
+                  user.name.substring(0, 1).toUpperCase(),
+                  style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+
+            _buildSidebarTile(0, 'Overview', Icons.home_outlined),
+            _buildSidebarTile(1, 'Cases', Icons.cases_outlined),
+            _buildSidebarTile(2, 'Accountant Portal', Icons.attach_money),
+            _buildSidebarTile(3, 'MIDLEX CASE DIRECTORY', Icons.insert_drive_file_outlined),
+            _buildSidebarTile(4, 'Clients', Icons.groups_outlined),
+            _buildSidebarTile(5, 'Lawyers', Icons.gavel_outlined),
+            _buildSidebarTile(6, 'Admins', Icons.person_outline),
+            _buildSidebarTile(7, 'Messages', Icons.chat_bubble_outline),
+            _buildSidebarTile(8, 'Payments', Icons.monetization_on_outlined),
+            _buildSidebarTile(9, 'Inquiries', Icons.chat_outlined),
+            _buildSidebarTile(10, 'Notifications', Icons.notifications_none_outlined),
+
+            const Divider(color: Colors.white24, height: 24),
+
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.redAccent),
+              title: const Text('Sign Out', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+              onTap: () async {
+                final auth = Provider.of<AuthProvider>(context, listen: false);
+                await auth.logout();
+                if (context.mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSidebarTile(int index, String title, IconData icon) {
+    final isSelected = _staffViewIndex == index;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+      decoration: BoxDecoration(
+        color: isSelected ? const Color(0xFFC69A59) : Colors.transparent, // Gold highlight for active item
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        leading: Icon(icon, color: isSelected ? Colors.white : Colors.white70, size: 20),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white70,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+            fontSize: 13,
           ),
-          const BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payments'),
-          if (user.isAccountant || user.isAdmin)
-            const BottomNavigationBarItem(icon: Icon(Icons.account_balance), label: 'Accountant')
-          else
-            const BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Schedule'),
-          if (user.isAdmin)
-            const BottomNavigationBarItem(icon: Icon(Icons.inbox), label: 'Inquiries'),
-        ],
+        ),
+        onTap: () {
+          setState(() {
+            _staffViewIndex = index;
+          });
+          Navigator.pop(context); // close drawer
+        },
       ),
     );
   }
@@ -243,7 +349,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         setState(() {
-                          _currentIndex = 1;
+                          _staffViewIndex = 3; // Open Case Directory
                         });
                       },
                       icon: const Icon(Icons.folder_open, size: 16, color: Colors.white),
@@ -301,7 +407,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textDark),
               ),
               TextButton(
-                onPressed: () => setState(() => _currentIndex = 1),
+                onPressed: () => setState(() => _staffViewIndex = 1),
                 child: const Text('View All', style: TextStyle(color: AppTheme.secondary)),
               ),
             ],
@@ -348,6 +454,138 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  // Directory View for Clients, Lawyers, or Admins
+  Widget _buildUserDirectoryView(String roleType) {
+    return _UserDirectoryListWidget(roleType: roleType);
+  }
+}
+
+class _UserDirectoryListWidget extends StatefulWidget {
+  final String roleType; // CLIENT, LAWYER, ADMIN
+  const _UserDirectoryListWidget({required this.roleType});
+
+  @override
+  State<_UserDirectoryListWidget> createState() => _UserDirectoryListWidgetState();
+}
+
+class _UserDirectoryListWidgetState extends State<_UserDirectoryListWidget> {
+  List<dynamic> _users = [];
+  bool _isLoading = true;
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsers();
+  }
+
+  Future<void> _fetchUsers() async {
+    setState(() => _isLoading = true);
+    try {
+      String endpoint = ApiConfig.clients;
+      if (widget.roleType == 'LAWYER') endpoint = ApiConfig.lawyers;
+      if (widget.roleType == 'ADMIN') endpoint = ApiConfig.admins;
+
+      final res = await ApiService.get(endpoint);
+      if (res is List && mounted) {
+        setState(() => _users = res);
+      }
+    } catch (e) {
+      debugPrint('Error fetching ${widget.roleType} users: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title = widget.roleType == 'CLIENT'
+        ? 'Clients Directory'
+        : widget.roleType == 'LAWYER'
+            ? 'Lawyers & Legal Staff'
+            : 'Super Admins';
+
+    final filtered = _users.where((u) {
+      if (_searchQuery.trim().isEmpty) return true;
+      final q = _searchQuery.toLowerCase();
+      final name = (u['name'] ?? '').toString().toLowerCase();
+      final email = (u['email'] ?? '').toString().toLowerCase();
+      final phone = (u['phone'] ?? u['secondaryPhone'] ?? '').toString().toLowerCase();
+      return name.contains(q) || email.contains(q) || phone.contains(q);
+    }).toList();
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          color: Colors.white,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+              const SizedBox(height: 10),
+              TextField(
+                onChanged: (v) => setState(() => _searchQuery = v),
+                decoration: InputDecoration(
+                  hintText: 'Search $title by name, email, phone...',
+                  prefixIcon: const Icon(Icons.search, color: AppTheme.secondary),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : filtered.isEmpty
+                  ? Center(
+                      child: Text('No ${widget.roleType.toLowerCase()} records found.'),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, idx) {
+                        final userItem = filtered[idx];
+                        final name = userItem['name'] ?? 'N/A';
+                        final email = userItem['email'] ?? 'N/A';
+                        final phone = [userItem['phone'], userItem['secondaryPhone']].where((p) => p != null && p.toString().isNotEmpty).join(', ');
+
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(16),
+                            leading: CircleAvatar(
+                              backgroundColor: AppTheme.primary,
+                              child: Text(
+                                name.substring(0, 1).toUpperCase(),
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.primary)),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 4),
+                                Text('✉️ $email', style: const TextStyle(fontSize: 12, color: AppTheme.textDark)),
+                                if (phone.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Text('📞 $phone', style: const TextStyle(fontSize: 12, color: AppTheme.secondary, fontWeight: FontWeight.bold)),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
     );
   }
 }
