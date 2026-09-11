@@ -823,8 +823,8 @@ export default function CasesPage() {
 
       {/* Full Page Dedicated Team Directory Register */}
       {activeTeamDirectoryModal && (
-        <div className="fixed inset-0 bg-[#f8fafc] z-50 overflow-y-auto p-4 md:p-10 space-y-8 animate-in fade-in duration-200">
-          <div className="max-w-7xl mx-auto space-y-8 pb-20">
+        <div className="fixed inset-0 bg-[#f8fafc] z-50 overflow-y-auto p-4 md:p-8 lg:p-10 space-y-8 animate-in fade-in duration-200">
+          <div className="w-full max-w-[98%] mx-auto space-y-8 pb-20">
             {/* Top Navigation & Header Bar */}
             <div className="bg-white rounded-[32px] p-6 md:p-8 border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex items-center gap-4">
