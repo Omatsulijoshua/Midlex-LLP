@@ -28,13 +28,29 @@
   --font-mono: var(--font-geist-mono);
 }
 
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
 html, body {
   color-scheme: light !important;
   scroll-behavior: smooth;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  overflow-x: hidden;
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  width: 100% !important;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* Fix mobile Safari & Chrome auto-zooming on inputs */
+@media (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* Forced 100% solid pitch black text for all inputs & forms across all devices, themes & dark modes */
@@ -82,7 +98,8 @@ input:-webkit-autofill:active {
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {

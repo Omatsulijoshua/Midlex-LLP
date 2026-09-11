@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -53,7 +53,11 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport = {
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   themeColor: "#ffffff",
   colorScheme: "light",
 };
@@ -66,16 +70,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased light`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased light w-full max-w-full overflow-x-hidden`}
       style={{ colorScheme: "light" }}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta name="color-scheme" content="light" />
         <meta name="supported-color-schemes" content="light" />
       </head>
-      <body className="min-h-full flex flex-col bg-white text-slate-900" style={{ colorScheme: "light" }} suppressHydrationWarning>
+      <body className="min-h-full flex flex-col bg-white text-slate-900 w-full max-w-full overflow-x-hidden relative" style={{ colorScheme: "light" }} suppressHydrationWarning>
         <AuthProvider>
           <PageTransition>
             {children}

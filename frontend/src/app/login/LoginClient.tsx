@@ -46,7 +46,7 @@ export default function LoginClient() {
   }
 
   return (
-    <main className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4">
+    <main className="min-h-screen bg-[#fafafa] flex items-center justify-center p-3 sm:p-6 py-6 sm:py-12 w-full max-w-full overflow-x-hidden relative">
       <style dangerouslySetInnerHTML={{ __html: `
         input,
         input:focus,
@@ -65,21 +65,21 @@ export default function LoginClient() {
         }
       ` }} />
 
-      <div className="absolute inset-0 z-0 opacity-5">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-primary rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute inset-0 z-0 opacity-5 overflow-hidden">
+        <div className="absolute top-0 left-0 w-72 sm:w-96 h-72 sm:h-96 bg-primary rounded-full blur-[100px] sm:blur-[120px] -translate-x-1/2 -translate-y-1/2" />
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white rounded-[32px] shadow-2xl p-10 relative z-10 border border-gray-100"
+        className="w-full max-w-md bg-white rounded-3xl sm:rounded-[32px] shadow-2xl p-6 sm:p-10 relative z-10 border border-gray-100 max-w-full"
       >
-        <div className="flex flex-col items-center mb-10">
-          <Link href="/" className="mb-6">
-            <img src="/logo.jpg" alt="Midlex LLP" className="h-28 w-auto object-contain" />
+        <div className="flex flex-col items-center mb-6 sm:mb-10">
+          <Link href="/" className="mb-4 sm:mb-6">
+            <img src="/logo.jpg" alt="Midlex LLP" className="h-20 sm:h-28 w-auto object-contain" />
           </Link>
-          <h1 className="text-3xl font-bold text-primary mb-2">Welcome Back</h1>
-          <p className="text-gray-500 text-center">Enter your credentials to access your Midlex dashboard</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-2">Welcome Back</h1>
+          <p className="text-gray-500 text-center text-xs sm:text-sm">Enter your credentials to access your Midlex dashboard</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
