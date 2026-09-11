@@ -36,13 +36,26 @@ export class LawyerService {
   }
 
   async getMyCases(lawyerId: string) {
-    return this.prisma.case.findMany({
-      where: { lawyerId },
+    const lawyerUser = await this.prisma.user.findUnique({ where: { id: lawyerId } });
+    const team = lawyerUser?.litigationTeam;
+
+    const allCases = await this.prisma.case.findMany({
       include: {
-        client: { select: { name: true } },
+        client: { select: { name: true, phone: true, email: true } },
+        lawyer: { select: { name: true } },
       },
       orderBy: { updatedAt: 'desc' },
     });
+
+    if (!team) {
+      return allCases.filter((c: any) => c.lawyerId === lawyerId);
+    }
+
+    return allCases.filter(
+      (c: any) =>
+        c.lawyerId === lawyerId ||
+        (c.litigationTeam && c.litigationTeam.trim().toUpperCase() === team.trim().toUpperCase()),
+    );
   }
 
   async getUpcomingHearings(lawyerId: string) {
