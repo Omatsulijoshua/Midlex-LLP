@@ -16,15 +16,20 @@ class DirectoryService {
     'HIGH COURT BENIN CITY',
     'HIGH COURT OKADA',
     'HIGH COURT EKIADOLOR',
+    'EKIADOLOR MAGISTRATE COURT',
     'FEDERAL HIGH COURT',
     'HIGH COURT',
     'MAGISTRATE COURT OGBESON',
+    'MAGISTRATE COURT OREDO',
+    'MAGISTRATE COURT EGOR',
     'HIGH COURT WARRI',
     'HIGH COURT ABUDU',
     'FEDERAL HIGH COURT BENIN',
     'HIGH COURT BENIN',
+    'APPEAL COURT BENIN CITY',
     'NATIONAL INDUSTRIAL COURT BENIN CITY',
     'AREA CUSTOMARY COURT EHOR',
+    'CUSTOMARY COURT URHONIGBE',
     'HIGH COURT EHOR',
   ];
 
@@ -64,6 +69,17 @@ class DirectoryService {
     if (list == null || list.isEmpty) {
       await prefs.setStringList(_courtsKey, defaultCourts);
       return List.from(defaultCourts);
+    }
+    // Merge new default courts if not present
+    bool updated = false;
+    for (final dc in defaultCourts) {
+      if (!list.contains(dc)) {
+        list.add(dc);
+        updated = true;
+      }
+    }
+    if (updated) {
+      await prefs.setStringList(_courtsKey, list);
     }
     return list;
   }

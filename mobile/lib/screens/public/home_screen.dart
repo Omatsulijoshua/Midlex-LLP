@@ -3,7 +3,6 @@ import '../../config/theme.dart';
 import '../../widgets/custom_app_bar.dart';
 import '../../widgets/custom_drawer.dart';
 import 'practice_areas_screen.dart';
-import 'team_screen.dart';
 import 'contact_screen.dart';
 import 'book_consultation_screen.dart';
 

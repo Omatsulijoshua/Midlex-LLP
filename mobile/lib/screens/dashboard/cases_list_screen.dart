@@ -204,6 +204,28 @@ class _CasesListScreenState extends State<CasesListScreen> {
                     'Manage jurisdiction courts available for litigation matters.',
                     style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
                   ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline, size: 14, color: Colors.blue),
+                        SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'Notice: If your court is not available in the directory list below, enter the name and click "Add" to register a new court.',
+                            style: TextStyle(fontSize: 11, color: Colors.blue),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -371,6 +393,28 @@ class _CasesListScreenState extends State<CasesListScreen> {
                         setDialogState(() => selectedCourt = val);
                       }
                     },
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline, size: 14, color: Colors.blue),
+                        SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'Notice: If your court is not available in the dropdown, click "Courts Directory" above to register a new court.',
+                            style: TextStyle(fontSize: 10, color: Colors.blue),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 14),
 

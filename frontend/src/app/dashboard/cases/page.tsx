@@ -28,15 +28,20 @@ const defaultCourts = [
   'HIGH COURT BENIN CITY',
   'HIGH COURT OKADA',
   'HIGH COURT EKIADOLOR',
+  'EKIADOLOR MAGISTRATE COURT',
   'FEDERAL HIGH COURT',
   'HIGH COURT',
   'MAGISTRATE COURT OGBESON',
+  'MAGISTRATE COURT OREDO',
+  'MAGISTRATE COURT EGOR',
   'HIGH COURT WARRI',
   'HIGH COURT ABUDU',
   'FEDERAL HIGH COURT BENIN',
   'HIGH COURT BENIN',
+  'APPEAL COURT BENIN CITY',
   'NATIONAL INDUSTRIAL COURT BENIN CITY',
   'AREA CUSTOMARY COURT EHOR',
+  'CUSTOMARY COURT URHONIGBE',
   'HIGH COURT EHOR',
 ];
 
@@ -381,6 +386,11 @@ export default function CasesPage() {
                 <p className="text-xs text-gray-400">Add or remove legal jurisdiction courts</p>
               </div>
               <button onClick={() => setIsCourtsModalOpen(false)} className="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>            <div className="p-2.5 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-2">
+              <span className="text-blue-500 text-sm">ℹ️</span>
+              <p className="text-xs text-blue-700 leading-snug">
+                Notice: If your court is not available in the directory list below, enter the name and click "Add Court" to register a new court to the system.
+              </p>
             </div>
 
             <div className="flex gap-2">
@@ -460,6 +470,12 @@ export default function CasesPage() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
+                <div className="mt-1.5 p-2 bg-blue-50 border border-blue-100 rounded-lg flex items-start gap-2">
+                  <span className="text-blue-500 text-xs">ℹ️</span>
+                  <p className="text-[11px] text-blue-700 leading-tight">
+                    Notice: If your court is not available in the dropdown, click <span className="font-bold">"Courts Directory"</span> at the top right to register a new court.
+                  </p>
+                </div>
               </div>
 
               <div>
