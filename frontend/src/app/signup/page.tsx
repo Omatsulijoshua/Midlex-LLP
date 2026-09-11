@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Gavel, Mail, Lock, User, ArrowRight, Phone, MapPin, Building, FileText, FileEdit } from "lucide-react";
@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 
 export default function SignupPage() {
+  const [mounted, setMounted] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,6 +23,10 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +56,10 @@ export default function SignupPage() {
       setIsSubmitting(false);
     }
   };
+
+  if (!mounted) {
+    return <main className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4" />;
+  }
 
   return (
     <main suppressHydrationWarning className="min-h-screen bg-[#fafafa] flex items-center justify-center p-3 sm:p-6 py-6 sm:py-12 w-full max-w-full overflow-x-hidden relative">
@@ -91,6 +100,7 @@ export default function SignupPage() {
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                   <input
+                    suppressHydrationWarning
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -107,6 +117,7 @@ export default function SignupPage() {
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                   <input
+                    suppressHydrationWarning
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -125,6 +136,7 @@ export default function SignupPage() {
                 <div className="relative">
                   <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                   <input
+                    suppressHydrationWarning
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
@@ -141,6 +153,7 @@ export default function SignupPage() {
                 <div className="relative">
                   <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary" size={18} />
                   <input
+                    suppressHydrationWarning
                     type="tel"
                     value={formData.secondaryPhone}
                     onChange={(e) => setFormData({...formData, secondaryPhone: e.target.value})}
@@ -158,6 +171,7 @@ export default function SignupPage() {
                 <div className="relative">
                   <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                   <input
+                    suppressHydrationWarning
                     type="text"
                     value={formData.city}
                     onChange={(e) => setFormData({...formData, city: e.target.value})}
@@ -174,6 +188,7 @@ export default function SignupPage() {
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                   <input
+                    suppressHydrationWarning
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
@@ -191,6 +206,7 @@ export default function SignupPage() {
               <div className="relative">
                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
+                  suppressHydrationWarning
                   type="text"
                   value={formData.address}
                   onChange={(e) => setFormData({...formData, address: e.target.value})}
@@ -214,6 +230,7 @@ export default function SignupPage() {
               <div className="relative">
                 <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary" size={18} />
                 <input
+                  suppressHydrationWarning
                   type="text"
                   value={formData.caseTitle}
                   onChange={(e) => setFormData({...formData, caseTitle: e.target.value})}
@@ -230,6 +247,7 @@ export default function SignupPage() {
               <div className="relative">
                 <FileEdit className="absolute left-4 top-4 text-secondary" size={18} />
                 <textarea
+                  suppressHydrationWarning
                   rows={4}
                   value={formData.caseDescription}
                   onChange={(e) => setFormData({...formData, caseDescription: e.target.value})}
@@ -255,7 +273,7 @@ export default function SignupPage() {
 
         <div className="mt-8 text-center text-gray-600 text-sm">
           Already registered?{" "}
-          <Link href="/login" className="text-secondary font-bold hover:underline">Sign In Here</Link>
+          <Link href="/signup" className="text-secondary font-bold hover:underline">Sign In Here</Link>
         </div>
       </motion.div>
     </main>
