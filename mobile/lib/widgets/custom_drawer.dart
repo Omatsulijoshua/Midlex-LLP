@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../providers/auth_provider.dart';
-import '../screens/public/home_screen.dart';
 import '../screens/public/about_screen.dart';
 import '../screens/public/practice_areas_screen.dart';
 import '../screens/public/team_screen.dart';
@@ -59,7 +58,7 @@ class CustomDrawer extends StatelessWidget {
             title: const Text('Home'),
             onTap: () => Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
+              MaterialPageRoute(builder: (context) => auth.isAuthenticated ? const DashboardScreen() : const LoginScreen()),
             ),
           ),
           ListTile(
@@ -145,7 +144,7 @@ class CustomDrawer extends StatelessWidget {
                 if (context.mounted) {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
                   );
                 }
               },

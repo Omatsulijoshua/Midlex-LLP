@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../config/theme.dart';
 import '../../services/storage_service.dart';
 import '../auth/login_screen.dart';
-import '../public/home_screen.dart';
 
 class OnboardingPageModel {
   final String badge;
@@ -276,10 +275,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: () => _completeOnboarding(const HomeScreen()),
-                            icon: const Icon(Icons.explore_outlined, color: Colors.white),
+                            onPressed: () => _completeOnboarding(const LoginScreen()),
+                            icon: const Icon(Icons.login, color: Colors.white),
                             label: const Text(
-                              'Explore App as Guest',
+                              'Proceed to Sign In',
                               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                             ),
                             style: OutlinedButton.styleFrom(

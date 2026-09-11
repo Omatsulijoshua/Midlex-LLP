@@ -10,6 +10,7 @@ import 'payments_screen.dart';
 import 'schedule_screen.dart';
 import 'inquiries_screen.dart';
 import 'notifications_screen.dart';
+import '../auth/login_screen.dart';
 import '../public/home_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -50,10 +51,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
                   );
                 },
-                child: const Text('Go Home'),
+                child: const Text('Go to Sign In'),
               ),
             ],
           ),
