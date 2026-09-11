@@ -24,6 +24,18 @@ class StorageService {
     return prefs.getString(userKey);
   }
 
+  static const String onboardingKey = 'midlex_onboarding_seen';
+
+  static Future<void> setHasSeenOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(onboardingKey, true);
+  }
+
+  static Future<bool> hasSeenOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(onboardingKey) ?? false;
+  }
+
   static Future<void> clearAuth() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(tokenKey);

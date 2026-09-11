@@ -9,6 +9,7 @@ import '../screens/public/team_screen.dart';
 import '../screens/public/insights_screen.dart';
 import '../screens/public/contact_screen.dart';
 import '../screens/public/book_consultation_screen.dart';
+import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 
@@ -97,6 +98,14 @@ class CustomDrawer extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const ContactScreen()),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.slideshow_outlined, color: AppTheme.primary),
+            title: const Text('App Tour & Overview'),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const OnboardingScreen()),
             ),
           ),
           const Divider(),
