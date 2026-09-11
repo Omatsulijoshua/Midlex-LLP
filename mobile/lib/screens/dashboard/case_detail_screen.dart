@@ -577,9 +577,9 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                     ),
                     const Divider(),
                     ListTile(
-                      leading: const Icon(Icons.gavel, color: AppTheme.secondary),
-                      title: const Text('Assigned Lawyer', style: TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text(widget.caseModel.lawyer?.name ?? 'Unassigned / Pending lawyer assignment'),
+                      leading: const Icon(Icons.shield_outlined, color: AppTheme.secondary),
+                      title: const Text('Assigned Litigation Team', style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(widget.caseModel.litigationTeam),
                     ),
                   ],
                 ),

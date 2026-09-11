@@ -178,29 +178,88 @@ export class CasesService {
     return updated;
   }
 
-  async assignLawyer(caseId: string, lawyerId: string): Promise<Case> {
+  async assignTeam(caseId: string, data: { litigationTeam?: string; lawyerId?: string }): Promise<Case> {
+    const teamName = data.litigationTeam?.trim() || '';
     const updated = await this.prisma.case.update({
       where: { id: caseId },
-      data: { lawyerId },
+      data: {
+        ...(teamName ? { litigationTeam: teamName } : {}),
+        ...(data.lawyerId ? { lawyerId: data.lawyerId } : {}),
+      },
       include: { client: true, lawyer: true },
     });
 
-    await this.notificationsService.create({
-      recipientId: lawyerId,
-      title: 'New client assigned',
-      message: `${updated.client?.name || 'A client'} has been allocated to you for ${updated.title}.`,
-      link: `/dashboard/cases/${caseId}`,
-      type: 'CLIENT_ASSIGNED',
-    });
+    // Notify lawyers belonging to this litigation team
+    if (teamName) {
+      try {
+        const teamLawyers = await this.prisma.user.findMany({
+          where: { litigationTeam: teamName, role: 'LAWYER' },
+        });
+
+        await Promise.all(
+          teamLawyers.map((lawyer: any) =>
+            this.notificationsService.create({
+              recipientId: lawyer.id,
+              title: `New Case Allocated to ${teamName}`,
+              message: `Case "${updated.title}" has been allocated to your Litigation Team (${teamName}).`,
+              link: `/dashboard/cases/${caseId}`,
+              type: 'CLIENT_ASSIGNED',
+            }),
+          ),
+        );
+      } catch (e) {
+        console.warn('[cases] Failed to notify team lawyers:', e);
+      }
+    } else if (data.lawyerId) {
+      await this.notificationsService.create({
+        recipientId: data.lawyerId,
+        title: 'New case assigned',
+        message: `${updated.client?.name || 'A client'} has been allocated to you for ${updated.title}.`,
+        link: `/dashboard/cases/${caseId}`,
+        type: 'CLIENT_ASSIGNED',
+      });
+    }
+
+    // Notify client of team assignment
+    if (updated.clientId) {
+      try {
+        await this.notificationsService.create({
+          recipientId: updated.clientId,
+          title: `Litigation Team Assigned`,
+          message: `Your case "${updated.title}" has been allocated to Midlex Litigation Team: ${teamName || updated.lawyer?.name || 'Legal Counsel'}.`,
+          link: `/dashboard/cases/${caseId}`,
+          type: 'TEAM_ASSIGNED',
+        });
+      } catch (e) {
+        console.warn('[cases] Failed to notify client of team assignment:', e);
+      }
+    }
 
     return updated;
   }
 
+  async assignLawyer(caseId: string, lawyerId: string): Promise<Case> {
+    return this.assignTeam(caseId, { lawyerId });
+  }
+
   async findByLawyer(lawyerId: string): Promise<Case[]> {
-    return this.prisma.case.findMany({
-      where: { lawyerId },
-      include: { client: true },
+    const lawyerUser = await this.prisma.user.findUnique({ where: { id: lawyerId } });
+    const team = lawyerUser?.litigationTeam;
+
+    const allCases = await this.prisma.case.findMany({
+      include: { client: true, lawyer: true },
+      orderBy: { createdAt: 'desc' },
     });
+
+    if (!team) {
+      return allCases.filter((c: any) => c.lawyerId === lawyerId);
+    }
+
+    return allCases.filter(
+      (c: any) =>
+        c.lawyerId === lawyerId ||
+        (c.litigationTeam && c.litigationTeam.trim().toUpperCase() === team.trim().toUpperCase()),
+    );
   }
 
   async findByClient(clientId: string): Promise<Case[]> {
@@ -227,9 +286,10 @@ export class CasesService {
       title: caseData.title,
       description: caseData.description,
       status: caseData.status,
+      litigationTeam: (caseData as any).litigationTeam,
       createdAt: caseData.createdAt,
       clientName: (caseData as any).client?.name || 'Client',
-      lawyerName: (caseData as any).lawyer?.name || 'Midlex Legal Counsel',
+      lawyerName: (caseData as any).litigationTeam ? `Litigation Team: ${(caseData as any).litigationTeam}` : (caseData as any).lawyer?.name || 'Midlex Legal Counsel',
       documents: caseData.documents || [],
     };
   }

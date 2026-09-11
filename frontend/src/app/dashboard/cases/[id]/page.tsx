@@ -116,7 +116,7 @@ export default function CaseDetailsPage({ params }: { params: Promise<{ id: stri
                onClick={() => setIsAssignModalOpen(true)}
                className="px-8 py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all text-sm"
              >
-               Assign Lawyer
+               Assign Litigation Team
              </button>
           )}
           {user?.role === 'LAWYER' && (
@@ -166,9 +166,13 @@ export default function CaseDetailsPage({ params }: { params: Promise<{ id: stri
                 )}
               </div>
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Lead Counsel</p>
-                <h4 className="font-bold text-primary">{caseData.lawyer?.name || 'Unassigned'}</h4>
-                <p className="text-sm text-gray-500">{caseData.lawyer ? 'Barrister & Solicitor' : 'Awaiting Assignment'}</p>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Assigned Litigation Team</p>
+                <h4 className="font-bold text-primary">
+                  {(caseData as any).litigationTeam || caseData.lawyer?.name || 'Unassigned'}
+                </h4>
+                <p className="text-sm text-gray-500">
+                  {(caseData as any).litigationTeam ? 'Midlex Senior Litigation Panel' : caseData.lawyer ? 'Barrister & Solicitor' : 'Awaiting Team Allocation'}
+                </p>
               </div>
             </div>
           </motion.div>

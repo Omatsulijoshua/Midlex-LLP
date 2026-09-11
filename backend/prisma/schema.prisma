@@ -81,6 +81,8 @@ model Case {
   adminId     String?
   admin       User?      @relation("AdminCases", fields: [adminId], references: [id])
 
+  litigationTeam String? // Assigned Litigation Team (e.g. TEAM ANCHOR, TITAN LITIGATION)
+
   // Content
   documents   Document[]
   messages    Message[]

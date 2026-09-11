@@ -93,8 +93,11 @@ export class CasesController {
   @Patch(':id/assign')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  async assign(@Param('id') id: string, @Body('lawyerId') lawyerId: string) {
-    return this.casesService.assignLawyer(id, lawyerId);
+  async assign(
+    @Param('id') id: string,
+    @Body() body: { lawyerId?: string; litigationTeam?: string },
+  ) {
+    return this.casesService.assignTeam(id, body);
   }
 
   @Get(':id/timeline')
