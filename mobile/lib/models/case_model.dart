@@ -20,6 +20,8 @@ class CaseModel {
   final String? customSuitNumber;
   final String? customCourt;
   final String? customLitigationTeam;
+  final String? stage;
+  final String? pendingTask;
 
   CaseModel({
     required this.id,
@@ -37,6 +39,8 @@ class CaseModel {
     this.customSuitNumber,
     this.customCourt,
     this.customLitigationTeam,
+    this.stage,
+    this.pendingTask,
   });
 
   String get suitNumber {
@@ -92,6 +96,8 @@ class CaseModel {
       customSuitNumber: json['suitNumber'] ?? json['suitNo'],
       customCourt: json['court'] ?? json['courtName'],
       customLitigationTeam: json['litigationTeam'] ?? json['team'],
+      stage: json['stage'],
+      pendingTask: json['pendingTask'],
     );
   }
 }

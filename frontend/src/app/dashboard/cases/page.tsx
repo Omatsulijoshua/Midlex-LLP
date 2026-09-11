@@ -171,26 +171,28 @@ export default function CasesPage() {
 
   const handleSaveCaseAssignment = async () => {
     if (!editingCase) return;
-    if (editTitle.trim() && editTitle.trim() !== editingCase.title) {
-      try {
-        await apiFetch(`/cases/${editingCase.id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ title: editTitle.trim() }),
-        });
-        setCases(prev => prev.map(c => c.id === editingCase.id ? { ...c, title: editTitle.trim() } : c));
-      } catch (err) {
-        console.error('Failed to update title:', err);
-      }
+    const payload = {
+      title: editTitle.trim() || editingCase.title,
+      suitNumber: editSuitNo.trim(),
+      court: editCourt,
+      litigationTeam: editTeam,
+      stage: editStage.trim() || 'PLEADINGS / PRE-TRIAL',
+      pendingTask: editPendingTask.trim() || 'Filing of Written Address & Witness Statements',
+    };
+
+    try {
+      const updatedCase = await apiFetch(`/cases/${editingCase.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      });
+      setCases(prev => prev.map(c => c.id === editingCase.id ? { ...c, ...updatedCase } : c));
+    } catch (err) {
+      console.error('Failed to update case in backend:', err);
     }
+
     const updatedOverrides = {
       ...overrides,
-      [editingCase.id]: {
-        suitNumber: editSuitNo.trim(),
-        court: editCourt,
-        litigationTeam: editTeam,
-        stage: editStage.trim() || 'PLEADINGS / PRE-TRIAL',
-        pendingTask: editPendingTask.trim() || 'Filing of Written Address & Witness Statements',
-      }
+      [editingCase.id]: payload,
     };
     setOverrides(updatedOverrides);
     if (typeof window !== 'undefined') {

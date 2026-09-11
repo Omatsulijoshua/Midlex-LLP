@@ -836,28 +836,35 @@ class _CasesListScreenState extends State<CasesListScreen> {
               ElevatedButton(
                 onPressed: () async {
                   final newTitle = titleController.text.trim();
-                  if (newTitle.isNotEmpty && newTitle != caseModel.title) {
-                    try {
-                      await Provider.of<DashboardProvider>(context, listen: false).updateCaseTitle(
-                        caseId: caseModel.id,
-                        title: newTitle,
-                      );
-                    } catch (e) {
-                      debugPrint('Error updating title: $e');
-                    }
+                  final suitNo = suitController.text.trim();
+                  final task = taskController.text.trim();
+
+                  try {
+                    await Provider.of<DashboardProvider>(context, listen: false).updateCaseDetails(
+                      caseId: caseModel.id,
+                      title: newTitle.isNotEmpty ? newTitle : null,
+                      suitNumber: suitNo,
+                      court: selectedCourt,
+                      litigationTeam: selectedTeam,
+                      stage: selectedStage,
+                      pendingTask: task,
+                    );
+                  } catch (e) {
+                    debugPrint('Error updating case details on backend API: $e');
                   }
+
                   await DirectoryService.saveCaseAssignment(
                     caseModel.id,
-                    suitNumber: suitController.text.trim(),
+                    suitNumber: suitNo,
                     court: selectedCourt,
                     litigationTeam: selectedTeam,
                   );
                   _caseOverrides[caseModel.id] = {
-                    'suitNumber': suitController.text.trim(),
+                    'suitNumber': suitNo,
                     'court': selectedCourt,
                     'litigationTeam': selectedTeam,
                     'stage': selectedStage,
-                    'pendingTask': taskController.text.trim(),
+                    'pendingTask': task,
                   };
                   setState(() {});
                   if (ctx.mounted) Navigator.pop(ctx);

@@ -171,13 +171,19 @@ export class CasesService {
     });
   }
 
-  async updateCase(id: string, data: { title?: string; description?: string }): Promise<Case> {
+  async updateCase(id: string, data: { title?: string; description?: string; suitNumber?: string; court?: string; litigationTeam?: string; stage?: string; pendingTask?: string }): Promise<Case> {
     const updated = await this.prisma.case.update({
       where: { id },
       data: {
-        ...(data.title ? { title: data.title.trim() } : {}),
+        ...(data.title !== undefined ? { title: data.title.trim() } : {}),
         ...(data.description !== undefined ? { description: data.description.trim() } : {}),
+        ...(data.suitNumber !== undefined ? { suitNumber: data.suitNumber.trim() } : {}),
+        ...(data.court !== undefined ? { court: data.court.trim() } : {}),
+        ...(data.litigationTeam !== undefined ? { litigationTeam: data.litigationTeam.trim() } : {}),
+        ...(data.stage !== undefined ? { stage: data.stage.trim() } : {}),
+        ...(data.pendingTask !== undefined ? { pendingTask: data.pendingTask.trim() } : {}),
       },
+      include: { client: true, lawyer: true, timeline: true },
     });
 
     // Send notification to client

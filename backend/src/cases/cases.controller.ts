@@ -85,7 +85,7 @@ export class CasesController {
   @Roles(Role.ADMIN, Role.LAWYER)
   async updateCase(
     @Param('id') id: string,
-    @Body() body: { title?: string; description?: string },
+    @Body() body: { title?: string; description?: string; suitNumber?: string; court?: string; litigationTeam?: string; stage?: string; pendingTask?: string },
   ) {
     return this.casesService.updateCase(id, body);
   }

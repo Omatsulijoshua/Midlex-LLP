@@ -85,6 +85,26 @@ class DashboardProvider extends ChangeNotifier {
     await fetchDashboardData();
   }
 
+  Future<void> updateCaseDetails({
+    required String caseId,
+    String? title,
+    String? suitNumber,
+    String? court,
+    String? litigationTeam,
+    String? stage,
+    String? pendingTask,
+  }) async {
+    await ApiService.patch('${ApiConfig.cases}/$caseId', {
+      if (title != null && title.isNotEmpty) 'title': title,
+      if (suitNumber != null) 'suitNumber': suitNumber,
+      if (court != null) 'court': court,
+      if (litigationTeam != null) 'litigationTeam': litigationTeam,
+      if (stage != null) 'stage': stage,
+      if (pendingTask != null) 'pendingTask': pendingTask,
+    });
+    await fetchDashboardData();
+  }
+
   Future<void> createInquiry({
     required String name,
     required String email,
