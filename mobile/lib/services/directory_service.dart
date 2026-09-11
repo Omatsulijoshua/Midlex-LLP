@@ -42,8 +42,8 @@ class DirectoryService {
     final prefs = await SharedPreferences.getInstance();
     try {
       final res = await ApiService.get(ApiConfig.directoryTeams);
-      if (res is List) {
-        final teams = res.map((e) => e.toString()).toList();
+      if (res is List && res.isNotEmpty) {
+        final teams = res.map((e) => e.toString().trim().toUpperCase()).toSet().toList();
         await prefs.setStringList(_teamsKey, teams);
         return teams;
       }
@@ -57,31 +57,45 @@ class DirectoryService {
     return list;
   }
 
-  static Future<void> addTeam(String teamName) async {
+  static Future<List<String>> addTeam(String teamName) async {
     final clean = teamName.trim().toUpperCase();
-    if (clean.isEmpty) return;
+    if (clean.isEmpty) return await getTeams();
+    final prefs = await SharedPreferences.getInstance();
+
     try {
-      await ApiService.post(ApiConfig.directoryTeams, {'name': clean});
+      final res = await ApiService.post(ApiConfig.directoryTeams, {'name': clean});
+      if (res is List && res.isNotEmpty) {
+        final teams = res.map((e) => e.toString().trim().toUpperCase()).toSet().toList();
+        await prefs.setStringList(_teamsKey, teams);
+        return teams;
+      }
     } catch (_) {}
 
     final teams = await getTeams();
     if (!teams.contains(clean)) {
       teams.add(clean);
-      final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(_teamsKey, teams);
     }
+    return teams;
   }
 
-  static Future<void> removeTeam(String teamName) async {
+  static Future<List<String>> removeTeam(String teamName) async {
     final clean = teamName.trim().toUpperCase();
+    final prefs = await SharedPreferences.getInstance();
+
     try {
-      await ApiService.delete('${ApiConfig.directoryTeams}/${Uri.encodeComponent(clean)}');
+      final res = await ApiService.delete('${ApiConfig.directoryTeams}/${Uri.encodeComponent(clean)}');
+      if (res is List && res.isNotEmpty) {
+        final teams = res.map((e) => e.toString().trim().toUpperCase()).toSet().toList();
+        await prefs.setStringList(_teamsKey, teams);
+        return teams;
+      }
     } catch (_) {}
 
     final teams = await getTeams();
     teams.removeWhere((t) => t.toUpperCase() == clean);
-    final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_teamsKey, teams);
+    return teams;
   }
 
   // Courts Management (Synced with Backend DB)
@@ -89,8 +103,8 @@ class DirectoryService {
     final prefs = await SharedPreferences.getInstance();
     try {
       final res = await ApiService.get(ApiConfig.directoryCourts);
-      if (res is List) {
-        final courts = res.map((e) => e.toString()).toList();
+      if (res is List && res.isNotEmpty) {
+        final courts = res.map((e) => e.toString().trim().toUpperCase()).toSet().toList();
         await prefs.setStringList(_courtsKey, courts);
         return courts;
       }
@@ -101,45 +115,48 @@ class DirectoryService {
       await prefs.setStringList(_courtsKey, defaultCourts);
       return List.from(defaultCourts);
     }
-    // Merge new default courts if not present
-    bool updated = false;
-    for (final dc in defaultCourts) {
-      if (!list.contains(dc)) {
-        list.add(dc);
-        updated = true;
-      }
-    }
-    if (updated) {
-      await prefs.setStringList(_courtsKey, list);
-    }
     return list;
   }
 
-  static Future<void> addCourt(String courtName) async {
+  static Future<List<String>> addCourt(String courtName) async {
     final clean = courtName.trim().toUpperCase();
-    if (clean.isEmpty) return;
+    if (clean.isEmpty) return await getCourts();
+    final prefs = await SharedPreferences.getInstance();
+
     try {
-      await ApiService.post(ApiConfig.directoryCourts, {'name': clean});
+      final res = await ApiService.post(ApiConfig.directoryCourts, {'name': clean});
+      if (res is List && res.isNotEmpty) {
+        final courts = res.map((e) => e.toString().trim().toUpperCase()).toSet().toList();
+        await prefs.setStringList(_courtsKey, courts);
+        return courts;
+      }
     } catch (_) {}
 
     final courts = await getCourts();
     if (!courts.contains(clean)) {
       courts.add(clean);
-      final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(_courtsKey, courts);
     }
+    return courts;
   }
 
-  static Future<void> removeCourt(String courtName) async {
+  static Future<List<String>> removeCourt(String courtName) async {
     final clean = courtName.trim().toUpperCase();
+    final prefs = await SharedPreferences.getInstance();
+
     try {
-      await ApiService.delete('${ApiConfig.directoryCourts}/${Uri.encodeComponent(clean)}');
+      final res = await ApiService.delete('${ApiConfig.directoryCourts}/${Uri.encodeComponent(clean)}');
+      if (res is List && res.isNotEmpty) {
+        final courts = res.map((e) => e.toString().trim().toUpperCase()).toSet().toList();
+        await prefs.setStringList(_courtsKey, courts);
+        return courts;
+      }
     } catch (_) {}
 
     final courts = await getCourts();
     courts.removeWhere((c) => c.toUpperCase() == clean);
-    final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_courtsKey, courts);
+    return courts;
   }
 
   // Case Directory Custom Attributes (Suit No, Court, Litigation Team)

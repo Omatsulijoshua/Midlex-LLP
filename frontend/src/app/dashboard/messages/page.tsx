@@ -46,12 +46,23 @@ export default function MessagesPage() {
     };
     fetchCases();
 
-    if (typeof window !== 'undefined') {
-      const savedTeams = localStorage.getItem('midlex_teams');
-      if (savedTeams) {
-        try { setTeams(JSON.parse(savedTeams)); } catch (e) {}
-      }
-    }
+    apiFetch<string[]>('/directory/teams')
+      .then((backendTeams) => {
+        if (Array.isArray(backendTeams) && backendTeams.length > 0) {
+          setTeams(backendTeams);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('midlex_teams', JSON.stringify(backendTeams));
+          }
+        }
+      })
+      .catch(() => {
+        if (typeof window !== 'undefined') {
+          const savedTeams = localStorage.getItem('midlex_teams');
+          if (savedTeams) {
+            try { setTeams(JSON.parse(savedTeams)); } catch (e) {}
+          }
+        }
+      });
   }, []);
 
   useEffect(() => {

@@ -35,9 +35,16 @@ export default function AssignLawyerModal({
   const [customTeam, setCustomTeam] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [backendTeams, setBackendTeams] = useState<string[]>([]);
+
   useEffect(() => {
     if (isOpen) {
       apiFetch('/users/lawyers').then(setLawyers).catch(console.error);
+      apiFetch<string[]>('/directory/teams')
+        .then((t) => {
+          if (Array.isArray(t) && t.length > 0) setBackendTeams(t);
+        })
+        .catch(() => {});
     }
   }, [isOpen]);
 
@@ -62,6 +69,7 @@ export default function AssignLawyerModal({
   // Group lawyers by team
   const availableTeams = Array.from(
     new Set([
+      ...backendTeams,
       ...DEFAULT_TEAMS,
       ...lawyers.map((l) => (l.litigationTeam || '').trim().toUpperCase()).filter(Boolean),
     ])

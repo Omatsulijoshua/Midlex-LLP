@@ -140,10 +140,20 @@ export default function CasesPage() {
         method: 'POST',
         body: JSON.stringify({ name: clean }),
       });
-      if (Array.isArray(updated)) setTeams(updated);
-      else if (!teams.includes(clean)) setTeams([...teams, clean]);
+      if (Array.isArray(updated) && updated.length > 0) {
+        setTeams(updated);
+        localStorage.setItem('midlex_teams', JSON.stringify(updated));
+      } else if (!teams.includes(clean)) {
+        const next = [...teams, clean];
+        setTeams(next);
+        localStorage.setItem('midlex_teams', JSON.stringify(next));
+      }
     } catch (e) {
-      if (!teams.includes(clean)) setTeams([...teams, clean]);
+      if (!teams.includes(clean)) {
+        const next = [...teams, clean];
+        setTeams(next);
+        localStorage.setItem('midlex_teams', JSON.stringify(next));
+      }
     }
     setNewTeamInput('');
   };
@@ -153,10 +163,18 @@ export default function CasesPage() {
       const updated = await apiFetch<string[]>(`/directory/teams/${encodeURIComponent(teamName)}`, {
         method: 'DELETE',
       });
-      if (Array.isArray(updated)) setTeams(updated);
-      else setTeams(teams.filter(t => t !== teamName));
+      if (Array.isArray(updated)) {
+        setTeams(updated);
+        localStorage.setItem('midlex_teams', JSON.stringify(updated));
+      } else {
+        const next = teams.filter(t => t !== teamName);
+        setTeams(next);
+        localStorage.setItem('midlex_teams', JSON.stringify(next));
+      }
     } catch (e) {
-      setTeams(teams.filter(t => t !== teamName));
+      const next = teams.filter(t => t !== teamName);
+      setTeams(next);
+      localStorage.setItem('midlex_teams', JSON.stringify(next));
     }
   };
 
@@ -168,10 +186,20 @@ export default function CasesPage() {
         method: 'POST',
         body: JSON.stringify({ name: clean }),
       });
-      if (Array.isArray(updated)) setCourts(updated);
-      else if (!courts.includes(clean)) setCourts([...courts, clean]);
+      if (Array.isArray(updated) && updated.length > 0) {
+        setCourts(updated);
+        localStorage.setItem('midlex_courts', JSON.stringify(updated));
+      } else if (!courts.includes(clean)) {
+        const next = [...courts, clean];
+        setCourts(next);
+        localStorage.setItem('midlex_courts', JSON.stringify(next));
+      }
     } catch (e) {
-      if (!courts.includes(clean)) setCourts([...courts, clean]);
+      if (!courts.includes(clean)) {
+        const next = [...courts, clean];
+        setCourts(next);
+        localStorage.setItem('midlex_courts', JSON.stringify(next));
+      }
     }
     setNewCourtInput('');
   };
@@ -181,10 +209,18 @@ export default function CasesPage() {
       const updated = await apiFetch<string[]>(`/directory/courts/${encodeURIComponent(courtName)}`, {
         method: 'DELETE',
       });
-      if (Array.isArray(updated)) setCourts(updated);
-      else setCourts(courts.filter(c => c !== courtName));
+      if (Array.isArray(updated)) {
+        setCourts(updated);
+        localStorage.setItem('midlex_courts', JSON.stringify(updated));
+      } else {
+        const next = courts.filter(c => c !== courtName);
+        setCourts(next);
+        localStorage.setItem('midlex_courts', JSON.stringify(next));
+      }
     } catch (e) {
-      setCourts(courts.filter(c => c !== courtName));
+      const next = courts.filter(c => c !== courtName);
+      setCourts(next);
+      localStorage.setItem('midlex_courts', JSON.stringify(next));
     }
   };
 

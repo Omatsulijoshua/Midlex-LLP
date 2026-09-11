@@ -18,7 +18,8 @@ type ModelName =
   | 'notification'
   | 'courtDate'
   | 'inquiry'
-  | 'caseTimeline';
+  | 'caseTimeline'
+  | 'directory';
 
 type QueryArgs = {
   where?: any;
@@ -42,6 +43,7 @@ const COLLECTIONS: Record<ModelName, string> = {
   courtDate: 'courtDates',
   inquiry: 'inquiries',
   caseTimeline: 'caseTimelines',
+  directory: 'directory',
 };
 
 @Injectable()
@@ -63,6 +65,7 @@ export class PrismaService implements OnModuleInit {
   courtDate = this.model('courtDate');
   inquiry = this.model('inquiry');
   caseTimeline = this.model('caseTimeline');
+  directory = this.model('directory');
 
   constructor() {
     const serviceAccount = this.readServiceAccount();

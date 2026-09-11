@@ -16,14 +16,14 @@ export class DirectoryController {
 
   @Post('courts')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.LAWYER)
   async addCourt(@Body('name') name: string) {
     return this.directoryService.addCourt(name);
   }
 
   @Delete('courts/:name')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.LAWYER)
   async removeCourt(@Param('name') name: string) {
     return this.directoryService.removeCourt(name);
   }
@@ -35,14 +35,14 @@ export class DirectoryController {
 
   @Post('teams')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.LAWYER)
   async addTeam(@Body('name') name: string) {
     return this.directoryService.addTeam(name);
   }
 
   @Delete('teams/:name')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.LAWYER)
   async removeTeam(@Param('name') name: string) {
     return this.directoryService.removeTeam(name);
   }
