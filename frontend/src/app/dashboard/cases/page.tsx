@@ -32,8 +32,10 @@ interface Case {
 
 const defaultTeams = [
   'TEAM ANCHOR',
-  'TEAM SAPPHIRE',
-  'TEAM GEMSTONE',
+  'TEAM ALPHA',
+  'TITAN LITIGATION',
+  'MARITIME PRACTICE GROUP',
+  'CORPORATE DISPUTE TEAM',
 ];
 
 const defaultCourts = [

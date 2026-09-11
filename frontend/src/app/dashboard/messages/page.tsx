@@ -6,7 +6,13 @@ import ChatWidget from '@/components/Dashboard/ChatWidget';
 import TeamChatWidget from '@/components/Dashboard/TeamChatWidget';
 import DashboardSearchBar from '@/components/Dashboard/DashboardSearchBar';
 
-const defaultTeams = ['TEAM ANCHOR', 'TEAM SAPPHIRE', 'TEAM GEMSTONE'];
+const defaultTeams = [
+  'TEAM ANCHOR',
+  'TEAM ALPHA',
+  'TITAN LITIGATION',
+  'MARITIME PRACTICE GROUP',
+  'CORPORATE DISPUTE TEAM',
+];
 
 import MonthPickerFilter, { getCurrentMonthStr, isItemInMonth } from '@/components/Dashboard/MonthPickerFilter';
 

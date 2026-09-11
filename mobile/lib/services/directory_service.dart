@@ -8,8 +8,10 @@ class DirectoryService {
 
   static const List<String> defaultTeams = [
     'TEAM ANCHOR',
-    'TEAM SAPPHIRE',
-    'TEAM GEMSTONE',
+    'TEAM ALPHA',
+    'TITAN LITIGATION',
+    'MARITIME PRACTICE GROUP',
+    'CORPORATE DISPUTE TEAM',
   ];
 
   static const List<String> defaultCourts = [

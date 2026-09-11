@@ -63,7 +63,7 @@ class _CasesListScreenState extends State<CasesListScreen> {
     super.dispose();
   }
 
-  // Dialog to manage Litigation Teams (TEAM ANCHOR, TEAM SAPPHIRE, TEAM GEMSTONE, etc.)
+  // Dialog to manage Litigation Teams (TEAM ANCHOR, TEAM ALPHA, TITAN LITIGATION, etc.)
   void _openManageTeamsDialog() {
     final addController = TextEditingController();
     showDialog(

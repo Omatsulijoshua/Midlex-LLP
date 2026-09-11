@@ -13,7 +13,13 @@ interface Lawyer {
   litigationTeam?: string;
 }
 
-const defaultTeams = ['TEAM ANCHOR', 'TEAM SAPPHIRE', 'TEAM GEMSTONE'];
+const defaultTeams = [
+  'TEAM ANCHOR',
+  'TEAM ALPHA',
+  'TITAN LITIGATION',
+  'MARITIME PRACTICE GROUP',
+  'CORPORATE DISPUTE TEAM',
+];
 
 export default function LawyersPage() {
   const { user } = useAuth();
