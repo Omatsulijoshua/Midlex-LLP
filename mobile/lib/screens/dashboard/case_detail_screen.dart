@@ -589,13 +589,39 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Case Documents',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textDark),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Case Documents',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textDark),
+                    ),
+                    Text(
+                      '${widget.caseModel.documents.length} Files',
+                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 13),
+                    ),
+                  ],
                 ),
-                Text(
-                  '${widget.caseModel.documents.length} Files',
-                  style: const TextStyle(color: AppTheme.textMuted, fontSize: 13),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    final shareUrl = 'https://midlex-llplawfirm.vercel.app/share/case/${widget.caseModel.id}';
+                    Clipboard.setData(ClipboardData(text: shareUrl));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Shareable Case Link copied to clipboard!\n$shareUrl'),
+                        backgroundColor: AppTheme.primary,
+                        duration: const Duration(seconds: 4),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.share, size: 16),
+                  label: const Text('Share Case Files'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.secondary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
                 ),
               ],
             ),
@@ -632,8 +658,8 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.share),
-                    label: const Text('Share Case Files'),
+                    icon: const Icon(Icons.folder_shared_rounded),
+                    label: const Text('Case Files'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.secondary,
                     ),
