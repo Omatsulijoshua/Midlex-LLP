@@ -53,17 +53,18 @@ export default function SignupPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4 py-12">
-      <div className="absolute inset-0 z-0 opacity-5">
+    <main suppressHydrationWarning className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4 py-12">
+      <div suppressHydrationWarning className="absolute inset-0 z-0 opacity-5">
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary rounded-full blur-[120px] translate-x-1/2 translate-y-1/2" />
       </div>
 
       <motion.div
+        suppressHydrationWarning
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-2xl bg-white rounded-[32px] shadow-2xl p-8 sm:p-12 relative z-10 border border-gray-100"
       >
-        <div className="flex flex-col items-center mb-8">
+        <div suppressHydrationWarning className="flex flex-col items-center mb-8">
           <Link href="/" className="mb-4">
             <img src="/logo.jpg" alt="Midlex LLP" className="h-24 w-auto object-contain" />
           </Link>
@@ -71,7 +72,7 @@ export default function SignupPage() {
           <p className="text-gray-500 text-center text-sm">Register your account & file your legal matter with Midlex LLP</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form suppressHydrationWarning onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-bold border border-red-100">
               {error}
