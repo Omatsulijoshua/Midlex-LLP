@@ -191,7 +191,7 @@ export default function AdminDashboard() {
                        <span className="font-bold text-primary">{item.title}</span>
                     </td>
                     <td className="px-8 py-6 text-sm text-gray-600">{item.client.name}</td>
-                    <td className="px-8 py-6 text-sm text-primary font-bold">{item.lawyer?.name || 'Unassigned'}</td>
+                    <td className="px-8 py-6 text-sm text-primary font-bold">{(item as any).litigationTeam || item.lawyer?.name || 'TEAM ANCHOR'}</td>
                     <td className="px-8 py-6">
                       <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${
                         item.status === 'OPEN' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'

@@ -12,6 +12,7 @@ interface CaseItem {
   status: string;
   client: { name: string; email?: string; phone?: string };
   lawyer?: { name: string };
+  litigationTeam?: string;
   createdAt: string;
 }
 
@@ -181,8 +182,8 @@ export default function CasesTitleListPage() {
                     <td className="px-8 py-6 text-sm text-gray-700 font-semibold">
                       {c.client?.name || 'N/A'}
                     </td>
-                    <td className="px-8 py-6 text-sm text-gray-700 font-semibold">
-                      {c.lawyer?.name || 'Unassigned'}
+                    <td className="px-8 py-6 text-sm text-primary font-bold">
+                      {c.litigationTeam || c.lawyer?.name || 'TEAM ANCHOR'}
                     </td>
                     <td className="px-8 py-6">
                       <span

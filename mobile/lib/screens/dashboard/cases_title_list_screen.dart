@@ -379,8 +379,10 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                                 // 3. COUNSEL
                                 DataCell(
                                   Text(
-                                    c.lawyer?.name ?? 'Unassigned',
-                                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                                    c.litigationTeam.isNotEmpty
+                                        ? c.litigationTeam
+                                        : (c.lawyer?.name ?? 'TEAM ANCHOR'),
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.primary),
                                   ),
                                 ),
                                 // 4. STATUS
