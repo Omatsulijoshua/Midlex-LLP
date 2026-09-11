@@ -69,6 +69,7 @@ export default function LawyerDashboard() {
         <Link href="/dashboard/schedule" className="bg-secondary text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-secondary/20 hover:bg-secondary/90 transition-all">
           <Plus size={20} /> View Schedule
         </Link>
+      </div>
       {/* Assigned Litigation Team Directory Banner */}
       <div className="bg-slate-900 border-2 border-amber-400/40 rounded-3xl p-6 shadow-xl text-white space-y-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">

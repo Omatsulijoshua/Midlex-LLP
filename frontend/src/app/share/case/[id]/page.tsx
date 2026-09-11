@@ -4,7 +4,8 @@ import React, { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { FileText, Download, Share2, Shield, Check, Calendar, User, ArrowLeft, ExternalLink, Printer } from 'lucide-react';
-import { API_BASE_URL } from '@/lib/api';
+import { getApiBaseUrl } from '@/lib/api';
+const API_BASE_URL = getApiBaseUrl();
 
 interface SharedCase {
   id: string;
