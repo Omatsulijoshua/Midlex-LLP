@@ -16,6 +16,18 @@ import 'notifications_screen.dart';
 import 'team_chat_screen.dart';
 import '../auth/login_screen.dart';
 
+class SidebarMenuItem {
+  final String name;
+  final IconData icon;
+  final Widget screen;
+
+  const SidebarMenuItem({
+    required this.name,
+    required this.icon,
+    required this.screen,
+  });
+}
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -24,8 +36,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _clientIndex = 0;
-  int _staffViewIndex = 0;
+  int _activeNavIndex = 0;
 
   @override
   void initState() {
@@ -35,6 +46,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
       provider.fetchDashboardData();
       provider.fetchNotifications();
     });
+  }
+
+  // Exact Web Role-Based Sidebar Navigation Items (matched to frontend/src/app/dashboard/layout.tsx)
+  List<SidebarMenuItem> _getRoleSidebarItems(dynamic user) {
+    if (user.isAdmin) {
+      return [
+        SidebarMenuItem(name: 'Overview', icon: Icons.home_outlined, screen: _buildOverviewTab(context, user)),
+        const SidebarMenuItem(name: 'Cases', icon: Icons.cases_outlined, screen: CasesTitleListScreen()),
+        const SidebarMenuItem(name: 'Accountant Portal', icon: Icons.attach_money, screen: AccountantDashboardScreen()),
+        const SidebarMenuItem(name: 'MIDLEX CASE DIRECTORY', icon: Icons.insert_drive_file_outlined, screen: CasesListScreen()),
+        SidebarMenuItem(name: 'Clients', icon: Icons.groups_outlined, screen: _buildUserDirectoryView('CLIENT')),
+        SidebarMenuItem(name: 'Lawyers', icon: Icons.gavel_outlined, screen: _buildUserDirectoryView('LAWYER')),
+        SidebarMenuItem(name: 'Admins', icon: Icons.person_outline, screen: _buildUserDirectoryView('ADMIN')),
+        const SidebarMenuItem(name: 'Messages', icon: Icons.chat_bubble_outline, screen: TeamChatScreen()),
+        const SidebarMenuItem(name: 'Payments', icon: Icons.monetization_on_outlined, screen: PaymentsScreen()),
+        const SidebarMenuItem(name: 'Inquiries', icon: Icons.chat_outlined, screen: InquiriesScreen()),
+        const SidebarMenuItem(name: 'Notifications', icon: Icons.notifications_none_outlined, screen: NotificationsScreen()),
+      ];
+    } else if (user.isLawyer) {
+      return [
+        const SidebarMenuItem(name: 'Cases', icon: Icons.cases_outlined, screen: CasesTitleListScreen()),
+        const SidebarMenuItem(name: 'MIDLEX CASE DIRECTORY', icon: Icons.insert_drive_file_outlined, screen: CasesListScreen()),
+        SidebarMenuItem(name: 'Clients', icon: Icons.groups_outlined, screen: _buildUserDirectoryView('CLIENT')),
+        const SidebarMenuItem(name: 'Messages', icon: Icons.chat_bubble_outline, screen: TeamChatScreen()),
+        const SidebarMenuItem(name: 'Schedule', icon: Icons.calendar_today_outlined, screen: ScheduleScreen()),
+      ];
+    } else if (user.isAccountant) {
+      return [
+        const SidebarMenuItem(name: 'Accountant Portal', icon: Icons.attach_money, screen: AccountantDashboardScreen()),
+        const SidebarMenuItem(name: 'Payments & Receipts', icon: Icons.monetization_on_outlined, screen: PaymentsScreen()),
+        SidebarMenuItem(name: 'Client-Lawyer Directory', icon: Icons.groups_outlined, screen: _buildUserDirectoryView('CLIENT')),
+      ];
+    } else {
+      // CLIENT Role
+      return [
+        SidebarMenuItem(name: 'My Case', icon: Icons.dashboard_outlined, screen: _buildOverviewTab(context, user)),
+        const SidebarMenuItem(name: 'Messages', icon: Icons.chat_bubble_outline, screen: TeamChatScreen()),
+        const SidebarMenuItem(name: 'Payments', icon: Icons.payment_outlined, screen: PaymentsScreen()),
+        const SidebarMenuItem(name: 'Schedule', icon: Icons.calendar_today_outlined, screen: ScheduleScreen()),
+      ];
+    }
   }
 
   @override
@@ -67,48 +119,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     final isStaff = user.isAdmin || user.isLawyer || user.isAccountant;
-
-    // Staff Views list matching Web Sidebar items
-    final List<Widget> staffPages = [
-      _buildOverviewTab(context, user),           // 0. Overview
-      const CasesTitleListScreen(),               // 1. Cases
-      const AccountantDashboardScreen(),           // 2. Accountant Portal
-      const CasesListScreen(),                     // 3. MIDLEX CASE DIRECTORY
-      _buildUserDirectoryView('CLIENT'),           // 4. Clients
-      _buildUserDirectoryView('LAWYER'),           // 5. Lawyers
-      _buildUserDirectoryView('ADMIN'),            // 6. Admins
-      const TeamChatScreen(),                      // 7. Messages
-      const PaymentsScreen(),                      // 8. Payments
-      const InquiriesScreen(),                     // 9. Inquiries
-      const NotificationsScreen(),                 // 10. Notifications
-    ];
-
-    // Client Views (Clean 4 tabs)
-    final List<Widget> clientPages = [
-      _buildOverviewTab(context, user),
-      const CasesListScreen(),
-      const PaymentsScreen(),
-      const ScheduleScreen(),
-    ];
-
-    final staffTitles = [
-      'Overview',
-      'Cases',
-      'Accountant Portal',
-      'MIDLEX CASE DIRECTORY',
-      'Clients',
-      'Lawyers',
-      'Admins',
-      'Messages',
-      'Payments',
-      'Inquiries',
-      'Notifications',
-    ];
+    final items = _getRoleSidebarItems(user);
+    final activeIndex = _activeNavIndex < items.length ? _activeNavIndex : 0;
+    final currentItem = items[activeIndex];
 
     return Scaffold(
-      drawer: isStaff ? _buildStaffSidebar(context, user) : null,
+      drawer: isStaff ? _buildStaffSidebar(context, user, items) : null,
       appBar: AppBar(
-        title: Text(isStaff ? staffTitles[_staffViewIndex < staffTitles.length ? _staffViewIndex : 0] : 'Client Dashboard'),
+        title: Text(isStaff ? currentItem.name : 'Client Dashboard'),
         actions: [
           IconButton(
             icon: Stack(
@@ -151,29 +169,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: isStaff
-          ? staffPages[_staffViewIndex < staffPages.length ? _staffViewIndex : 0]
-          : clientPages[_clientIndex < clientPages.length ? _clientIndex : 0],
+      body: currentItem.screen,
       bottomNavigationBar: isStaff
           ? null
           : BottomNavigationBar(
-              currentIndex: _clientIndex < clientPages.length ? _clientIndex : 0,
+              currentIndex: activeIndex,
               selectedItemColor: AppTheme.primary,
               unselectedItemColor: Colors.grey,
               type: BottomNavigationBarType.fixed,
-              onTap: (index) => setState(() => _clientIndex = index),
-              items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Overview'),
-                BottomNavigationBarItem(icon: Icon(Icons.folder), label: 'My Cases'),
-                BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payments'),
-                BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Schedule'),
-              ],
+              onTap: (index) => setState(() => _activeNavIndex = index),
+              items: items
+                  .map((item) => BottomNavigationBarItem(
+                        icon: Icon(item.icon),
+                        label: item.name,
+                      ))
+                  .toList(),
             ),
     );
   }
 
-  // Sidebar Drawer matching Web Sidebar Menu exactly
-  Widget _buildStaffSidebar(BuildContext context, dynamic user) {
+  // Sidebar Drawer matching Web Sidebar Menu per role
+  Widget _buildStaffSidebar(BuildContext context, dynamic user, List<SidebarMenuItem> items) {
     return Drawer(
       child: Container(
         color: const Color(0xFF1B4D2E), // Dark Green matching Web Sidebar
@@ -199,17 +215,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
 
-            _buildSidebarTile(0, 'Overview', Icons.home_outlined),
-            _buildSidebarTile(1, 'Cases', Icons.cases_outlined),
-            _buildSidebarTile(2, 'Accountant Portal', Icons.attach_money),
-            _buildSidebarTile(3, 'MIDLEX CASE DIRECTORY', Icons.insert_drive_file_outlined),
-            _buildSidebarTile(4, 'Clients', Icons.groups_outlined),
-            _buildSidebarTile(5, 'Lawyers', Icons.gavel_outlined),
-            _buildSidebarTile(6, 'Admins', Icons.person_outline),
-            _buildSidebarTile(7, 'Messages', Icons.chat_bubble_outline),
-            _buildSidebarTile(8, 'Payments', Icons.monetization_on_outlined),
-            _buildSidebarTile(9, 'Inquiries', Icons.chat_outlined),
-            _buildSidebarTile(10, 'Notifications', Icons.notifications_none_outlined),
+            ...List.generate(items.length, (index) {
+              final item = items[index];
+              final isSelected = _activeNavIndex == index;
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFFC69A59) : Colors.transparent, // Gold highlight for active item
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  leading: Icon(item.icon, color: isSelected ? Colors.white : Colors.white70, size: 20),
+                  title: Text(
+                    item.name,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.white70,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _activeNavIndex = index;
+                    });
+                    Navigator.pop(context); // close drawer
+                  },
+                ),
+              );
+            }),
 
             const Divider(color: Colors.white24, height: 24),
 
@@ -229,34 +262,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSidebarTile(int index, String title, IconData icon) {
-    final isSelected = _staffViewIndex == index;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFFC69A59) : Colors.transparent, // Gold highlight for active item
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: isSelected ? Colors.white : Colors.white70, size: 20),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.white70,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-            fontSize: 13,
-          ),
-        ),
-        onTap: () {
-          setState(() {
-            _staffViewIndex = index;
-          });
-          Navigator.pop(context); // close drawer
-        },
       ),
     );
   }
@@ -349,7 +354,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         setState(() {
-                          _staffViewIndex = 3; // Open Case Directory
+                          _activeNavIndex = 1; // Open Case Directory for lawyer
                         });
                       },
                       icon: const Icon(Icons.folder_open, size: 16, color: Colors.white),
@@ -407,7 +412,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textDark),
               ),
               TextButton(
-                onPressed: () => setState(() => _staffViewIndex = 1),
+                onPressed: () => setState(() => _activeNavIndex = 1),
                 child: const Text('View All', style: TextStyle(color: AppTheme.secondary)),
               ),
             ],
