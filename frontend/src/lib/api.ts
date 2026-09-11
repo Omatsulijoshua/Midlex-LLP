@@ -75,10 +75,13 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestInit =
     }
 
     if (typeof window !== 'undefined') {
-      console.error(`[apiFetch Error ${response.status}] ${API_URL}${endpoint}: ${message}`);
+      console.warn(`[apiFetch HTTP ${response.status}] ${API_URL}${endpoint}: ${message}`);
       if (response.status === 401) {
         localStorage.removeItem('midlex_token');
         localStorage.removeItem('midlex_user');
+        if (window.location.pathname.startsWith('/dashboard')) {
+          window.location.href = '/login';
+        }
       }
     }
 

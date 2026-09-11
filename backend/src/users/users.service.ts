@@ -35,8 +35,7 @@ export class UsersService {
       return await this.prisma.user.create({
         data: {
           ...data,
-          id: firebaseUser.uid,
-          firebaseUid: firebaseUser.uid,
+          ...(firebaseUser ? { id: firebaseUser.uid } : {}),
           email,
           name,
           password: hashedPassword,
@@ -57,13 +56,18 @@ export class UsersService {
     name: string;
   }) {
     try {
-      return await getAuth().getUserByEmail(data.email);
-    } catch {
-      return getAuth().createUser({
-        email: data.email,
-        password: data.password,
-        displayName: data.name,
-      });
+      try {
+        return await getAuth().getUserByEmail(data.email);
+      } catch {
+        return await getAuth().createUser({
+          email: data.email,
+          password: data.password,
+          displayName: data.name,
+        });
+      }
+    } catch (err: any) {
+      console.warn('[auth] Skipping Firebase Auth sync:', err?.message || err);
+      return null;
     }
   }
 
