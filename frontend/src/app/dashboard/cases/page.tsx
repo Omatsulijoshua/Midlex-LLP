@@ -4,6 +4,11 @@ import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import DashboardSearchBar from '@/components/Dashboard/DashboardSearchBar';
+import {
+  downloadDirectoryAsPdf,
+  downloadDirectoryAsDocx,
+  DirectoryExportItem,
+} from '@/lib/exportDirectory';
 
 interface Case {
   id: string;
@@ -192,6 +197,47 @@ export default function CasesPage() {
     return true;
   });
 
+  const getPreparedExportItems = (): DirectoryExportItem[] => {
+    return filteredCases.map((c, index) => {
+      const ov = overrides[c.id] || {};
+      const cleanId = c.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+      const shortId = cleanId.length > 4 ? cleanId.slice(0, 4) : (cleanId || '102');
+      const suitNo = ov.suitNumber || c.suitNumber || `SUIT NO: HCB/${shortId}/2026`;
+      const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
+      const teamName = ov.litigationTeam || c.litigationTeam || 'TEAM ANCHOR';
+
+      return {
+        sn: index + 1,
+        suitNumber: suitNo,
+        title: c.title,
+        court: courtName,
+        team: teamName,
+        clientName: c.client?.name,
+        status: c.status,
+      };
+    });
+  };
+
+  const handleDownloadPdf = () => {
+    const items = getPreparedExportItems();
+    downloadDirectoryAsPdf(items, {
+      query: deferredQuery,
+      courtFilter: selectedCourtFilter,
+      teamFilter: selectedTeamFilter,
+      totalRecords: items.length,
+    });
+  };
+
+  const handleDownloadDocx = () => {
+    const items = getPreparedExportItems();
+    downloadDirectoryAsDocx(items, {
+      query: deferredQuery,
+      courtFilter: selectedCourtFilter,
+      teamFilter: selectedTeamFilter,
+      totalRecords: items.length,
+    });
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -207,18 +253,33 @@ export default function CasesPage() {
         </div>
 
         {isStaff ? (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setIsTeamsModalOpen(true)}
-              className="px-5 py-3 bg-secondary text-white font-bold rounded-2xl shadow-lg hover:bg-secondary/90 transition-all text-xs flex items-center gap-2"
+              className="px-4 py-3 bg-secondary text-white font-bold rounded-2xl shadow-lg hover:bg-secondary/90 transition-all text-xs flex items-center gap-2"
             >
               <span>Litigation Teams ({teams.length})</span>
             </button>
             <button
               onClick={() => setIsCourtsModalOpen(true)}
-              className="px-5 py-3 bg-primary text-white font-bold rounded-2xl shadow-lg hover:bg-primary/90 transition-all text-xs flex items-center gap-2"
+              className="px-4 py-3 bg-primary text-white font-bold rounded-2xl shadow-lg hover:bg-primary/90 transition-all text-xs flex items-center gap-2"
             >
               <span>Courts Directory ({courts.length})</span>
+            </button>
+            <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block" />
+            <button
+              onClick={handleDownloadPdf}
+              className="px-4 py-3 bg-red-600 text-white font-bold rounded-2xl shadow-lg hover:bg-red-700 transition-all text-xs flex items-center gap-1.5"
+              title="Download Filtered Directory as PDF"
+            >
+              <span>📄 Export PDF</span>
+            </button>
+            <button
+              onClick={handleDownloadDocx}
+              className="px-4 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-lg hover:bg-blue-700 transition-all text-xs flex items-center gap-1.5"
+              title="Download Filtered Directory as Word DOCX"
+            >
+              <span>📝 Export DOCX</span>
             </button>
           </div>
         ) : (
