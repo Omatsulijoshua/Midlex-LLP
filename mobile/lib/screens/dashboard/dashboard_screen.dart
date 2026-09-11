@@ -102,7 +102,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onTap: (index) => setState(() => _currentIndex = index),
         items: [
           const BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Overview'),
-          const BottomNavigationBarItem(icon: Icon(Icons.folder), label: 'Cases'),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.folder_special),
+            label: (user.isAdmin || user.isLawyer) ? 'MIDLEX CASE DIRECTORY' : 'Cases',
+          ),
           const BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payments'),
           if (user.isAccountant || user.isAdmin)
             const BottomNavigationBarItem(icon: Icon(Icons.account_balance), label: 'Accountant')

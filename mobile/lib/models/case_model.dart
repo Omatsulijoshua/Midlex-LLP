@@ -17,6 +17,10 @@ class CaseModel {
   final List<CourtDateModel> courtDates;
   final String? createdAt;
 
+  final String? customSuitNumber;
+  final String? customCourt;
+  final String? customLitigationTeam;
+
   CaseModel({
     required this.id,
     required this.title,
@@ -30,7 +34,39 @@ class CaseModel {
     this.messages = const [],
     this.courtDates = const [],
     this.createdAt,
+    this.customSuitNumber,
+    this.customCourt,
+    this.customLitigationTeam,
   });
+
+  String get suitNumber {
+    if (customSuitNumber != null && customSuitNumber!.isNotEmpty) {
+      return customSuitNumber!;
+    }
+    final cleanId = id.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toUpperCase();
+    final shortId = cleanId.length > 4 ? cleanId.substring(0, 4) : (cleanId.isEmpty ? '102' : cleanId);
+    return 'SUIT NO: HCB/$shortId/2026';
+  }
+
+  String get courtName {
+    if (customCourt != null && customCourt!.isNotEmpty) {
+      return customCourt!;
+    }
+    if (courtDates.isNotEmpty && courtDates.first.location.isNotEmpty) {
+      return courtDates.first.location;
+    }
+    return 'High Court of Edo State';
+  }
+
+  String get litigationTeam {
+    if (customLitigationTeam != null && customLitigationTeam!.isNotEmpty) {
+      return customLitigationTeam!;
+    }
+    if (lawyer != null && lawyer!.name.isNotEmpty) {
+      return '${lawyer!.name} (Lead Counsel)';
+    }
+    return 'Midlex Senior Advocacy Panel';
+  }
 
   factory CaseModel.fromJson(Map<String, dynamic> json) {
     return CaseModel(
@@ -55,6 +91,9 @@ class CaseModel {
               .toList() ??
           [],
       createdAt: json['createdAt'],
+      customSuitNumber: json['suitNumber'] ?? json['suitNo'],
+      customCourt: json['court'] ?? json['courtName'],
+      customLitigationTeam: json['litigationTeam'] ?? json['team'],
     );
   }
 }
