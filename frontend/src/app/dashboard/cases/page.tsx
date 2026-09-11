@@ -110,7 +110,7 @@ export default function CasesPage() {
     };
     fetchCases();
 
-    // Load saved teams & courts from localStorage if present
+    // Load saved teams, courts & case overrides from localStorage if present
     if (typeof window !== 'undefined') {
       const savedTeams = localStorage.getItem('midlex_teams');
       if (savedTeams) {
@@ -119,6 +119,10 @@ export default function CasesPage() {
       const savedCourts = localStorage.getItem('midlex_courts');
       if (savedCourts) {
         try { setCourts(JSON.parse(savedCourts)); } catch (e) {}
+      }
+      const savedOverrides = localStorage.getItem('midlex_case_overrides');
+      if (savedOverrides) {
+        try { setOverrides(JSON.parse(savedOverrides)); } catch (e) {}
       }
     }
   }, [user]);
@@ -178,8 +182,8 @@ export default function CasesPage() {
         console.error('Failed to update title:', err);
       }
     }
-    setOverrides(prev => ({
-      ...prev,
+    const updatedOverrides = {
+      ...overrides,
       [editingCase.id]: {
         suitNumber: editSuitNo.trim(),
         court: editCourt,
@@ -187,7 +191,11 @@ export default function CasesPage() {
         stage: editStage.trim() || 'PLEADINGS / PRE-TRIAL',
         pendingTask: editPendingTask.trim() || 'Filing of Written Address & Witness Statements',
       }
-    }));
+    };
+    setOverrides(updatedOverrides);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('midlex_case_overrides', JSON.stringify(updatedOverrides));
+    }
     setEditingCase(null);
   };
 
@@ -594,7 +602,7 @@ export default function CasesPage() {
 
       {/* Teams Management Modal */}
       {isTeamsModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <div>
@@ -648,7 +656,7 @@ export default function CasesPage() {
 
       {/* Courts Management Modal */}
       {isCourtsModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <div>
@@ -707,7 +715,7 @@ export default function CasesPage() {
 
       {/* Case Assignment Modal */}
       {editingCase && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <div>
