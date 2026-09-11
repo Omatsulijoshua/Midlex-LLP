@@ -132,7 +132,7 @@ export default function PublicCaseSharePage({ params }: { params: Promise<{ id: 
               <span className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
                 caseData.status === 'OPEN' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
               }`}>
-                {caseData.status === 'OPEN' || caseData.status === 'NEW' ? 'CASE MATTER REGISTERED' : caseData.status.replace('_', ' ')}
+                {(!caseData?.status || caseData?.status === 'OPEN' || caseData?.status === 'NEW') ? 'CASE MATTER REGISTERED' : String(caseData.status).replace('_', ' ')}
               </span>
               <span className="text-xs font-bold text-gray-400">REF: #{caseData.id.slice(0, 8).toUpperCase()}</span>
             </div>

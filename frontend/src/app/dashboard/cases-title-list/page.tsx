@@ -201,7 +201,7 @@ export default function CasesTitleListPage() {
                             : 'bg-gray-100 text-gray-700 border-gray-200'
                         }`}
                       >
-                        {realStatus === 'OPEN' || realStatus === 'NEW' ? 'CASE MATTER REGISTERED' : realStatus.replace('_', ' ')}
+                        {(!realStatus || realStatus === 'OPEN' || realStatus === 'NEW') ? 'CASE MATTER REGISTERED' : String(realStatus).replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-8 py-6 text-sm text-gray-500 font-medium">
