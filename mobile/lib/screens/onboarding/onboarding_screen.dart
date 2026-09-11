@@ -31,6 +31,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    StorageService.setHasSeenOnboarding();
+  }
+
   final List<OnboardingPageModel> _pages = [
     OnboardingPageModel(
       badge: 'PREMIER LEGAL ADVISORY',
