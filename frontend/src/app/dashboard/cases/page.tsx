@@ -82,6 +82,7 @@ export default function CasesPage() {
   const [overrides, setOverrides] = useState<Record<string, { suitNumber?: string; court?: string; litigationTeam?: string; stage?: string; pendingTask?: string }>>({});
 
   const [editingCase, setEditingCase] = useState<Case | null>(null);
+  const [editTitle, setEditTitle] = useState('');
   const [editSuitNo, setEditSuitNo] = useState('');
   const [editCourt, setEditCourt] = useState('');
   const [editTeam, setEditTeam] = useState('');
@@ -159,8 +160,19 @@ export default function CasesPage() {
     }
   };
 
-  const handleSaveCaseAssignment = () => {
+  const handleSaveCaseAssignment = async () => {
     if (!editingCase) return;
+    if (editTitle.trim() && editTitle.trim() !== editingCase.title) {
+      try {
+        await apiFetch(`/cases/${editingCase.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ title: editTitle.trim() }),
+        });
+        setCases(prev => prev.map(c => c.id === editingCase.id ? { ...c, title: editTitle.trim() } : c));
+      } catch (err) {
+        console.error('Failed to update title:', err);
+      }
+    }
     setOverrides(prev => ({
       ...prev,
       [editingCase.id]: {
@@ -515,6 +527,7 @@ export default function CasesPage() {
                               const courtName = ov.court || c.court || 'HIGH COURT BENIN CITY';
                               const teamName = ov.litigationTeam || c.litigationTeam || 'TEAM ANCHOR';
                               setEditingCase(c);
+                              setEditTitle(c.title || '');
                               setEditSuitNo(suitNo);
                               setEditCourt(courtName);
                               setEditTeam(teamName);
@@ -679,6 +692,18 @@ export default function CasesPage() {
             </div>
 
             <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1">Case Title *</label>
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="Enter Case Title"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold text-primary"
+                  required
+                />
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-gray-500 mb-1">Suit Number / File Reference</label>
                 <input

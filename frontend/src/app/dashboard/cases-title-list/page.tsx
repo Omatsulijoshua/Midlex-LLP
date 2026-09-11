@@ -16,6 +16,7 @@ interface CaseItem {
 }
 
 import MonthPickerFilter, { getCurrentMonthStr, isItemInMonth } from '@/components/Dashboard/MonthPickerFilter';
+import EditCaseModal from '@/components/Dashboard/EditCaseModal';
 
 export default function CasesTitleListPage() {
   const { user } = useAuth();
@@ -25,19 +26,21 @@ export default function CasesTitleListPage() {
   const deferredQuery = useDeferredValue(query);
   const [selectedCaseId, setSelectedCaseId] = useState<string | 'ALL'>('ALL');
   const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonthStr());
+  const [editingCase, setEditingCase] = useState<CaseItem | null>(null);
+
+  const fetchCases = async () => {
+    try {
+      const endpoint = user?.role === 'ADMIN' ? '/cases' : '/cases/my-cases';
+      const data = await apiFetch(endpoint);
+      setCases(data);
+    } catch (error) {
+      console.error('Error fetching cases:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchCases = async () => {
-      try {
-        const endpoint = user?.role === 'ADMIN' ? '/cases' : '/cases/my-cases';
-        const data = await apiFetch(endpoint);
-        setCases(data);
-      } catch (error) {
-        console.error('Error fetching cases:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchCases();
   }, [user]);
 
@@ -196,15 +199,26 @@ export default function CasesTitleListPage() {
                       {formattedDate}
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <Link
-                        href={`/dashboard/cases/${c.id}`}
-                        className="px-5 py-2.5 bg-primary text-white font-bold rounded-xl text-xs hover:bg-primary/90 transition-all shadow-md inline-flex items-center gap-1.5"
-                      >
-                        <span>View</span>
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        {(user?.role === 'ADMIN' || user?.role === 'LAWYER') && (
+                          <button
+                            onClick={() => setEditingCase(c)}
+                            className="px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-bold rounded-xl text-xs transition-all flex items-center gap-1"
+                            title="Edit Title"
+                          >
+                            ✏️ Edit Title
+                          </button>
+                        )}
+                        <Link
+                          href={`/dashboard/cases/${c.id}`}
+                          className="px-5 py-2.5 bg-primary text-white font-bold rounded-xl text-xs hover:bg-primary/90 transition-all shadow-md inline-flex items-center gap-1.5"
+                        >
+                          <span>View</span>
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -221,6 +235,12 @@ export default function CasesTitleListPage() {
           </table>
         </div>
       </div>
+      <EditCaseModal
+        caseItem={editingCase}
+        isOpen={Boolean(editingCase)}
+        onClose={() => setEditingCase(null)}
+        onUpdated={fetchCases}
+      />
     </div>
   );
 }

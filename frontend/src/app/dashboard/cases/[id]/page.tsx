@@ -5,6 +5,7 @@ import ChatWidget from '@/components/Dashboard/ChatWidget';
 import DocumentManager from '@/components/Dashboard/DocumentManager';
 import AssignLawyerModal from '@/components/Dashboard/AssignLawyerModal';
 import CourtDateModal from '@/components/Dashboard/CourtDateModal';
+import EditCaseModal from '@/components/Dashboard/EditCaseModal';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 
@@ -26,6 +27,7 @@ export default function CaseDetailsPage({ params }: { params: Promise<{ id: stri
   const [isLoading, setIsLoading] = useState(true);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isCourtModalOpen, setIsCourtModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchCase = async () => {
     try {
@@ -79,7 +81,18 @@ export default function CaseDetailsPage({ params }: { params: Promise<{ id: stri
             </span>
             <span className="text-sm text-gray-400 font-medium">Created on {new Date(caseData.createdAt).toLocaleDateString()}</span>
           </div>
-          <h2 className="text-3xl font-bold text-primary">{caseData.title}</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl font-bold text-primary">{caseData.title}</h2>
+            {(user?.role === 'ADMIN' || user?.role === 'LAWYER') && (
+              <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-bold rounded-xl text-xs flex items-center gap-1 transition-all"
+                title="Edit Case Title"
+              >
+                ✏️ Edit Title
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -205,6 +218,12 @@ export default function CaseDetailsPage({ params }: { params: Promise<{ id: stri
         isOpen={isCourtModalOpen}
         onClose={() => setIsCourtModalOpen(false)}
         onScheduled={fetchCase}
+      />
+      <EditCaseModal
+        caseItem={caseData}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onUpdated={fetchCase}
       />
     </div>
   );

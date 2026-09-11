@@ -40,6 +40,16 @@ export class CasesService {
     });
   }
 
+  async updateCase(id: string, data: { title?: string; description?: string }): Promise<Case> {
+    return this.prisma.case.update({
+      where: { id },
+      data: {
+        ...(data.title ? { title: data.title.trim() } : {}),
+        ...(data.description !== undefined ? { description: data.description.trim() } : {}),
+      },
+    });
+  }
+
   async assignLawyer(caseId: string, lawyerId: string): Promise<Case> {
     const updated = await this.prisma.case.update({
       where: { id: caseId },

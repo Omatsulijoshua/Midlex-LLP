@@ -79,6 +79,16 @@ export class CasesController {
     return this.casesService.updateStatus(id, status);
   }
 
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.LAWYER)
+  async updateCase(
+    @Param('id') id: string,
+    @Body() body: { title?: string; description?: string },
+  ) {
+    return this.casesService.updateCase(id, body);
+  }
+
   @Patch(':id/assign')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
