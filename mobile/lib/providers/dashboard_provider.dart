@@ -96,4 +96,33 @@ class DashboardProvider extends ChangeNotifier {
       'serviceNeeded': serviceNeeded,
     });
   }
+
+  Future<List<dynamic>> fetchCaseTimeline(String caseId) async {
+    try {
+      final res = await ApiService.get('${ApiConfig.cases}/$caseId/timeline');
+      if (res is List) return res;
+    } catch (e) {
+      debugPrint('Error fetching timeline: $e');
+    }
+    return [];
+  }
+
+  Future<void> addTimelineEvent({
+    required String caseId,
+    required String title,
+    String? description,
+    String? status,
+    String? date,
+  }) async {
+    await ApiService.post('${ApiConfig.cases}/$caseId/timeline', {
+      'title': title,
+      if (description != null) 'description': description,
+      if (status != null) 'status': status,
+      if (date != null) 'date': date,
+    });
+  }
+
+  Future<void> deleteTimelineEvent(String caseId, String timelineId) async {
+    await ApiService.delete('${ApiConfig.cases}/$caseId/timeline/$timelineId');
+  }
 }

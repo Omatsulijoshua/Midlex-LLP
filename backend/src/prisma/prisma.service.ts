@@ -17,7 +17,8 @@ type ModelName =
   | 'passwordReset'
   | 'notification'
   | 'courtDate'
-  | 'inquiry';
+  | 'inquiry'
+  | 'caseTimeline';
 
 type QueryArgs = {
   where?: any;
@@ -40,6 +41,7 @@ const COLLECTIONS: Record<ModelName, string> = {
   notification: 'notifications',
   courtDate: 'courtDates',
   inquiry: 'inquiries',
+  caseTimeline: 'caseTimelines',
 };
 
 @Injectable()
@@ -60,6 +62,7 @@ export class PrismaService implements OnModuleInit {
   notification = this.model('notification');
   courtDate = this.model('courtDate');
   inquiry = this.model('inquiry');
+  caseTimeline = this.model('caseTimeline');
 
   constructor() {
     const serviceAccount = this.readServiceAccount();
@@ -444,6 +447,12 @@ export class PrismaService implements OnModuleInit {
     }
     if (include.courtDates) {
       out.courtDates = await this.findMany('courtDate', {
+        where: { caseId: out.id },
+        orderBy: { date: 'asc' },
+      });
+    }
+    if (include.timeline) {
+      out.timeline = await this.findMany('caseTimeline', {
         where: { caseId: out.id },
         orderBy: { date: 'asc' },
       });

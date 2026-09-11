@@ -6,6 +6,7 @@ import DocumentManager from '@/components/Dashboard/DocumentManager';
 import AssignLawyerModal from '@/components/Dashboard/AssignLawyerModal';
 import CourtDateModal from '@/components/Dashboard/CourtDateModal';
 import EditCaseModal from '@/components/Dashboard/EditCaseModal';
+import CaseTimelineWidget from '@/components/Dashboard/CaseTimelineWidget';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 
@@ -171,6 +172,8 @@ export default function CaseDetailsPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
           </motion.div>
+
+          <CaseTimelineWidget caseId={caseData.id} caseStatus={caseData.status} />
 
           <DocumentManager caseId={caseData.id} status={caseData.status} />
         </div>

@@ -5,6 +5,7 @@ import {
   Body,
   Param,
   Patch,
+  Delete,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -94,5 +95,36 @@ export class CasesController {
   @Roles(Role.ADMIN)
   async assign(@Param('id') id: string, @Body('lawyerId') lawyerId: string) {
     return this.casesService.assignLawyer(id, lawyerId);
+  }
+
+  @Get(':id/timeline')
+  @UseGuards(JwtAuthGuard)
+  async getTimeline(@Param('id') id: string) {
+    return this.casesService.getTimeline(id);
+  }
+
+  @Post(':id/timeline')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.LAWYER)
+  async addTimelineEvent(
+    @Param('id') id: string,
+    @Body() body: { title: string; description?: string; status?: string; date?: string },
+    @Request() req: any,
+  ) {
+    return this.casesService.addTimelineEvent(id, {
+      title: body.title,
+      description: body.description,
+      status: body.status,
+      date: body.date,
+      createdById: req.user?.id,
+      createdByName: req.user?.name || req.user?.email || 'Legal Counsel',
+    });
+  }
+
+  @Delete(':id/timeline/:timelineId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.LAWYER)
+  async deleteTimelineEvent(@Param('timelineId') timelineId: string) {
+    return this.casesService.deleteTimelineEvent(timelineId);
   }
 }

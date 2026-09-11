@@ -86,9 +86,27 @@ model Case {
   messages    Message[]
   courtDates  CourtDate[]
   payments    Payment[]
+  timeline    CaseTimeline[]
 
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+}
+
+model CaseTimeline {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  status      String?  // e.g. "OPEN", "IN_PROGRESS", "HEARING", "RESOLVED"
+  date        DateTime @default(now())
+
+  caseId      String
+  case        Case     @relation(fields: [caseId], references: [id])
+
+  createdById String?
+  createdByName String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Document {

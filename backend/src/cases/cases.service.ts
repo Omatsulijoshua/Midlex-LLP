@@ -11,17 +11,32 @@ export class CasesService {
   ) {}
 
   async create(data: Prisma.CaseUncheckedCreateInput): Promise<Case> {
-    return this.prisma.case.create({ data });
+    const createdCase = await this.prisma.case.create({ data });
+    // Automatically seed initial timeline event
+    try {
+      await this.prisma.caseTimeline.create({
+        data: {
+          caseId: createdCase.id,
+          title: 'Case Matter Registered',
+          description: 'Legal case matter opened and recorded in Midlex LLP Registry.',
+          status: 'OPEN',
+          date: createdCase.createdAt || new Date(),
+        },
+      });
+    } catch (e) {
+      console.warn('[cases] Failed to seed initial timeline event:', e);
+    }
+    return createdCase;
   }
 
   async findAll(): Promise<Case[]> {
     return this.prisma.case.findMany({
-      include: { client: true, lawyer: true },
+      include: { client: true, lawyer: true, timeline: true },
     });
   }
 
   async findOne(id: string): Promise<Case | null> {
-    return this.prisma.case.findUnique({
+    const caseItem = await this.prisma.case.findUnique({
       where: { id },
       include: {
         client: true,
@@ -29,14 +44,81 @@ export class CasesService {
         documents: true,
         messages: { include: { sender: true } },
         courtDates: true,
+        timeline: true,
+      },
+    });
+
+    // If timeline is empty, auto-generate default start timeline entry
+    if (caseItem && (!caseItem.timeline || caseItem.timeline.length === 0)) {
+      try {
+        const startEvent = await this.prisma.caseTimeline.create({
+          data: {
+            caseId: caseItem.id,
+            title: 'Case Matter Registered',
+            description: 'Legal case matter opened and recorded in Midlex LLP Registry.',
+            status: 'OPEN',
+            date: caseItem.createdAt || new Date(),
+          },
+        });
+        caseItem.timeline = [startEvent];
+      } catch (e) {
+        console.warn('[cases] Failed to auto-create start timeline entry:', e);
+      }
+    }
+
+    return caseItem;
+  }
+
+  async updateStatus(id: string, status: CaseStatus): Promise<Case> {
+    const updated = await this.prisma.case.update({
+      where: { id },
+      data: { status },
+    });
+
+    // Auto post timeline update for status changes
+    try {
+      const isResolved = status === 'COMPLETED' || status === 'CLOSED';
+      await this.prisma.caseTimeline.create({
+        data: {
+          caseId: id,
+          title: isResolved ? 'Case Matter Resolved & Closed' : `Case Status Updated to ${status.replace('_', ' ')}`,
+          description: isResolved ? 'Legal proceedings and client case matter concluded successfully.' : `Status progressed to ${status}.`,
+          status,
+          date: new Date(),
+        },
+      });
+    } catch (e) {
+      console.warn('[cases] Failed to log timeline status update:', e);
+    }
+
+    return updated;
+  }
+
+  async addTimelineEvent(caseId: string, data: { title: string; description?: string; status?: string; date?: string; createdById?: string; createdByName?: string }) {
+    return this.prisma.caseTimeline.create({
+      data: {
+        caseId,
+        title: data.title.trim(),
+        description: data.description?.trim() || '',
+        status: data.status || 'IN_PROGRESS',
+        date: data.date ? new Date(data.date) : new Date(),
+        createdById: data.createdById,
+        createdByName: data.createdByName,
       },
     });
   }
 
-  async updateStatus(id: string, status: CaseStatus): Promise<Case> {
-    return this.prisma.case.update({
-      where: { id },
-      data: { status },
+  async getTimeline(caseId: string) {
+    const events = await this.prisma.caseTimeline.findMany({
+      where: { caseId },
+      orderBy: { date: 'asc' },
+    });
+    return events;
+  }
+
+  async deleteTimelineEvent(timelineId: string) {
+    return this.prisma.caseTimeline.delete({
+      where: { id: timelineId },
     });
   }
 
