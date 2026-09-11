@@ -1017,6 +1017,7 @@ export default function CasesPage() {
                             <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">CLIENT DETAILS</th>
                             <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">STAGE</th>
                             <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">PENDING TASK</th>
+                            <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest text-right">ACTION</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -1066,13 +1067,47 @@ export default function CasesPage() {
                                     <span>{pendingTask}</span>
                                   </div>
                                 </td>
+                                <td className="px-6 py-5 text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    {isStaff && (
+                                      <button
+                                        onClick={() => {
+                                          const ov = overrides[c.id] || {};
+                                          const suitNo = ov.suitNumber || c.suitNumber || '';
+                                          const courtName = ov.court || c.court || '';
+                                          const teamName = ov.litigationTeam || c.litigationTeam || activeTeamDirectoryModal || '';
+                                          setEditingCase(c);
+                                          setEditTitle(c.title || '');
+                                          setEditSuitNo(suitNo);
+                                          setEditCourt(courtName);
+                                          setEditTeam(teamName);
+                                          setEditStage(ov.stage || 'PLEADINGS / PRE-TRIAL');
+                                          setEditPendingTask(ov.pendingTask || 'Filing of Written Address & Witness Statements');
+                                        }}
+                                        className="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold rounded-xl text-xs transition-all flex items-center gap-1"
+                                        title="Edit Case Title, Suit No., Court, Stage & Pending Task"
+                                      >
+                                        ✏️ Edit
+                                      </button>
+                                    )}
+                                    <Link 
+                                      href={`/dashboard/cases/${c.id}`}
+                                      className="px-4 py-2 bg-primary text-white font-bold rounded-xl text-xs hover:bg-primary/90 transition-all shadow-md inline-flex items-center gap-1"
+                                    >
+                                      <span>View</span>
+                                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                      </svg>
+                                    </Link>
+                                  </div>
+                                </td>
                               </tr>
                             );
                           })}
 
                           {teamCases.length === 0 && (
                             <tr>
-                              <td colSpan={7} className="px-8 py-20 text-center">
+                              <td colSpan={8} className="px-8 py-20 text-center">
                                 <div className="space-y-3">
                                   <div className="w-16 h-16 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto text-2xl font-bold">
                                     📂
