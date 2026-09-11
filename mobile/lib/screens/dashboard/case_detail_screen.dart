@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../widgets/status_chip.dart';
 import 'chat_screen.dart';
+import 'notifications_screen.dart';
 
 class CaseDetailScreen extends StatefulWidget {
   final CaseModel caseModel;
@@ -311,6 +312,42 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
       appBar: AppBar(
         title: Text(_currentTitle),
         actions: [
+          Consumer<DashboardProvider>(
+            builder: (context, db, child) {
+              return IconButton(
+                icon: Stack(
+                  children: [
+                    const Icon(Icons.notifications_outlined),
+                    if (db.unreadNotificationCount > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                          child: Text(
+                            '${db.unreadNotificationCount}',
+                            style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                tooltip: 'Notifications',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                  );
+                },
+              );
+            },
+          ),
           if (isStaff)
             IconButton(
               icon: const Icon(Icons.edit),

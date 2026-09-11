@@ -3,6 +3,7 @@ import '../models/case_model.dart';
 import '../models/payment_model.dart';
 import '../models/court_date_model.dart';
 import '../models/inquiry_model.dart';
+import '../models/notification_model.dart';
 import '../services/api_service.dart';
 import '../config/api_config.dart';
 
@@ -11,12 +12,15 @@ class DashboardProvider extends ChangeNotifier {
   List<PaymentModel> _payments = [];
   List<CourtDateModel> _courtDates = [];
   List<InquiryModel> _inquiries = [];
+  List<NotificationModel> _notifications = [];
   bool _isLoading = false;
 
   List<CaseModel> get cases => _cases;
   List<PaymentModel> get payments => _payments;
   List<CourtDateModel> get courtDates => _courtDates;
   List<InquiryModel> get inquiries => _inquiries;
+  List<NotificationModel> get notifications => _notifications;
+  int get unreadNotificationCount => _notifications.where((n) => !n.isRead).length;
   bool get isLoading => _isLoading;
 
   Future<void> fetchDashboardData() async {
@@ -124,5 +128,30 @@ class DashboardProvider extends ChangeNotifier {
 
   Future<void> deleteTimelineEvent(String caseId, String timelineId) async {
     await ApiService.delete('${ApiConfig.cases}/$caseId/timeline/$timelineId');
+  }
+
+  Future<void> fetchNotifications() async {
+    try {
+      final res = await ApiService.get(ApiConfig.notifications);
+      if (res is List) {
+        _notifications = res.map((e) => NotificationModel.fromJson(e)).toList();
+      } else if (res is Map && res['items'] is List) {
+        _notifications = (res['items'] as List)
+            .map((e) => NotificationModel.fromJson(e))
+            .toList();
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error fetching notifications: $e');
+    }
+  }
+
+  Future<void> markAllNotificationsRead() async {
+    try {
+      await ApiService.patch(ApiConfig.markNotificationsRead, {});
+      await fetchNotifications();
+    } catch (e) {
+      debugPrint('Error marking notifications read: $e');
+    }
   }
 }

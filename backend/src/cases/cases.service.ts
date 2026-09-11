@@ -87,15 +87,26 @@ export class CasesService {
           date: new Date(),
         },
       });
+
+      // Send notification to client
+      if (updated.clientId) {
+        await this.notificationsService.create({
+          recipientId: updated.clientId,
+          title: `Case Status Update: ${status.replace('_', ' ')}`,
+          message: `Your case status for "${updated.title}" has been updated to ${status.replace('_', ' ')}.`,
+          link: `/dashboard/cases/${id}`,
+          type: 'CASE_STATUS_UPDATE',
+        });
+      }
     } catch (e) {
-      console.warn('[cases] Failed to log timeline status update:', e);
+      console.warn('[cases] Failed to log timeline status update or notification:', e);
     }
 
     return updated;
   }
 
   async addTimelineEvent(caseId: string, data: { title: string; description?: string; status?: string; date?: string; createdById?: string; createdByName?: string }) {
-    return this.prisma.caseTimeline.create({
+    const timeline = await this.prisma.caseTimeline.create({
       data: {
         caseId,
         title: data.title.trim(),
@@ -106,6 +117,24 @@ export class CasesService {
         createdByName: data.createdByName,
       },
     });
+
+    // Send notification to client
+    try {
+      const caseItem = await this.prisma.case.findUnique({ where: { id: caseId } });
+      if (caseItem && caseItem.clientId) {
+        await this.notificationsService.create({
+          recipientId: caseItem.clientId,
+          title: `Timeline Update: ${data.title.trim()}`,
+          message: data.description?.trim() || `New progress update posted for ${caseItem.title}`,
+          link: `/dashboard/cases/${caseId}`,
+          type: 'TIMELINE_UPDATE',
+        });
+      }
+    } catch (e) {
+      console.warn('[cases] Failed to create notification for timeline update:', e);
+    }
+
+    return timeline;
   }
 
   async getTimeline(caseId: string) {
@@ -123,13 +152,30 @@ export class CasesService {
   }
 
   async updateCase(id: string, data: { title?: string; description?: string }): Promise<Case> {
-    return this.prisma.case.update({
+    const updated = await this.prisma.case.update({
       where: { id },
       data: {
         ...(data.title ? { title: data.title.trim() } : {}),
         ...(data.description !== undefined ? { description: data.description.trim() } : {}),
       },
     });
+
+    // Send notification to client
+    try {
+      if (updated.clientId) {
+        await this.notificationsService.create({
+          recipientId: updated.clientId,
+          title: `Case Details Updated`,
+          message: `Updates were made to your case: "${updated.title}".`,
+          link: `/dashboard/cases/${id}`,
+          type: 'CASE_UPDATE',
+        });
+      }
+    } catch (e) {
+      console.warn('[cases] Failed to create notification for case update:', e);
+    }
+
+    return updated;
   }
 
   async assignLawyer(caseId: string, lawyerId: string): Promise<Case> {

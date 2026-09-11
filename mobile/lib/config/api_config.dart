@@ -30,4 +30,8 @@ class ApiConfig {
   // Users
   static String get users => '$baseUrl/users';
   static String get lawyers => '$baseUrl/users/lawyers';
+
+  // Notifications
+  static String get notifications => '$baseUrl/notifications';
+  static String get markNotificationsRead => '$baseUrl/notifications/read-all';
 }

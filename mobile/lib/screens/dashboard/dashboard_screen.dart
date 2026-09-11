@@ -9,6 +9,7 @@ import 'cases_list_screen.dart';
 import 'payments_screen.dart';
 import 'schedule_screen.dart';
 import 'inquiries_screen.dart';
+import 'notifications_screen.dart';
 import '../public/home_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -27,6 +28,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<DashboardProvider>(context, listen: false);
       provider.fetchDashboardData();
+      provider.fetchNotifications();
     });
   }
 
@@ -34,6 +36,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final user = auth.user;
+    final dashboard = Provider.of<DashboardProvider>(context);
 
     if (user == null) {
       return Scaffold(
@@ -74,9 +77,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: Text('${user.role} Dashboard'),
         actions: [
           IconButton(
+            icon: Stack(
+              children: [
+                const Icon(Icons.notifications_outlined),
+                if (dashboard.unreadNotificationCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                      child: Text(
+                        '${dashboard.unreadNotificationCount}',
+                        style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            tooltip: 'Notifications',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              Provider.of<DashboardProvider>(context, listen: false).fetchDashboardData();
+              dashboard.fetchDashboardData();
+              dashboard.fetchNotifications();
             },
           ),
           IconButton(
