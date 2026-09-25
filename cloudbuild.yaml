@@ -1,0 +1,29 @@
+steps:
+  # 1. Build backend Docker container image with proper context path (backend/)
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/midlex-backend:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/midlex-backend:latest'
+      - '-f'
+      - 'backend/Dockerfile'
+      - 'backend'
+
+  # 2. Push image tags to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/midlex-backend:$SHORT_SHA'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/midlex-backend:latest'
+
+timeout: '900s'
+
+images:
+  - 'gcr.io/$PROJECT_ID/midlex-backend:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/midlex-backend:latest'
