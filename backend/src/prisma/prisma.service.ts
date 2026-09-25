@@ -108,6 +108,13 @@ export class PrismaService implements OnModuleInit {
           phone: '08012345678',
         },
         {
+          email: 'samson@midlex.com',
+          name: 'Samson Sabbat',
+          password: 'samson123',
+          role: 'LAWYER',
+          phone: '08022223333',
+        },
+        {
           email: 'accountant@midlex.com',
           name: 'Chief Accountant (Finance)',
           password: 'accountant123',

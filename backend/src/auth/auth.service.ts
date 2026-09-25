@@ -22,6 +22,8 @@ export class AuthService {
       const defaultAccounts: Record<string, { name: string; passes: string[]; role: any }> = {
         'midlexllp01@gmail.com': { name: 'Super Admin', passes: ['Admin@123', 'admin123', 'password123'], role: 'ADMIN' },
         'lawyer1@midlex.com': { name: 'Barr. Adebayo', passes: ['admin123', 'password123'], role: 'LAWYER' },
+        'samson@midlex.com': { name: 'Samson Sabbat', passes: ['samson123', 'admin123', 'password123'], role: 'LAWYER' },
+        'samson.sabbat@midlex.com': { name: 'Samson Sabbat', passes: ['samson123', 'admin123', 'password123'], role: 'LAWYER' },
         'accountant@midlex.com': { name: 'Chief Accountant (Finance)', passes: ['accountant123', 'password123'], role: 'ACCOUNTANT' },
         'client@midlex.com': { name: 'Demo Client (John Doe)', passes: ['client123', 'password123'], role: 'CLIENT' },
         'user@midlex.com': { name: 'Standard User (Jane Doe)', passes: ['user123', 'password123'], role: 'CLIENT' },

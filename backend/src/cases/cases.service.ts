@@ -11,6 +11,32 @@ export class CasesService {
   ) {}
 
   async create(data: Prisma.CaseUncheckedCreateInput): Promise<Case> {
+    const cat = String((data as any).category || '').toUpperCase();
+    const sub = String((data as any).subCategory || '').toLowerCase();
+
+    // Auto-allocate Samson Sabbat for General / Property matters if no lawyer explicitly set
+    if ((cat === 'GENERAL' || sub.includes('property') || sub.includes('real estate')) && !data.lawyerId) {
+      try {
+        const lawyers = await this.prisma.user.findMany({
+          where: { role: 'LAWYER' },
+        });
+        const samson = lawyers.find(
+          (u: any) =>
+            u.email === 'samson@midlex.com' ||
+            u.email === 'samson.sabbat@midlex.com' ||
+            String(u.name || '').toLowerCase().includes('samson'),
+        );
+        if (samson) {
+          data.lawyerId = samson.id;
+          if (!(data as any).litigationTeam) {
+            (data as any).litigationTeam = 'REAL ESTATE & PROPERTY LAW';
+          }
+        }
+      } catch (e) {
+        console.warn('[cases] Failed to auto-allocate Samson Sabbat:', e);
+      }
+    }
+
     const createdCase = await this.prisma.case.create({ data });
     // Automatically seed initial timeline event
     try {
