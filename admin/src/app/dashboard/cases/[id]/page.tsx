@@ -124,9 +124,9 @@ export default function CaseDetailsPage({ params }: { params: Promise<{ id: stri
                Assign Litigation Team
              </button>
           )}
-          {user?.role === 'LAWYER' && (
-             <div className="flex gap-2">
-               {['OPEN', 'IN_PROGRESS', 'CLOSED'].map((status) => (
+          {(user?.role === 'ADMIN' || user?.role === 'LAWYER') && (
+             <div className="flex flex-wrap gap-2">
+               {['OPEN', 'IN_PROGRESS', 'COMPLETED', 'CLOSED'].map((status) => (
                  <button 
                    key={status}
                    onClick={() => handleStatusUpdate(status)}
