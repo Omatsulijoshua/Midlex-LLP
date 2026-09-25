@@ -97,7 +97,7 @@ export class NotificationsService {
     if (!input.title?.trim()) throw new BadRequestException('Title is required');
     if (!input.message?.trim()) throw new BadRequestException('Message is required');
 
-    return this.prisma.notification.create({
+    const created = await this.prisma.notification.create({
       data: {
         recipientId: input.recipientId,
         recipientUserId: input.recipientId,
@@ -111,6 +111,191 @@ export class NotificationsService {
         createdById: input.createdById,
       },
     });
+
+    // Auto dispatch multi-channel (Email, WhatsApp, SMS) to recipient user
+    this.dispatchMultiChannel(input.recipientId, input.title.trim(), input.message.trim(), input.link || input.href).catch((err) => {
+      console.warn('[Notifications] Auto multi-channel dispatch error:', err?.message || err);
+    });
+
+    return created;
+  }
+
+  /**
+   * Automatic Multi-Channel Dispatcher: Email, WhatsApp, SMS
+   */
+  private async dispatchMultiChannel(
+    recipientId: string,
+    title: string,
+    message: string,
+    link?: string,
+  ) {
+    try {
+      const user = await this.prisma.user.findUnique({ where: { id: recipientId } });
+      if (!user) return;
+
+      const recipientName = user.name || 'Valued Client';
+      const email = user.email;
+      const phone = user.phone || user.secondaryPhone;
+      const appUrl = process.env.FRONTEND_URL || 'https://midlexlawfirms.vercel.app';
+      const fullLink = link ? (link.startsWith('http') ? link : `${appUrl}${link}`) : appUrl;
+
+      // 1. Dispatch Email Notification
+      if (email) {
+        this.sendEmailNotification({
+          to: email,
+          name: recipientName,
+          title,
+          message,
+          link: fullLink,
+        });
+      }
+
+      // 2. Dispatch WhatsApp Notification
+      if (phone) {
+        this.sendWhatsAppNotification({
+          phone,
+          name: recipientName,
+          title,
+          message,
+          link: fullLink,
+        });
+      }
+
+      // 3. Dispatch SMS Notification
+      if (phone) {
+        this.sendSMSNotification({
+          phone,
+          name: recipientName,
+          title,
+          message,
+          link: fullLink,
+        });
+      }
+    } catch (error) {
+      console.warn('[Notifications] Failed to execute multi-channel dispatch:', error);
+    }
+  }
+
+  private async sendEmailNotification(payload: {
+    to: string;
+    name: string;
+    title: string;
+    message: string;
+    link: string;
+  }) {
+    const sendgridApiKey = process.env.SENDGRID_API_KEY;
+
+    console.log(`[📧 EMAIL AUTO-SENT] To: ${payload.to} | Subject: ${payload.title}`);
+    console.log(`Body: Hello ${payload.name},\n${payload.message}\nLink: ${payload.link}`);
+
+    if (sendgridApiKey) {
+      try {
+        await fetch('https://api.sendgrid.com/v3/mail/send', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${sendgridApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            personalizations: [{ to: [{ email: payload.to }] }],
+            from: { email: process.env.EMAIL_FROM || 'notifications@midlex.com', name: 'Midlex LLP Legal Team' },
+            subject: `Midlex LLP Update: ${payload.title}`,
+            content: [
+              {
+                type: 'text/html',
+                value: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 16px;">
+                    <div style="background-color: #1B4D2E; padding: 20px; text-align: center; border-radius: 12px;">
+                      <h1 style="color: #C69A59; margin: 0;">Midlex LLP</h1>
+                      <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 12px; letter-spacing: 2px;">BARRISTERS & SOLICITORS</p>
+                    </div>
+                    <div style="padding: 20px 0;">
+                      <h3 style="color: #1B4D2E;">${payload.title}</h3>
+                      <p style="color: #374151; font-size: 14px; line-height: 1.6;">Dear ${payload.name},</p>
+                      <p style="color: #374151; font-size: 14px; line-height: 1.6;">${payload.message}</p>
+                      <div style="margin: 25px 0; text-align: center;">
+                        <a href="${payload.link}" style="background-color: #C69A59; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; display: inline-block;">
+                          Open Legal Matter Details
+                        </a>
+                      </div>
+                    </div>
+                    <div style="border-top: 1px solid #e5e7eb; padding-top: 15px; font-size: 11px; color: #9ca3af; text-align: center;">
+                      This is an automated legal update from Midlex LLP Portal. Confidential & Privileged.
+                    </div>
+                  </div>
+                `,
+              },
+            ],
+          }),
+        });
+      } catch (err) {
+        console.warn('[Email Dispatcher] SendGrid API send error:', err);
+      }
+    }
+  }
+
+  private async sendWhatsAppNotification(payload: {
+    phone: string;
+    name: string;
+    title: string;
+    message: string;
+    link: string;
+  }) {
+    const cleanPhone = payload.phone.replace(/[^0-9+]/g, '');
+    const whatsappApiUrl = process.env.WHATSAPP_API_URL || process.env.TERMII_WHATSAPP_URL;
+
+    console.log(`[💬 WHATSAPP AUTO-SENT] To: ${cleanPhone}`);
+    console.log(`Text: ⚖️ *Midlex LLP Legal Update*\nHello *${payload.name}*,\n\n*${payload.title}*\n${payload.message}\n\n🔗 ${payload.link}`);
+
+    if (whatsappApiUrl) {
+      try {
+        await fetch(whatsappApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: cleanPhone,
+            recipient: cleanPhone,
+            message: `⚖️ *Midlex LLP Legal Update*\n\nHello *${payload.name}*,\n\n*${payload.title}*\n${payload.message}\n\n🔗 View details: ${payload.link}`,
+            api_key: process.env.WHATSAPP_API_KEY || process.env.TERMII_API_KEY,
+          }),
+        });
+      } catch (err) {
+        console.warn('[WhatsApp Dispatcher] Webhook send error:', err);
+      }
+    }
+  }
+
+  private async sendSMSNotification(payload: {
+    phone: string;
+    name: string;
+    title: string;
+    message: string;
+    link: string;
+  }) {
+    const cleanPhone = payload.phone.replace(/[^0-9+]/g, '');
+    const termiiApiKey = process.env.TERMII_API_KEY;
+
+    console.log(`[📱 SMS AUTO-SENT] To: ${cleanPhone}`);
+    console.log(`Text: Midlex LLP: ${payload.title}. ${payload.message}. Link: ${payload.link}`);
+
+    if (termiiApiKey) {
+      try {
+        await fetch('https://api.ng.termii.com/api/sms/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: cleanPhone,
+            from: process.env.SMS_SENDER_ID || 'MidlexLLP',
+            sms: `Midlex LLP: ${payload.title}. ${payload.message}. Link: ${payload.link}`,
+            type: 'plain',
+            channel: 'generic',
+            api_key: termiiApiKey,
+          }),
+        });
+      } catch (err) {
+        console.warn('[SMS Dispatcher] Termii API send error:', err);
+      }
+    }
   }
 
   async notifyRole(role: Role, input: Omit<CreateNotificationInput, 'recipientId'>) {
@@ -225,15 +410,12 @@ export class NotificationsService {
 
     return Promise.all(
       uniqueRecipients.map((recipient) =>
-        this.prisma.notification.create({
-          data: {
-            ...payload,
-            ...recipient,
-            recipientId: recipient.recipientId || recipient.recipientUserId,
-            link: payload.href,
-            isRead: false,
-            readAt: null,
-          },
+        this.create({
+          recipientId: recipient.recipientId || recipient.recipientUserId || '',
+          title: payload.title,
+          message: payload.message,
+          type: payload.type,
+          link: payload.href,
         }),
       ),
     );
