@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Next.js frontend, admin & lawyers
+frontend/.next/
+frontend/out/
+admin/node_modules/
+admin/.next/
+admin/out/
+admin/.env
+admin/.env.*
+!admin/.env.example
+
+lawyers/node_modules/
+lawyers/.next/
+lawyers/out/
+lawyers/.env
+lawyers/.env.*
+!lawyers/.env.example
+
+# NestJS backend
+backend/dist/
+backend/uploads/
+backend/data/
+
+# Coverage & logs
+coverage/
+*.log
+
+# Flutter & Dart
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/.pub-cache/
+mobile/.pub/
+mobile/build/
