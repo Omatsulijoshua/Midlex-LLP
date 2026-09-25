@@ -83,55 +83,53 @@ Default seeded accounts:
 
 Change these before handing the app to the client.
 
-## 3. Frontend on Vercel
+## 3. Deploying 3 Separate Applications to Different Domains (Vercel)
 
-In Vercel:
+Each portal (`frontend`, `admin`, `lawyers`) can be imported into Vercel as a separate project and pointed to its own domain/subdomain.
 
-1. Import this Git repo.
-2. Set Root Directory to `frontend`.
-3. Use the default Next.js framework settings.
-4. Add environment variables:
+### App 1: Public Website & Client Portal (`frontend/`)
+1. In Vercel, click **Add New** > **Project** and select repository `Omatsulijoshua/Midlex-LLP`.
+2. Name project: `midlex-frontend` (or `midlex-client`).
+3. Set **Root Directory** to `frontend`.
+4. Environment Variables:
+   ```env
+   NEXT_PUBLIC_API_URL=https://midlex-backend.onrender.com
+   NEXT_PUBLIC_SITE_URL=https://midlexlawfirms.vercel.app
+   ```
+5. Assign Domain (e.g. `midlexlawfirms.vercel.app` or `client.midlex.com`).
 
-```env
-NEXT_PUBLIC_API_URL=https://your-cloud-run-backend-url.run.app
-NEXT_PUBLIC_SITE_URL=https://your-vercel-domain.vercel.app
-```
+---
 
-Deploy the frontend.
+### App 2: Admin & Super Admin Portal (`admin/`)
+1. In Vercel, click **Add New** > **Project** and select repository `Omatsulijoshua/Midlex-LLP`.
+2. Name project: `midlex-admin`.
+3. Set **Root Directory** to `admin`.
+4. Environment Variables:
+   ```env
+   NEXT_PUBLIC_API_URL=https://midlex-backend.onrender.com
+   NEXT_PUBLIC_SITE_URL=https://midlex-admin.vercel.app
+   ```
+5. Assign Domain (e.g. `midlex-admin.vercel.app` or `admin.midlex.com`).
 
-After Vercel gives you the final domain, update Cloud Run `FRONTEND_URL` to match it exactly, then redeploy/restart the backend.
+---
 
-## 4. Cost guardrails
+### App 3: Lawyer & Counsel Portal (`lawyers/`)
+1. In Vercel, click **Add New** > **Project** and select repository `Omatsulijoshua/Midlex-LLP`.
+2. Name project: `midlex-lawyers`.
+3. Set **Root Directory** to `lawyers`.
+4. Environment Variables:
+   ```env
+   NEXT_PUBLIC_API_URL=https://midlex-backend.onrender.com
+   NEXT_PUBLIC_SITE_URL=https://midlex-lawyers.vercel.app
+   ```
+5. Assign Domain (e.g. `midlex-lawyers.vercel.app` or `lawyers.midlex.com`).
 
-To keep this close to free:
+---
 
-- Add a Google Cloud billing budget alert for the Firebase project.
-- Set Cloud Run minimum instances to `0`.
-- Keep Firestore in native mode and avoid unnecessary polling.
-- Keep uploaded files reasonably small.
-- Do not make Storage publicly writable. This repo's rules keep writes backend-only.
+## 4. Local Development
 
-## 5. Local development
-
-Backend:
-
-```bash
-cd backend
-npm install
-npm run start:dev
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Local frontend env:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-```
+Start all 4 servers locally with `start-offline.bat`:
+- **Backend API**: `http://localhost:3001`
+- **Public & Client Portal**: `http://localhost:3000`
+- **Admin Portal**: `http://localhost:3002`
+- **Lawyer Portal**: `http://localhost:3003`
