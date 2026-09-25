@@ -86,12 +86,17 @@ export default function LoginClient() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md bg-white rounded-3xl sm:rounded-[32px] shadow-2xl p-6 sm:p-10 relative z-10 border border-gray-100 max-w-full"
       >
-        <div className="flex flex-col items-center mb-6 sm:mb-10">
+        <div className="flex flex-col items-center mb-6 sm:mb-10 text-center">
           <Link href="/" className="mb-4 sm:mb-6">
             <img src="/logo.jpg" alt="Midlex LLP" className="h-20 sm:h-28 w-auto object-contain" />
           </Link>
+          <span className="px-3.5 py-1 bg-primary/10 border border-primary/20 text-primary rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+            Client & User Portal Sign In
+          </span>
           <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-2">Welcome Back</h1>
-          <p className="text-gray-500 text-center text-xs sm:text-sm">Enter your credentials to access your Midlex dashboard</p>
+          <p className="text-gray-500 text-center text-xs sm:text-sm max-w-xs">
+            Sign in with your registered Client, Lawyer, or Admin credentials to access your portal.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
