@@ -21,12 +21,12 @@ class _NewCaseScreenState extends State<NewCaseScreen> {
     'LITIGATION': [
       'Commercial Litigation',
       'Civil & Contractual Dispute',
-      'Land & Property Dispute',
+      'Land & Property / Realty Dispute',
       'Criminal Defense',
     ],
     'GENERAL': [
       'Monthly Corporate Retainer',
-      'Property Acquisition & Real Estate',
+      'Property / Realty & Real Estate',
       'Tax Advisory & Compliance',
       'Corporate Secretarial Services',
       'General Legal Advisory',

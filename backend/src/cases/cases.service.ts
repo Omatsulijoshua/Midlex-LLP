@@ -14,8 +14,8 @@ export class CasesService {
     const cat = String((data as any).category || '').toUpperCase();
     const sub = String((data as any).subCategory || '').toLowerCase();
 
-    // Auto-allocate Samson Sabbat for General / Property matters if no lawyer explicitly set
-    if ((cat === 'GENERAL' || sub.includes('property') || sub.includes('real estate')) && !data.lawyerId) {
+    // Auto-allocate Samson Sabbat for General / Property / Realty matters if no lawyer explicitly set
+    if ((cat === 'GENERAL' || sub.includes('property') || sub.includes('realty') || sub.includes('real estate')) && !data.lawyerId) {
       try {
         const lawyers = await this.prisma.user.findMany({
           where: { role: 'LAWYER' },

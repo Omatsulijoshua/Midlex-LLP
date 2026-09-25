@@ -40,7 +40,7 @@ export default function NewCasePage() {
     <div className="max-w-3xl">
       <div className="mb-10">
         <h2 className="text-3xl font-bold text-primary">Request Legal Counsel / Open Matter</h2>
-        <p className="text-gray-500 mt-2">Specify whether this is a Litigation issue or General Retainer/Property/Tax matter.</p>
+        <p className="text-gray-500 mt-2">Specify whether this is a Litigation issue or General Retainer / Property / Realty / Tax matter.</p>
       </div>
 
       <motion.div 
@@ -75,7 +75,7 @@ export default function NewCasePage() {
                 }`}
               >
                 <div className="text-lg font-bold">🏛️ General / Retainer Matter</div>
-                <div className="text-xs text-gray-500 mt-1">Property, monthly retainer, tax advisory, corporate advisory</div>
+                <div className="text-xs text-gray-500 mt-1">Property / Realty, monthly retainer, tax advisory, corporate advisory</div>
               </button>
             </div>
           </div>
@@ -91,13 +91,13 @@ export default function NewCasePage() {
                 <>
                   <option value="Commercial Litigation">Commercial Litigation</option>
                   <option value="Civil Dispute">Civil & Contractual Dispute</option>
-                  <option value="Land & Property Dispute">Land & Property Dispute</option>
+                  <option value="Land & Property / Realty Dispute">Land & Property / Realty Dispute</option>
                   <option value="Criminal Defense">Criminal Defense</option>
                 </>
               ) : (
                 <>
                   <option value="Monthly Retainer">Monthly Corporate Retainer</option>
-                  <option value="Property & Real Estate">Property Acquisition & Real Estate</option>
+                  <option value="Property / Realty & Real Estate">Property / Realty & Real Estate</option>
                   <option value="Tax Advisory">Tax Advisory & Compliance</option>
                   <option value="Corporate Secretarial">Corporate Secretarial Services</option>
                   <option value="General Legal Advisory">General Legal Advisory</option>
