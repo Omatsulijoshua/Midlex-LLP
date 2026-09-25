@@ -1,24 +1,82 @@
 "use client";
 import React, { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getCbtSubmissions, getCbtQuestions, CbtSubmission, CbtQuestion } from '@/lib/cbtStore';
+import { getCbtSubmissions, getCbtQuestions, getCbtExams, CbtSubmission, CbtQuestion, CbtExam, CbtUser } from '@/lib/cbtStore';
 
 export default function CbtResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: submissionId } = use(params);
   const [submission, setSubmission] = useState<CbtSubmission | null>(null);
   const [questions, setQuestions] = useState<CbtQuestion[]>([]);
+  const [exam, setExam] = useState<CbtExam | null>(null);
+  const [currentUser, setCurrentUser] = useState<CbtUser | null>(null);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const session = localStorage.getItem('midlex_cbt_session');
+      if (session) {
+        try { setCurrentUser(JSON.parse(session)); } catch (e) {}
+      }
+    }
     const subs = getCbtSubmissions();
     const found = subs.find((s) => s.id === submissionId);
     if (found) {
       setSubmission(found);
       const qList = getCbtQuestions(found.examId);
       setQuestions(qList);
+
+      const allExams = getCbtExams();
+      const targetExam = allExams.find((e) => e.id === found.examId);
+      if (targetExam) setExam(targetExam);
     }
   }, [submissionId]);
 
-  if (!submission) return <div className="p-10 text-center animate-pulse">Loading examination results...</div>;
+  if (!submission) return <div className="p-10 text-center animate-pulse">Loading Midlex CBT examination results...</div>;
+
+  // If Examinee and Exam is set to hide results immediately:
+  if (currentUser?.role !== 'ADMIN' && (exam?.showResultsImmediately === false || exam?.showResultsImmediately === undefined)) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="max-w-xl w-full bg-white rounded-[40px] border border-slate-200 p-10 shadow-2xl text-center space-y-6">
+          <div className="w-20 h-20 bg-emerald-100 text-emerald-700 rounded-3xl flex items-center justify-center text-4xl mx-auto font-black shadow-inner">
+            🤝
+          </div>
+          <div className="space-y-3">
+            <span className="px-4 py-1.5 bg-emerald-50 text-emerald-800 text-xs font-black uppercase tracking-widest rounded-full border border-emerald-200">
+              Midlex CBT Examination Submitted
+            </span>
+            <h1 className="text-2xl font-black text-slate-900 mt-2">
+              Thank you! We will get back to you with your results.
+            </h1>
+            <p className="text-slate-500 text-xs leading-relaxed">
+              Your responses for <strong>{submission.examTitle}</strong> have been securely recorded and submitted to the Midlex Examination Board.
+            </p>
+          </div>
+
+          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-left space-y-2 text-xs">
+            <div className="flex justify-between border-b border-slate-200/60 pb-2">
+              <span className="text-slate-500 font-medium">Candidate Name:</span>
+              <strong className="text-slate-900">{submission.userName}</strong>
+            </div>
+            <div className="flex justify-between border-b border-slate-200/60 pb-2">
+              <span className="text-slate-500 font-medium">Candidate ID:</span>
+              <strong className="text-slate-900">{submission.candidateId}</strong>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500 font-medium">Submission Timestamp:</span>
+              <strong className="text-slate-900">{new Date(submission.submittedAt).toLocaleString()}</strong>
+            </div>
+          </div>
+
+          <Link
+            href="/dashboard"
+            className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 transition-all text-sm block shadow-xl shadow-primary/20"
+          >
+            Return to Examinee Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-6">

@@ -5,6 +5,7 @@ import {
   getCbtExams,
   getCbtQuestions,
   saveCbtQuestion,
+  updateCbtExamResultSetting,
   CbtExam,
   CbtQuestion,
   QuestionType,
@@ -47,6 +48,13 @@ export default function AdminQuestionsBuilderPage() {
   const handleExamSelect = (eId: string) => {
     setSelectedExamId(eId);
     setQuestions(getCbtQuestions(eId));
+  };
+
+  const handleToggleResultVisibility = (showImmediately: boolean) => {
+    if (!selectedExamId) return;
+    updateCbtExamResultSetting(selectedExamId, showImmediately);
+    const updatedExams = getCbtExams();
+    setExams(updatedExams);
   };
 
   const handleInsertGermanChar = (char: string) => {
@@ -141,6 +149,53 @@ export default function AdminQuestionsBuilderPage() {
             Current Questions: {questions.length} Items
           </span>
         </div>
+
+        {/* Post-Exam Result Release Display Setting */}
+        {(() => {
+          const currentExam = exams.find((e) => e.id === selectedExamId);
+          const isImmediate = currentExam?.showResultsImmediately === true;
+
+          return (
+            <div className="bg-gradient-to-r from-slate-900 to-amber-950 text-white p-6 rounded-[28px] shadow-lg flex flex-wrap items-center justify-between gap-6 border border-amber-500/20">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-0.5 bg-amber-400/20 text-amber-300 text-[10px] font-black uppercase tracking-widest rounded-full border border-amber-400/30">
+                    EXAM RESULT RELEASE SETTING
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-white">Post-Submission Result Display Mode</h3>
+                <p className="text-xs text-amber-200/80">
+                  Choose what examinees see immediately after clicking &quot;Submit Examination&quot;.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 bg-white/10 p-2 rounded-2xl border border-white/10">
+                <button
+                  type="button"
+                  onClick={() => handleToggleResultVisibility(false)}
+                  className={`px-5 py-2.5 rounded-xl font-black text-xs transition-all ${
+                    !isImmediate
+                      ? 'bg-amber-500 text-slate-950 shadow-lg'
+                      : 'text-amber-200 hover:bg-white/10'
+                  }`}
+                >
+                  🤝 Hide Results & Display &quot;Thank you! We will get back to you with your results.&quot;
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleToggleResultVisibility(true)}
+                  className={`px-5 py-2.5 rounded-xl font-black text-xs transition-all ${
+                    isImmediate
+                      ? 'bg-emerald-500 text-slate-950 shadow-lg'
+                      : 'text-amber-200 hover:bg-white/10'
+                  }`}
+                >
+                  📊 Show Score & Breakdown Immediately
+                </button>
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Question Creation Form */}

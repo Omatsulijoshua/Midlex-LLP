@@ -41,6 +41,7 @@ export interface CbtExam {
   totalMarks: number;
   passingScore: number;
   questionCount: number;
+  showResultsImmediately?: boolean; // If false, examinee sees "Thank you! We will get back to you with your results."
   createdAt: string;
 }
 
@@ -105,6 +106,7 @@ const DEFAULT_EXAMS: CbtExam[] = [
     totalMarks: 100,
     passingScore: 60,
     questionCount: 4,
+    showResultsImmediately: false, // Default: Hide results & show "Thank you we will get back to you"
     createdAt: new Date().toISOString(),
   },
   {
@@ -116,6 +118,7 @@ const DEFAULT_EXAMS: CbtExam[] = [
     totalMarks: 50,
     passingScore: 50,
     questionCount: 3,
+    showResultsImmediately: false, // Default: Hide results & show "Thank you we will get back to you"
     createdAt: new Date().toISOString(),
   }
 ];
@@ -260,6 +263,17 @@ export function saveCbtExam(exam: Omit<CbtExam, 'id' | 'createdAt'>): CbtExam {
     localStorage.setItem('midlex_cbt_exams', JSON.stringify(updated));
   }
   return newExam;
+}
+
+export function updateCbtExamResultSetting(examId: string, showResultsImmediately: boolean): CbtExam | null {
+  const exams = getCbtExams();
+  const idx = exams.findIndex((e) => e.id === examId);
+  if (idx === -1) return null;
+  exams[idx].showResultsImmediately = showResultsImmediately;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('midlex_cbt_exams', JSON.stringify(exams));
+  }
+  return exams[idx];
 }
 
 export function getCbtQuestions(examId?: string): CbtQuestion[] {
