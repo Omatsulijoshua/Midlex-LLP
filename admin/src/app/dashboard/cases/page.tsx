@@ -124,11 +124,15 @@ export default function CasesPage() {
     };
     fetchCases();
 
-    // Load saved case overrides from localStorage if present
+    // Load saved case overrides & admin department preference from localStorage if present
     if (typeof window !== 'undefined') {
       const savedOverrides = localStorage.getItem('midlex_case_overrides');
       if (savedOverrides) {
         try { setOverrides(JSON.parse(savedOverrides)); } catch (e) {}
+      }
+      const savedDept = localStorage.getItem('midlex_admin_dept');
+      if (savedDept === 'LITIGATION' || savedDept === 'GENERAL') {
+        setCategoryFilter(savedDept);
       }
     }
   }, [user]);

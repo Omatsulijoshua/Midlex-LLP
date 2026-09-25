@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { DollarSign, FileText, TrendingUp, Users } from 'lucide-react';
+import { DollarSign, FileText, TrendingUp, Users, Scale, Building } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 
 import MonthPickerFilter, { getCurrentMonthStr, isItemInMonth } from './MonthPickerFilter';
+import AdminDepartmentModal, { PracticeDepartment } from './AdminDepartmentModal';
 
 interface AdminStats {
   totalCases: number;
@@ -21,15 +22,11 @@ interface ActivityItem {
   client?: { name: string };
 }
 
-const fallbackStats: AdminStats = {
-  totalCases: 0,
-  activeLawyers: 0,
-  pendingPayments: 0,
-  totalRevenue: 0,
-};
-
 export default function AdminOverview() {
   const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonthStr());
+  const [selectedDept, setSelectedDept] = useState<PracticeDepartment | null>(null);
+  const [isDeptModalOpen, setIsDeptModalOpen] = useState<boolean>(false);
+
   const [allCases, setAllCases] = useState<any[]>([]);
   const [allPayments, setAllPayments] = useState<any[]>([]);
   const [allClients, setAllClients] = useState<any[]>([]);
@@ -37,6 +34,17 @@ export default function AdminOverview() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Check saved department
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('midlex_admin_dept') as PracticeDepartment | null;
+      if (saved) {
+        setSelectedDept(saved);
+      } else {
+        // Open 2-squares selection modal by default on initial admin login
+        setIsDeptModalOpen(true);
+      }
+    }
+
     const fetchOverview = async () => {
       try {
         const [casesData, paymentsData, clientsData, activityData] = await Promise.all([
@@ -59,25 +67,73 @@ export default function AdminOverview() {
     fetchOverview();
   }, []);
 
-  const filteredCases = allCases.filter(c => isItemInMonth(c.createdAt, selectedMonth));
+  const handleSelectDepartment = (dept: PracticeDepartment) => {
+    setSelectedDept(dept);
+    setIsDeptModalOpen(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('midlex_admin_dept', dept);
+    }
+  };
+
+  // Helper to determine if a case is Litigation vs General / Property
+  const isLitigationCase = (c: any) => {
+    const text = `${c.title || ''} ${c.description || ''} ${c.category || ''} ${c.court || ''} ${c.suitNumber || ''}`.toLowerCase();
+    return (
+      c.suitNumber ||
+      c.court ||
+      c.litigationTeam ||
+      c.category === 'LITIGATION' ||
+      text.includes('court') ||
+      text.includes('suit') ||
+      text.includes('trial') ||
+      text.includes('litigation')
+    );
+  };
+
+  const isGeneralCase = (c: any) => {
+    const text = `${c.title || ''} ${c.description || ''} ${c.category || ''} ${c.assignedLawyer || ''}`.toLowerCase();
+    return (
+      c.category === 'PROPERTY' ||
+      c.category === 'REALTY' ||
+      c.category === 'GENERAL' ||
+      text.includes('property') ||
+      text.includes('realty') ||
+      text.includes('title') ||
+      text.includes('samson') ||
+      text.includes('general') ||
+      !isLitigationCase(c)
+    );
+  };
+
+  // Filter cases based on month & chosen department
+  const filteredMonthCases = allCases.filter(c => isItemInMonth(c.createdAt, selectedMonth));
+  const deptFilteredCases = filteredMonthCases.filter(c => {
+    if (!selectedDept) return true;
+    return selectedDept === 'LITIGATION' ? isLitigationCase(c) : isGeneralCase(c);
+  });
+
   const filteredPayments = allPayments.filter(p => isItemInMonth(p.createdAt || p.paidAt, selectedMonth));
   const filteredClients = allClients.filter(cl => isItemInMonth(cl.createdAt, selectedMonth));
-  const filteredActivity = activity.filter(a => isItemInMonth(a.createdAt, selectedMonth));
 
   const totalRevenue = filteredPayments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
   const pendingPaymentsCount = filteredPayments.filter(p => p.status === 'PENDING').length;
 
   const statCards = [
-    { label: 'Cases (This Month)', value: filteredCases.length, icon: <FileText size={22} />, color: 'bg-blue-500' },
+    {
+      label: selectedDept === 'LITIGATION' ? 'Litigation Suits (This Month)' : selectedDept === 'GENERAL' ? 'Property & General Cases' : 'All Cases (This Month)',
+      value: deptFilteredCases.length,
+      icon: selectedDept === 'LITIGATION' ? <Scale size={22} /> : <Building size={22} />,
+      color: selectedDept === 'LITIGATION' ? 'bg-blue-600' : 'bg-amber-600'
+    },
     { label: 'Clients Registered', value: filteredClients.length, icon: <Users size={22} />, color: 'bg-green-500' },
     { label: 'Pending Payments', value: pendingPaymentsCount, icon: <DollarSign size={22} />, color: 'bg-amber-500' },
     { label: 'Monthly Revenue', value: `NGN ${totalRevenue.toLocaleString()}`, icon: <TrendingUp size={22} />, color: 'bg-emerald-500' },
   ];
 
   const quickActions = [
-    { label: 'Open Cases', href: '/dashboard/cases' },
-    { label: 'View Client', href: '/dashboard/clients' },
-    { label: 'Review Payment', href: '/dashboard/payments' },
+    { label: selectedDept === 'LITIGATION' ? '⚖️ Litigation Cases' : selectedDept === 'GENERAL' ? '🏢 Property & General Cases' : 'Open Cases', href: '/dashboard/cases' },
+    { label: 'View Clients', href: '/dashboard/clients' },
+    { label: 'Review Payments', href: '/dashboard/payments' },
   ];
 
   if (isLoading) {
@@ -96,11 +152,56 @@ export default function AdminOverview() {
 
   return (
     <div className="space-y-8">
+      {/* 2 Squares Department Selection Modal */}
+      <AdminDepartmentModal
+        isOpen={isDeptModalOpen}
+        onSelectDepartment={handleSelectDepartment}
+        onClose={() => setIsDeptModalOpen(false)}
+        currentDept={selectedDept}
+      />
+
+      {/* Top Department Monitoring Status Bar */}
+      <div className={`p-6 rounded-[28px] text-white shadow-xl flex flex-wrap items-center justify-between gap-4 border transition-all ${
+        selectedDept === 'LITIGATION'
+          ? 'bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 border-blue-500/30'
+          : 'bg-gradient-to-r from-slate-900 via-amber-950 to-slate-900 border-amber-500/30'
+      }`}>
+        <div className="flex items-center gap-4">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-2xl ${
+            selectedDept === 'LITIGATION' ? 'bg-blue-600/30 text-amber-300 border border-blue-400/40' : 'bg-amber-600/30 text-amber-400 border border-amber-400/40'
+          }`}>
+            {selectedDept === 'LITIGATION' ? '⚖️' : '🏢'}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-0.5 bg-amber-400/20 text-amber-300 text-[10px] font-black uppercase tracking-widest rounded-full border border-amber-400/30">
+                ACTIVE MONITORING WORKSPACE
+              </span>
+            </div>
+            <h3 className="text-xl font-black text-white mt-1">
+              {selectedDept === 'LITIGATION' ? 'Litigation Practice Department' : 'General & Property (Realty) Practice Department'}
+            </h3>
+            <p className="text-xs text-slate-300 mt-0.5">
+              {selectedDept === 'LITIGATION'
+                ? 'Monitoring High Court suits, trial calendars, court filings, & advocate team assignments.'
+                : 'Monitoring land title verification, Samson Sabbat property auto-allocations, & commercial advisory.'}
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setIsDeptModalOpen(true)}
+          className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2"
+        >
+          🔄 Switch Department View (2 Squares)
+        </button>
+      </div>
+
       <MonthPickerFilter
         selectedMonth={selectedMonth}
         onChange={setSelectedMonth}
-        totalCount={filteredCases.length}
-        countLabel="cases this month"
+        totalCount={deptFilteredCases.length}
+        countLabel={`${selectedDept === 'LITIGATION' ? 'litigation suits' : 'general cases'} this month`}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
