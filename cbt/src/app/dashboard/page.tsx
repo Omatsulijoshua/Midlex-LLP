@@ -37,9 +37,7 @@ export default function CbtStudentDashboard() {
       <header className="bg-primary text-white sticky top-0 z-30 shadow-md">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-secondary text-white rounded-xl flex items-center justify-center font-black text-lg">
-              💻
-            </div>
+            <img src="/logo.jpg" alt="Midlex LLP" className="h-10 w-auto object-contain rounded-xl border border-white/20 shadow-sm" />
             <div>
               <h1 className="font-bold text-lg text-white">Midlex CBT Examination Portal</h1>
               <p className="text-[11px] text-amber-200">Candidate ID: {currentUser.candidateId}</p>

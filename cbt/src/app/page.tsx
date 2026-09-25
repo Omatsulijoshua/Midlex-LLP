@@ -70,8 +70,8 @@ export default function CbtLoginPage() {
         className="max-w-md w-full bg-white rounded-[32px] p-8 shadow-2xl border border-slate-100"
       >
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary text-secondary rounded-2xl flex items-center justify-center font-black text-2xl mx-auto mb-4 shadow-lg">
-            💻
+          <div className="flex items-center justify-center mb-4">
+            <img src="/logo.jpg" alt="Midlex LLP" className="h-16 w-auto object-contain rounded-xl shadow-md border border-slate-100" />
           </div>
           <h1 className="text-2xl font-black text-primary uppercase tracking-wide">MIDLEX CBT PORTAL</h1>
           <p className="text-xs text-slate-500 mt-1">Computer-Based Examination & Language Assessment System</p>

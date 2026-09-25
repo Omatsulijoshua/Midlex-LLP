@@ -46,9 +46,7 @@ export default function AdminCbtDashboard() {
       <header className="bg-amber-900 text-white sticky top-0 z-30 shadow-md">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-amber-500 text-slate-900 rounded-xl flex items-center justify-center font-black text-lg">
-              🛡️
-            </div>
+            <img src="/logo.jpg" alt="Midlex LLP" className="h-10 w-auto object-contain rounded-xl border border-amber-500/30 shadow-sm" />
             <div>
               <h1 className="font-bold text-lg text-white">Midlex CBT Admin Examiner Command Center</h1>
               <p className="text-[11px] text-amber-200">Question Authoring, User Auto-Creation & Theory Grading</p>

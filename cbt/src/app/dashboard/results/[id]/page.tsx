@@ -37,8 +37,8 @@ export default function CbtResultPage({ params }: { params: Promise<{ id: string
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="max-w-xl w-full bg-white rounded-[40px] border border-slate-200 p-10 shadow-2xl text-center space-y-6">
-          <div className="w-20 h-20 bg-emerald-100 text-emerald-700 rounded-3xl flex items-center justify-center text-4xl mx-auto font-black shadow-inner">
-            🤝
+          <div className="flex justify-center">
+            <img src="/logo.jpg" alt="Midlex LLP" className="h-16 w-auto object-contain rounded-2xl shadow-md border border-slate-100" />
           </div>
           <div className="space-y-3">
             <span className="px-4 py-1.5 bg-emerald-50 text-emerald-800 text-xs font-black uppercase tracking-widest rounded-full border border-emerald-200">
