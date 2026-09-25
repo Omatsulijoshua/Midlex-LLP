@@ -16,6 +16,22 @@ const defaultTeams = [
 
 import MonthPickerFilter, { getCurrentMonthStr, isItemInMonth } from '@/components/Dashboard/MonthPickerFilter';
 
+function formatChatTime(dateStr: string) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) {
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  const yesterday = new Date();
+  yesterday.setDate(now.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) {
+    return 'Yesterday';
+  }
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
 export default function MessagesPage() {
   const { user } = useAuth();
   const [cases, setCases] = useState<any[]>([]);
@@ -34,10 +50,8 @@ export default function MessagesPage() {
     const fetchCases = async () => {
       try {
         const data = await apiFetch('/cases/my-cases');
-        setCases(data);
-        if (data.length > 0) {
-          setSelectedCaseId(data[0].id);
-        }
+        setCases(data || []);
+        // Note: Do NOT auto-select first case so user must click to open (WhatsApp PC style)
       } catch (error) {
         console.error('Error fetching cases for messages:', error);
       } finally {
@@ -74,12 +88,21 @@ export default function MessagesPage() {
   if (isLoading) return <div className="h-full bg-white rounded-[40px] animate-pulse" />;
 
   const normalizedQuery = deferredQuery.trim().toLowerCase();
-  const filteredCases = cases.filter((c) => {
+  
+  // Sort cases descending by last chatted message timestamp / updatedAt / createdAt (WhatsApp PC style)
+  const sortedCases = [...cases].sort((a, b) => {
+    const lastTimeA = a.messages && a.messages.length > 0 ? a.messages[0].createdAt : (a.updatedAt || a.createdAt);
+    const lastTimeB = b.messages && b.messages.length > 0 ? b.messages[0].createdAt : (b.updatedAt || b.createdAt);
+    return new Date(lastTimeB).getTime() - new Date(lastTimeA).getTime();
+  });
+
+  const filteredCases = sortedCases.filter((c) => {
     if (!isItemInMonth(c.createdAt, selectedMonth)) {
       return false;
     }
     if (!normalizedQuery) return true;
-    return [c.title, c.description, c.status, c.client?.name]
+    const lastMsgContent = c.messages && c.messages.length > 0 ? c.messages[0].content : '';
+    return [c.title, c.description, c.status, c.client?.name, lastMsgContent]
       .filter(Boolean)
       .some((value) => String(value).toLowerCase().includes(normalizedQuery));
   });
@@ -156,47 +179,93 @@ export default function MessagesPage() {
           <TeamChatWidget teamName={selectedTeam} />
         </div>
       ) : (
-        <div className="flex-1 grid lg:grid-cols-4 gap-8 min-h-0">
-          {/* Sidebar: Case List */}
-          <div className="lg:col-span-1 bg-white rounded-[40px] border border-gray-100 overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-100 bg-gray-50/50">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Active Case Discussions</p>
+        <div className="flex-1 grid lg:grid-cols-4 gap-8 min-h-[600px]">
+          {/* Sidebar: WhatsApp Desktop Style Conversations List */}
+          <div className="lg:col-span-1 bg-white rounded-[40px] border border-gray-100 overflow-hidden flex flex-col shadow-sm">
+            <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-primary uppercase tracking-widest">Conversations</p>
+                <p className="text-[10px] text-gray-400 font-medium mt-0.5">Sorted by recent chats</p>
+              </div>
+              <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" title="Live Messaging" />
             </div>
+
             <div className="p-4 border-b border-gray-100">
               <DashboardSearchBar
                 value={query}
                 onChange={setQuery}
-                placeholder="Search case discussions"
+                placeholder="Search conversations..."
                 count={filteredCases.length}
                 countLabel="chats"
               />
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {filteredCases.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => setSelectedCaseId(c.id)}
-                  className={`w-full text-left p-4 rounded-2xl transition-all ${
-                    selectedCaseId === c.id 
-                      ? 'bg-secondary text-white shadow-lg shadow-secondary/20' 
-                      : 'hover:bg-gray-50 text-primary'
-                  }`}
-                >
-                  <p className="font-bold text-sm truncate">{c.title}</p>
-                  <p className={`text-[10px] mt-1 uppercase tracking-widest font-bold ${selectedCaseId === c.id ? 'text-white/60' : 'text-gray-400'}`}>
-                    {c.status}
-                  </p>
-                </button>
-              ))}
+
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {filteredCases.map((c) => {
+                const lastMsg = c.messages && c.messages.length > 0 ? c.messages[0] : null;
+                const lastTime = lastMsg ? lastMsg.createdAt : (c.updatedAt || c.createdAt);
+                const timeLabel = formatChatTime(lastTime);
+                const isSelected = selectedCaseId === c.id;
+
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setSelectedCaseId(c.id)}
+                    className={`w-full text-left p-4 rounded-2xl transition-all border ${
+                      isSelected
+                        ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.01]'
+                        : 'bg-white hover:bg-gray-50 border-gray-100 text-primary'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
+                          isSelected ? 'bg-white/20 text-white' : 'bg-primary/10 text-primary'
+                        }`}>
+                          {((c.category || '').toUpperCase() === 'GENERAL' ? '🏛️' : '⚖️')}
+                        </div>
+                        <p className="font-bold text-sm truncate">{c.title}</p>
+                      </div>
+                      <span className={`text-[10px] font-medium shrink-0 ${
+                        isSelected ? 'text-white/80' : 'text-gray-400'
+                      }`}>
+                        {timeLabel}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 pl-10">
+                      <p className={`text-xs truncate font-medium ${
+                        isSelected ? 'text-white/80' : 'text-gray-500'
+                      }`}>
+                        {lastMsg ? lastMsg.content || '📎 Attachment' : c.description || 'No messages yet.'}
+                      </p>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className={`text-[9px] uppercase tracking-widest font-bold ${
+                          isSelected ? 'text-white/60' : 'text-gray-400'
+                        }`}>
+                          {c.client?.name ? `Client: ${c.client.name}` : c.status}
+                        </span>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                          isSelected 
+                            ? 'bg-white/20 text-white' 
+                            : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {c.status?.replace('_', ' ')}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
               {filteredCases.length === 0 && (
-                <p className="text-sm text-gray-500 italic p-4">
-                  {cases.length === 0 ? 'No active case chats.' : 'No case chats matched your search.'}
-                </p>
+                <div className="p-8 text-center text-gray-400 italic text-sm">
+                  {cases.length === 0 ? 'No active conversations.' : 'No conversations match your search.'}
+                </div>
               )}
             </div>
           </div>
 
-          {/* Chat Area */}
+          {/* Right Main Chat Area: WhatsApp PC Placeholder until clicked */}
           <div className="lg:col-span-3 h-full">
             {selectedCaseId && activeSelectedCase ? (
               <ChatWidget
@@ -204,14 +273,17 @@ export default function MessagesPage() {
                 status={activeSelectedCase.status || "OPEN"}
               />
             ) : (
-              <div className="h-full flex flex-col items-center justify-center bg-white rounded-[40px] border border-gray-100 text-gray-400 p-10 text-center">
-                <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                  </svg>
+              <div className="h-full flex flex-col items-center justify-center bg-white rounded-[40px] border border-gray-100 text-gray-400 p-10 text-center shadow-sm">
+                <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-6">
+                  <span className="text-4xl">💬</span>
                 </div>
-                <h3 className="text-xl font-bold text-primary mb-2">No Discussion Selected</h3>
-                <p className="max-w-xs mx-auto">Select a case from the sidebar to view the conversation history and collaborate.</p>
+                <h3 className="text-2xl font-bold text-primary mb-2">Midlex Web Messenger</h3>
+                <p className="text-gray-500 text-sm max-w-sm leading-relaxed">
+                  Select a conversation from the left sidebar to view legal discussions, messages, and document attachments.
+                </p>
+                <div className="mt-8 flex items-center gap-2 text-xs font-bold text-gray-400 bg-gray-50 px-4 py-2 rounded-full border border-gray-100">
+                  <span>🔒 End-to-end legal communication portal</span>
+                </div>
               </div>
             )}
           </div>

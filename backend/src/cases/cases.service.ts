@@ -57,7 +57,7 @@ export class CasesService {
 
   async findAll(): Promise<Case[]> {
     return this.prisma.case.findMany({
-      include: { client: true, lawyer: true, timeline: true },
+      include: { client: true, lawyer: true, timeline: true, messages: { orderBy: { createdAt: 'desc' }, take: 1 } },
     });
   }
 
@@ -301,7 +301,7 @@ export class CasesService {
     const team = lawyerUser?.litigationTeam;
 
     const allCases = await this.prisma.case.findMany({
-      include: { client: true, lawyer: true },
+      include: { client: true, lawyer: true, messages: { orderBy: { createdAt: 'desc' }, take: 1 } },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -319,7 +319,7 @@ export class CasesService {
   async findByClient(clientId: string): Promise<Case[]> {
     return this.prisma.case.findMany({
       where: { clientId },
-      include: { lawyer: true },
+      include: { lawyer: true, messages: { orderBy: { createdAt: 'desc' }, take: 1 } },
     });
   }
 
