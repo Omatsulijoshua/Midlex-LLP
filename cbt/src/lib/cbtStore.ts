@@ -24,10 +24,12 @@ export interface CbtQuestion {
   category: string; // e.g. "German Grammar", "German Legal Terminology", "Civil Litigation"
   questionText: string;
   isGerman?: boolean;
+  caseSensitive?: boolean; // If true, strict case sensitive German grammar. Default: false (case-insensitive)
   imageUrl?: string;
   options?: QuestionOption[]; // For MCQ (A, B, C, D)
   correctOptionKey?: 'A' | 'B' | 'C' | 'D'; // For MCQ
   correctTrueFalse?: boolean; // For True / False
+  correctTheoryKeyword?: string; // Optional reference key for German theory text answers
   explanation?: string;
   marks: number;
 }
@@ -274,6 +276,27 @@ export function updateCbtExamResultSetting(examId: string, showResultsImmediatel
     localStorage.setItem('midlex_cbt_exams', JSON.stringify(exams));
   }
   return exams[idx];
+}
+
+export function updateCbtExamDuration(examId: string, durationMinutes: number): CbtExam | null {
+  const exams = getCbtExams();
+  const idx = exams.findIndex((e) => e.id === examId);
+  if (idx === -1) return null;
+  exams[idx].durationMinutes = Math.max(1, durationMinutes);
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('midlex_cbt_exams', JSON.stringify(exams));
+  }
+  return exams[idx];
+}
+
+export function checkGermanTextAnswer(studentText: string, targetKeyword: string, isCaseSensitive: boolean = false): boolean {
+  if (!studentText || !targetKeyword) return false;
+  const s = studentText.trim();
+  const t = targetKeyword.trim();
+  if (isCaseSensitive) {
+    return s.includes(t);
+  }
+  return s.toLowerCase().includes(t.toLowerCase());
 }
 
 export function getCbtQuestions(examId?: string): CbtQuestion[] {

@@ -6,6 +6,7 @@ import {
   getCbtQuestions,
   saveCbtQuestion,
   updateCbtExamResultSetting,
+  updateCbtExamDuration,
   CbtExam,
   CbtQuestion,
   QuestionType,
@@ -22,6 +23,7 @@ export default function AdminQuestionsBuilderPage() {
   const [category, setCategory] = useState('German Language & Grammar');
   const [questionText, setQuestionText] = useState('');
   const [isGerman, setIsGerman] = useState(true);
+  const [caseSensitive, setCaseSensitive] = useState(false); // Default: Case-insensitive
   const [imageUrl, setImageUrl] = useState('');
   const [marks, setMarks] = useState(25);
   const [explanation, setExplanation] = useState('');
@@ -57,6 +59,13 @@ export default function AdminQuestionsBuilderPage() {
     setExams(updatedExams);
   };
 
+  const handleUpdateDuration = (mins: number) => {
+    if (!selectedExamId) return;
+    updateCbtExamDuration(selectedExamId, mins);
+    const updatedExams = getCbtExams();
+    setExams(updatedExams);
+  };
+
   const handleInsertGermanChar = (char: string) => {
     setQuestionText((prev) => prev + char);
   };
@@ -88,6 +97,7 @@ export default function AdminQuestionsBuilderPage() {
       category: category.trim() || 'General',
       questionText: questionText.trim(),
       isGerman,
+      caseSensitive: isGerman ? caseSensitive : false,
       imageUrl: imageUrl.trim() || undefined,
       options,
       correctOptionKey: type === 'MCQ' ? correctOptionKey : undefined,
@@ -123,32 +133,78 @@ export default function AdminQuestionsBuilderPage() {
 
       <main className="max-w-6xl mx-auto px-6 pt-10 space-y-10">
         <div>
-          <h2 className="text-3xl font-black text-slate-900">CBT Question Bank Builder</h2>
+          <h2 className="text-3xl font-black text-slate-900">CBT Question Bank & Exam Configuration</h2>
           <p className="text-slate-500 text-sm mt-1">
-            Create German language questions, diagram images, Multiple Choice Options (A, B, C, D), True/False, and Theory essay prompts.
+            Configure exam duration timers, German case sensitivity rules, result display modes, and question authoring.
           </p>
         </div>
 
-        {/* Target Exam Switcher */}
-        <div className="bg-white p-6 rounded-[28px] border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Select Target Examination:</span>
-            <select
-              value={selectedExamId}
-              onChange={(e) => handleExamSelect(e.target.value)}
-              className="px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
-            >
-              {exams.map((ex) => (
-                <option key={ex.id} value={ex.id}>
-                  {ex.title} ({ex.subject})
-                </option>
-              ))}
-            </select>
-          </div>
-          <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100">
-            Current Questions: {questions.length} Items
-          </span>
-        </div>
+        {/* Target Exam Switcher & Quick Timer Adjuster */}
+        {(() => {
+          const currentExam = exams.find((e) => e.id === selectedExamId);
+
+          return (
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Exam Module Switcher */}
+              <div className="bg-white p-6 rounded-[28px] border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Target Examination Module:</span>
+                <select
+                  value={selectedExamId}
+                  onChange={(e) => handleExamSelect(e.target.value)}
+                  className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  {exams.map((ex) => (
+                    <option key={ex.id} value={ex.id}>
+                      {ex.title} ({ex.subject})
+                    </option>
+                  ))}
+                </select>
+                <div className="flex justify-between items-center text-xs font-bold pt-2 border-t border-slate-100">
+                  <span className="text-slate-500">Bank Size: <strong className="text-slate-900">{questions.length} Items</strong></span>
+                  <span className="text-amber-700 bg-amber-50 px-3 py-1 rounded-xl">Current Timer: ⏱️ {currentExam?.durationMinutes || 30} mins</span>
+                </div>
+              </div>
+
+              {/* Live Exam Duration Timer Adjuster */}
+              <div className="bg-white p-6 rounded-[28px] border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Exam Timer Duration Control</span>
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900">Change Exam Duration (in Minutes) Anytime</h4>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min={1}
+                    max={300}
+                    value={currentExam?.durationMinutes || 30}
+                    onChange={(e) => handleUpdateDuration(Number(e.target.value))}
+                    className="w-28 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-black text-center text-base text-primary"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {[15, 30, 45, 60, 90].map((mins) => (
+                      <button
+                        key={mins}
+                        type="button"
+                        onClick={() => handleUpdateDuration(mins)}
+                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                          currentExam?.durationMinutes === mins
+                            ? 'bg-amber-600 text-white shadow-md font-black'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        {mins}m
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Post-Exam Result Release Display Setting */}
         {(() => {
@@ -263,6 +319,52 @@ export default function AdminQuestionsBuilderPage() {
                     onChange={(e) => setMarks(Number(e.target.value))}
                     className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800"
                   />
+                </div>
+              </div>
+
+              {/* German Language Case Sensitivity Evaluation Rule */}
+              <div className="bg-yellow-50/60 p-4 rounded-2xl border border-yellow-200/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🇩🇪</span>
+                    <span className="text-xs font-bold text-yellow-950 uppercase tracking-wider">German Text Answer Case Evaluation Rule</span>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isGerman}
+                      onChange={(e) => setIsGerman(e.target.checked)}
+                      className="w-4 h-4 text-amber-600 rounded"
+                    />
+                    <span className="text-xs font-bold text-slate-700">Flag as German Question</span>
+                  </label>
+                </div>
+                <p className="text-[11px] text-yellow-900/80">
+                  Configure whether student text answers should match strictly on German Noun Upper Case (e.g., <em>&quot;Rechtsanwalt&quot;</em> vs <em>&quot;rechtsanwalt&quot;</em>) or be case-insensitive.
+                </p>
+                <div className="flex flex-wrap gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setCaseSensitive(false)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                      !caseSensitive
+                        ? 'bg-amber-600 text-white shadow-md font-black'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    🔤 Case-Insensitive (Normalizes Upper & Lowercase)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCaseSensitive(true)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                      caseSensitive
+                        ? 'bg-yellow-700 text-white shadow-md font-black'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    🔠 Strict Case-Sensitive (German Noun Rule)
+                  </button>
                 </div>
               </div>
 
