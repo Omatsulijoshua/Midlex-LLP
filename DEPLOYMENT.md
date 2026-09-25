@@ -126,10 +126,24 @@ Each portal (`frontend`, `admin`, `lawyers`) can be imported into Vercel as a se
 
 ---
 
+### App 4: CBT & Assessment Portal (`cbt/`)
+1. In Vercel, click **Add New** > **Project** and select repository `Omatsulijoshua/Midlex-LLP`.
+2. Name project: `midlex-cbt`.
+3. Set **Root Directory** to `cbt`.
+4. Environment Variables:
+   ```env
+   NEXT_PUBLIC_API_URL=https://midlex-backend.onrender.com
+   NEXT_PUBLIC_SITE_URL=https://midlex-cbt.vercel.app
+   ```
+5. Assign Domain (e.g. `midlex-cbt.vercel.app` or `cbt.midlex.com`).
+
+---
+
 ## 4. Local Development
 
-Start all 4 servers locally with `start-offline.bat`:
+Start all 5 servers locally with `start-offline.bat`:
 - **Backend API**: `http://localhost:3001`
 - **Public & Client Portal**: `http://localhost:3000`
 - **Admin Portal**: `http://localhost:3002`
 - **Lawyer Portal**: `http://localhost:3003`
+- **CBT Portal**: `http://localhost:3004`
