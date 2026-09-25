@@ -139,11 +139,25 @@ Each portal (`frontend`, `admin`, `lawyers`) can be imported into Vercel as a se
 
 ---
 
+### App 5: Midlex Internship Program Portal (`mip/`)
+1. In Vercel, click **Add New** > **Project** and select repository `Omatsulijoshua/Midlex-LLP`.
+2. Name project: `midlex-mip`.
+3. Set **Root Directory** to `mip`.
+4. Environment Variables:
+   ```env
+   NEXT_PUBLIC_API_URL=https://midlex-backend.onrender.com
+   NEXT_PUBLIC_SITE_URL=https://midlex-mip.vercel.app
+   ```
+5. Assign Domain (e.g. `midlex-mip.vercel.app` or `internship.midlex.com`).
+
+---
+
 ## 4. Local Development
 
-Start all 5 servers locally with `start-offline.bat`:
+Start all 6 servers locally with `start-offline.bat`:
 - **Backend API**: `http://localhost:3001`
 - **Public & Client Portal**: `http://localhost:3000`
 - **Admin Portal**: `http://localhost:3002`
 - **Lawyer Portal**: `http://localhost:3003`
 - **CBT Portal**: `http://localhost:3004`
+- **MIP Portal (Internship)**: `http://localhost:3005`
