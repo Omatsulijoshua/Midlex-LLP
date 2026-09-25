@@ -14,6 +14,7 @@ import 'schedule_screen.dart';
 import 'inquiries_screen.dart';
 import 'notifications_screen.dart';
 import 'team_chat_screen.dart';
+import 'profile_screen.dart';
 import '../auth/login_screen.dart';
 
 class SidebarMenuItem {
@@ -61,6 +62,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         SidebarMenuItem(name: 'Admins', icon: Icons.person_outline, screen: _buildUserDirectoryView('ADMIN')),
         const SidebarMenuItem(name: 'Messages', icon: Icons.chat_bubble_outline, screen: TeamChatScreen()),
         const SidebarMenuItem(name: 'Payments', icon: Icons.monetization_on_outlined, screen: PaymentsScreen()),
+        const SidebarMenuItem(name: 'Profile & Request', icon: Icons.person_outline, screen: ProfileScreen()),
         const SidebarMenuItem(name: 'Inquiries', icon: Icons.chat_outlined, screen: InquiriesScreen()),
         const SidebarMenuItem(name: 'Notifications', icon: Icons.notifications_none_outlined, screen: NotificationsScreen()),
       ];
@@ -70,6 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SidebarMenuItem(name: 'MIDLEX CASE DIRECTORY', icon: Icons.insert_drive_file_outlined, screen: CasesListScreen()),
         SidebarMenuItem(name: 'Clients', icon: Icons.groups_outlined, screen: _buildUserDirectoryView('CLIENT')),
         const SidebarMenuItem(name: 'Messages', icon: Icons.chat_bubble_outline, screen: TeamChatScreen()),
+        const SidebarMenuItem(name: 'Profile & Request', icon: Icons.person_outline, screen: ProfileScreen()),
         const SidebarMenuItem(name: 'Schedule', icon: Icons.calendar_today_outlined, screen: ScheduleScreen()),
       ];
     } else if (user.isAccountant) {
@@ -83,6 +86,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return [
         SidebarMenuItem(name: 'My Case', icon: Icons.dashboard_outlined, screen: _buildOverviewTab(context, user)),
         const SidebarMenuItem(name: 'Messages', icon: Icons.chat_bubble_outline, screen: TeamChatScreen()),
+        const SidebarMenuItem(name: 'Profile & Request', icon: Icons.person_outline, screen: ProfileScreen()),
         const SidebarMenuItem(name: 'Payments', icon: Icons.payment_outlined, screen: PaymentsScreen()),
         const SidebarMenuItem(name: 'Schedule', icon: Icons.calendar_today_outlined, screen: ScheduleScreen()),
       ];
