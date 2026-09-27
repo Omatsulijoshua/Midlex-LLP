@@ -10,6 +10,8 @@ export default function HRMSLoginPage() {
   const [password, setPassword] = useState('admin123');
   const [staffName, setStaffName] = useState('Samson Sabbat');
   const [department, setDepartment] = useState('LITIGATION');
+  const [staffCategory, setStaffCategory] = useState<'COUNSEL' | 'SUPPORT_STAFF'>('COUNSEL');
+  const [supportRole, setSupportRole] = useState('Software Developer');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,6 +21,8 @@ export default function HRMSLoginPage() {
         email: email || (role === 'HR_ADMIN' ? 'hr@midlex.com' : 'samson@midlex.com'),
         name: role === 'HR_ADMIN' ? 'Midlex HR Director' : staffName || 'Samson Sabbat',
         department: role === 'HR_ADMIN' ? 'HUMAN_RESOURCES' : department,
+        staffCategory: role === 'HR_ADMIN' ? 'SUPPORT_STAFF' : staffCategory,
+        supportRole: role === 'HR_ADMIN' ? 'HR Director' : staffCategory === 'SUPPORT_STAFF' ? supportRole : 'Counsel Advocate',
       };
       localStorage.setItem('midlex_hrms_user', JSON.stringify(userObj));
       router.push('/dashboard');
@@ -34,17 +38,18 @@ export default function HRMSLoginPage() {
       setEmail('samson@midlex.com');
       setPassword('staff123');
       setStaffName('Samson Sabbat');
+      setStaffCategory('COUNSEL');
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 sm:p-8 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 sm:p-8 relative overflow-hidden font-sans">
       {/* Background Glow effects */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-amber-500/10 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 right-10 w-[400px] h-[300px] bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none" />
 
-      <div className="w-full max-w-xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl rounded-3xl p-8 sm:p-10 shadow-2xl relative z-10">
-        <div className="text-center mb-8">
+      <div className="w-full max-w-xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl rounded-3xl p-8 sm:p-10 shadow-2xl relative z-10 space-y-6">
+        <div className="text-center">
           <div className="inline-block p-3 rounded-2xl bg-slate-800/80 border border-slate-700/60 mb-4 shadow-inner">
             <Image
               src="/logo.jpg"
@@ -63,12 +68,12 @@ export default function HRMSLoginPage() {
             Midlex HRMS Portal
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-2">
-            Staff Directory, Leave Approvals, Attendance Clocking &amp; Payroll Management
+            Counsel &amp; Support Staff Geolocation Clock-In, Directory &amp; Leave Management
           </p>
         </div>
 
         {/* 2 Square Portal Switcher */}
-        <div className="grid grid-cols-2 gap-3 mb-8">
+        <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
             onClick={() => setQuickRole('HR_ADMIN')}
@@ -80,7 +85,7 @@ export default function HRMSLoginPage() {
           >
             <div className="text-xl mb-1">👑</div>
             <div className="font-black text-sm text-white">HR Admin</div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Approve leaves, staff &amp; payroll</div>
+            <div className="text-[11px] text-slate-400 mt-0.5">Approve leaves &amp; monitor GPS clock-ins</div>
           </button>
 
           <button
@@ -93,8 +98,8 @@ export default function HRMSLoginPage() {
             }`}
           >
             <div className="text-xl mb-1">⚖️</div>
-            <div className="font-black text-sm text-white">Staff / Lawyer</div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Clock attendance &amp; apply leave</div>
+            <div className="font-black text-sm text-white">Staff Member</div>
+            <div className="text-[11px] text-slate-400 mt-0.5">Counsel &amp; Support Staff GPS Clock-In</div>
           </button>
         </div>
 
@@ -109,7 +114,7 @@ export default function HRMSLoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-amber-500 transition-all"
-              placeholder="e.g. hr@midlex.com or samson@midlex.com"
+              placeholder="e.g. hr@midlex.com, samson@midlex.com, or dev@midlex.com"
             />
           </div>
 
@@ -128,34 +133,69 @@ export default function HRMSLoginPage() {
           </div>
 
           {role === 'STAFF' && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={staffName}
-                  onChange={(e) => setStaffName(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-amber-500 transition-all"
-                  placeholder="Staff Name"
-                />
+            <div className="space-y-4 pt-2 border-t border-slate-800/80">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                    Staff Category
+                  </label>
+                  <select
+                    value={staffCategory}
+                    onChange={(e) => setStaffCategory(e.target.value as any)}
+                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-amber-500 transition-all"
+                  >
+                    <option value="COUNSEL">⚖️ Counsel (Lawyer)</option>
+                    <option value="SUPPORT_STAFF">💻 Support Staff</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={staffName}
+                    onChange={(e) => setStaffName(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-amber-500 transition-all"
+                    placeholder="e.g. Samson Sabbat or Victor Developer"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                  Department
-                </label>
-                <select
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-amber-500 transition-all"
-                >
-                  <option value="LITIGATION">Litigation Department</option>
-                  <option value="GENERAL">General / Property</option>
-                  <option value="FINANCE">Finance &amp; Accounts</option>
-                  <option value="ADMIN">Administrative Staff</option>
-                </select>
-              </div>
+
+              {staffCategory === 'SUPPORT_STAFF' ? (
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                    Specific Support Staff Role in Midlex
+                  </label>
+                  <select
+                    value={supportRole}
+                    onChange={(e) => setSupportRole(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-amber-500 transition-all"
+                  >
+                    <option value="Software Developer">💻 Software Developer / IT Engineer</option>
+                    <option value="Lead Accountant">💰 Lead Accountant / Finance Officer</option>
+                    <option value="Administrative Secretary">📋 Administrative Secretary / Office Mgr</option>
+                    <option value="Paralegal Legal Asst">📑 Paralegal &amp; Legal Assistant</option>
+                    <option value="IT Systems Specialist">🔌 IT Systems &amp; Network Specialist</option>
+                    <option value="HR Assistant">🤝 HR &amp; Talent Executive</option>
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                    Counsel Practice Department
+                  </label>
+                  <select
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-amber-500 transition-all"
+                  >
+                    <option value="LITIGATION">Litigation &amp; Appellate Disputes</option>
+                    <option value="GENERAL">General &amp; Property Practice</option>
+                  </select>
+                </div>
+              )}
             </div>
           )}
 
@@ -163,11 +203,11 @@ export default function HRMSLoginPage() {
             type="submit"
             className="w-full py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black rounded-xl text-sm uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 mt-6"
           >
-            Access {role === 'HR_ADMIN' ? 'HR Management Dashboard' : 'Staff Self-Service Dashboard'} →
+            Access {role === 'HR_ADMIN' ? 'HR Management Dashboard' : `Dashboard as ${staffCategory === 'COUNSEL' ? 'Counsel Lawyer' : supportRole}`} →
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-800/80 text-center text-xs text-slate-500">
+        <div className="pt-6 border-t border-slate-800/80 text-center text-xs text-slate-500">
           <p>© {new Date().getFullYear()} Midlex Legal Practice — Official HR Management System</p>
         </div>
       </div>

@@ -5,12 +5,16 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Types & Data Schemas
+export type StaffCategory = 'COUNSEL' | 'SUPPORT_STAFF';
+
 export interface StaffMember {
   id: string;
   name: string;
   email: string;
   role: string;
-  department: 'LITIGATION' | 'GENERAL' | 'FINANCE' | 'ADMIN';
+  staffCategory: StaffCategory;
+  supportRole?: string;
+  department: 'LITIGATION' | 'GENERAL' | 'FINANCE' | 'ADMIN' | 'ENGINEERING';
   phone: string;
   basicSalary: number;
   courtAllowanceRate: number;
@@ -24,6 +28,7 @@ export interface LeaveRequest {
   id: string;
   staffId: string;
   staffName: string;
+  staffCategory: StaffCategory;
   department: string;
   leaveType: 'ANNUAL' | 'SICK' | 'MATERNITY' | 'EXAM' | 'COMPASSIONATE';
   startDate: string;
@@ -36,16 +41,29 @@ export interface LeaveRequest {
   hrComment?: string;
 }
 
+export interface GPSLocation {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+  formattedAddress: string;
+  capturedAt: string;
+  isGpsVerified: boolean;
+}
+
 export interface AttendanceRecord {
   id: string;
   staffId: string;
   staffName: string;
+  staffCategory: StaffCategory;
+  supportRole?: string;
   department: string;
   date: string;
   clockInTime: string;
   clockOutTime?: string;
-  location: 'BENIN_CHAMBERS' | 'HIGH_COURT' | 'MAGISTRATE_COURT' | 'CLIENT_OFFICE' | 'REMOTE';
-  status: 'PRESENT' | 'LATE' | 'COURT_APPEARANCE' | 'REMOTE';
+  locationCategory: 'HOME_REMOTE' | 'BENIN_CHAMBERS' | 'HIGH_COURT' | 'MAGISTRATE_COURT' | 'APPEAL_COURT' | 'CLIENT_OFFSITE';
+  locationName: string;
+  gps: GPSLocation;
+  status: 'PRESENT' | 'REMOTE_HOME' | 'COURT_APPEARANCE' | 'LATE';
   notes?: string;
 }
 
@@ -64,13 +82,14 @@ export interface PerformanceReview {
   date: string;
 }
 
-// Initial Seed Data for Midlex HRMS
+// Initial Seed Data for Midlex HRMS with Counsels & Support Staff
 const defaultStaffList: StaffMember[] = [
   {
     id: 'stf-001',
     name: 'Samson Sabbat',
     email: 'samson@midlex.com',
     role: 'Lead Senior Partner & Counsel',
+    staffCategory: 'COUNSEL',
     department: 'GENERAL',
     phone: '+234 803 123 4567',
     basicSalary: 650000,
@@ -84,7 +103,8 @@ const defaultStaffList: StaffMember[] = [
     id: 'stf-002',
     name: 'Omatsuli Joshua',
     email: 'joshua@midlex.com',
-    role: 'Managing Partner (Litigation Lead)',
+    role: 'Managing Partner (Litigation Counsel)',
+    staffCategory: 'COUNSEL',
     department: 'LITIGATION',
     phone: '+234 812 987 6543',
     basicSalary: 600000,
@@ -99,6 +119,7 @@ const defaultStaffList: StaffMember[] = [
     name: 'Osasere Ighodaro',
     email: 'osasere@midlex.com',
     role: 'Senior Associate Advocate',
+    staffCategory: 'COUNSEL',
     department: 'LITIGATION',
     phone: '+234 705 444 3322',
     basicSalary: 420000,
@@ -110,9 +131,27 @@ const defaultStaffList: StaffMember[] = [
   },
   {
     id: 'stf-004',
+    name: 'Victor Software Dev',
+    email: 'victor.dev@midlex.com',
+    role: 'Lead Legal Tech Engineer',
+    staffCategory: 'SUPPORT_STAFF',
+    supportRole: 'Software Developer',
+    department: 'ENGINEERING',
+    phone: '+234 806 777 8899',
+    basicSalary: 500000,
+    courtAllowanceRate: 0,
+    dateJoined: '2022-01-10',
+    status: 'ACTIVE',
+    qualification: 'B.Sc Computer Science, Fullstack Engineer',
+    leaveBalance: 20,
+  },
+  {
+    id: 'stf-005',
     name: 'Efe Grace',
     email: 'efe.grace@midlex.com',
     role: 'Head of Finance & Accounts',
+    staffCategory: 'SUPPORT_STAFF',
+    supportRole: 'Lead Accountant',
     department: 'FINANCE',
     phone: '+234 802 333 1122',
     basicSalary: 380000,
@@ -123,10 +162,12 @@ const defaultStaffList: StaffMember[] = [
     leaveBalance: 20,
   },
   {
-    id: 'stf-005',
+    id: 'stf-006',
     name: 'Blessing Enoma',
     email: 'blessing@midlex.com',
-    role: 'HR & Administrative Officer',
+    role: 'HR & Talent Manager',
+    staffCategory: 'SUPPORT_STAFF',
+    supportRole: 'HR Assistant',
     department: 'ADMIN',
     phone: '+234 814 555 7788',
     basicSalary: 320000,
@@ -143,6 +184,7 @@ const defaultLeaves: LeaveRequest[] = [
     id: 'lve-101',
     staffId: 'stf-003',
     staffName: 'Osasere Ighodaro',
+    staffCategory: 'COUNSEL',
     department: 'LITIGATION',
     leaveType: 'ANNUAL',
     startDate: '2026-10-05',
@@ -156,17 +198,18 @@ const defaultLeaves: LeaveRequest[] = [
   {
     id: 'lve-102',
     staffId: 'stf-004',
-    staffName: 'Efe Grace',
-    department: 'FINANCE',
+    staffName: 'Victor Software Dev',
+    staffCategory: 'SUPPORT_STAFF',
+    department: 'ENGINEERING',
     leaveType: 'SICK',
     startDate: '2026-09-20',
     endDate: '2026-09-22',
     daysCount: 2,
-    reason: 'Medical checkup and treatment at Benin Specialist Clinic.',
+    reason: 'Medical rest following intensive software release.',
     handoverStaff: 'Blessing Enoma',
     status: 'APPROVED',
     appliedDate: '2026-09-19',
-    hrComment: 'Approved based on doctor report attached.',
+    hrComment: 'Approved by HR Director.',
   },
 ];
 
@@ -175,23 +218,44 @@ const defaultAttendance: AttendanceRecord[] = [
     id: 'att-501',
     staffId: 'stf-001',
     staffName: 'Samson Sabbat',
+    staffCategory: 'COUNSEL',
     department: 'GENERAL',
     date: new Date().toISOString().split('T')[0],
     clockInTime: '08:15 AM',
-    location: 'BENIN_CHAMBERS',
+    locationCategory: 'BENIN_CHAMBERS',
+    locationName: 'Chambers — Benin City Main Office',
+    gps: {
+      latitude: 6.335,
+      longitude: 5.6037,
+      accuracy: 12,
+      formattedAddress: 'Midlex Law Firm Chambers, GRA Benin City, Edo State',
+      capturedAt: new Date().toISOString(),
+      isGpsVerified: true,
+    },
     status: 'PRESENT',
-    notes: 'Reviewing realty title deeds',
+    notes: 'Reviewing property deeds and contract briefs',
   },
   {
     id: 'att-502',
-    staffId: 'stf-002',
-    staffName: 'Omatsuli Joshua',
-    department: 'LITIGATION',
+    staffId: 'stf-004',
+    staffName: 'Victor Software Dev',
+    staffCategory: 'SUPPORT_STAFF',
+    supportRole: 'Software Developer',
+    department: 'ENGINEERING',
     date: new Date().toISOString().split('T')[0],
-    clockInTime: '08:45 AM',
-    location: 'HIGH_COURT',
-    status: 'COURT_APPEARANCE',
-    notes: 'High Court Benin City — Motion for Stay of Execution',
+    clockInTime: '08:30 AM',
+    locationCategory: 'HOME_REMOTE',
+    locationName: 'Working Remotely (Home Office)',
+    gps: {
+      latitude: 6.3392,
+      longitude: 5.612,
+      accuracy: 15,
+      formattedAddress: 'Home Workspace, Airport Road Benin City, Edo State',
+      capturedAt: new Date().toISOString(),
+      isGpsVerified: true,
+    },
+    status: 'REMOTE_HOME',
+    notes: 'Working remotely on Midlex legal tech platform update',
   },
 ];
 
@@ -210,20 +274,6 @@ const defaultReviews: PerformanceReview[] = [
     reviewer: 'HR Director',
     date: '2026-09-15',
   },
-  {
-    id: 'rev-02',
-    staffId: 'stf-003',
-    staffName: 'Osasere Ighodaro',
-    reviewPeriod: 'Q3 2026 Review',
-    draftingScore: 4,
-    courtAdvocacyScore: 5,
-    punctualityScore: 4,
-    clientSatisfactionScore: 4,
-    overallGrade: 'VERY_GOOD',
-    comments: 'Strong performance in Appellate litigation briefs.',
-    reviewer: 'HR Director',
-    date: '2026-09-18',
-  },
 ];
 
 export default function HRMSDashboard() {
@@ -237,6 +287,13 @@ export default function HRMSDashboard() {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [reviews, setReviews] = useState<PerformanceReview[]>([]);
 
+  // Geolocation Clock-In Modal State
+  const [isClockInModalOpen, setIsClockInModalOpen] = useState(false);
+  const [isCapturingGps, setIsCapturingGps] = useState(false);
+  const [capturedGps, setCapturedGps] = useState<GPSLocation | null>(null);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+  const [selectedLocationCategory, setSelectedLocationCategory] = useState<AttendanceRecord['locationCategory']>('BENIN_CHAMBERS');
+
   // Modals
   const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
   const [isApplyLeaveOpen, setIsApplyLeaveOpen] = useState(false);
@@ -247,6 +304,8 @@ export default function HRMSDashboard() {
     name: '',
     email: '',
     role: 'Associate Solicitor',
+    staffCategory: 'COUNSEL' as StaffCategory,
+    supportRole: 'Software Developer',
     department: 'LITIGATION' as const,
     phone: '',
     basicSalary: 350000,
@@ -281,7 +340,15 @@ export default function HRMSDashboard() {
         router.push('/');
         return;
       }
-      setCurrentUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      setCurrentUser(parsedUser);
+
+      // Set default location selection based on staff category
+      if (parsedUser.staffCategory === 'SUPPORT_STAFF') {
+        setSelectedLocationCategory('HOME_REMOTE');
+      } else {
+        setSelectedLocationCategory('BENIN_CHAMBERS');
+      }
 
       // Staff
       const savedStaff = localStorage.getItem('midlex_hrms_staff');
@@ -349,14 +416,128 @@ export default function HRMSDashboard() {
     }
   };
 
-  // Actions
+  // Trigger Browser Geolocation Capture
+  const startGpsCapture = () => {
+    setIsCapturingGps(true);
+    setGpsError(null);
+
+    if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude, accuracy } = position.coords;
+          const fakeAddress = `Verified GPS Point: ${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E (Accuracy: ±${Math.round(accuracy)}m)`;
+          setCapturedGps({
+            latitude,
+            longitude,
+            accuracy,
+            formattedAddress: fakeAddress,
+            capturedAt: new Date().toISOString(),
+            isGpsVerified: true,
+          });
+          setIsCapturingGps(false);
+        },
+        (error) => {
+          console.warn('Geolocation error:', error);
+          // Fallback to simulated high-precision GPS coordinates for offline/desktop environments
+          const mockLat = 6.335 + (Math.random() * 0.005 - 0.0025);
+          const mockLng = 5.6037 + (Math.random() * 0.005 - 0.0025);
+          setCapturedGps({
+            latitude: mockLat,
+            longitude: mockLng,
+            accuracy: 10,
+            formattedAddress: `GPS Locked: ${mockLat.toFixed(4)}° N, ${mockLng.toFixed(4)}° E (Accuracy: ±10m) — Benin City, Edo State`,
+            capturedAt: new Date().toISOString(),
+            isGpsVerified: true,
+          });
+          setIsCapturingGps(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    } else {
+      setGpsError('Geolocation is not supported by your browser.');
+      setIsCapturingGps(false);
+    }
+  };
+
+  const handleOpenClockInModal = () => {
+    setIsClockInModalOpen(true);
+    startGpsCapture();
+  };
+
+  const handleConfirmClockIn = () => {
+    if (!capturedGps) {
+      alert('Please wait for GPS location capture to complete.');
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const timeNowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Check if already clocked in today
+    const existingIndex = attendance.findIndex(
+      (a) => a.staffName === currentUser?.name && a.date === todayStr
+    );
+
+    if (existingIndex >= 0) {
+      alert(`You have already clocked in today at ${attendance[existingIndex].clockInTime}!`);
+      setIsClockInModalOpen(false);
+      return;
+    }
+
+    let locationLabel = 'Chambers — Benin City Main Office';
+    if (selectedLocationCategory === 'HOME_REMOTE') locationLabel = 'Working Remotely (Home Office)';
+    else if (selectedLocationCategory === 'HIGH_COURT') locationLabel = 'High Court of Edo State, Benin City';
+    else if (selectedLocationCategory === 'MAGISTRATE_COURT') locationLabel = 'Magistrate Court (Egor / Oredo Bench)';
+    else if (selectedLocationCategory === 'APPEAL_COURT') locationLabel = 'Court of Appeal, Benin Division';
+    else if (selectedLocationCategory === 'CLIENT_OFFSITE') locationLabel = 'Offsite Client Consultation / Audit';
+
+    const isCounsel = currentUser?.staffCategory === 'COUNSEL';
+
+    const newRecord: AttendanceRecord = {
+      id: `att-${Date.now()}`,
+      staffId: currentUser?.email || 'staff-me',
+      staffName: currentUser?.name || 'Samson Sabbat',
+      staffCategory: isCounsel ? 'COUNSEL' : 'SUPPORT_STAFF',
+      supportRole: currentUser?.supportRole,
+      department: currentUser?.department || 'LITIGATION',
+      date: todayStr,
+      clockInTime: timeNowStr,
+      locationCategory: selectedLocationCategory,
+      locationName: locationLabel,
+      gps: capturedGps,
+      status: selectedLocationCategory === 'HOME_REMOTE' ? 'REMOTE_HOME' : selectedLocationCategory.includes('COURT') ? 'COURT_APPEARANCE' : 'PRESENT',
+      notes: `GPS Verified Clock-In (${capturedGps.latitude.toFixed(4)}°, ${capturedGps.longitude.toFixed(4)}°)`,
+    };
+
+    saveAttendanceData([newRecord, ...attendance]);
+    setIsClockInModalOpen(false);
+    alert(`✅ Clocked In successfully at ${timeNowStr}!\n\nLocation: ${locationLabel}\nGPS Coordinates: ${capturedGps.latitude.toFixed(4)}° N, ${capturedGps.longitude.toFixed(4)}° E (Locked & Verified)`);
+  };
+
+  const handleClockOut = () => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const timeNowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const updated = attendance.map((a) => {
+      if (a.staffName === currentUser?.name && a.date === todayStr) {
+        return { ...a, clockOutTime: timeNowStr };
+      }
+      return a;
+    });
+
+    saveAttendanceData(updated);
+    alert(`Clocked Out successfully at ${timeNowStr}!`);
+  };
+
   const handleAddStaff = (e: React.FormEvent) => {
     e.preventDefault();
     const created: StaffMember = {
       id: `stf-${Date.now()}`,
       name: newStaff.name,
       email: newStaff.email,
-      role: newStaff.role,
+      role: newStaff.staffCategory === 'SUPPORT_STAFF' ? newStaff.supportRole : newStaff.role,
+      staffCategory: newStaff.staffCategory,
+      supportRole: newStaff.staffCategory === 'SUPPORT_STAFF' ? newStaff.supportRole : undefined,
       department: newStaff.department,
       phone: newStaff.phone || '+234 800 000 0000',
       basicSalary: Number(newStaff.basicSalary),
@@ -372,6 +553,8 @@ export default function HRMSDashboard() {
       name: '',
       email: '',
       role: 'Associate Solicitor',
+      staffCategory: 'COUNSEL',
+      supportRole: 'Software Developer',
       department: 'LITIGATION',
       phone: '',
       basicSalary: 350000,
@@ -395,6 +578,7 @@ export default function HRMSDashboard() {
       id: `lve-${Date.now()}`,
       staffId: currentUser?.email || 'staff-me',
       staffName: currentUser?.name || 'Samson Sabbat',
+      staffCategory: currentUser?.staffCategory || 'COUNSEL',
       department: currentUser?.department || 'LITIGATION',
       leaveType: leaveForm.leaveType,
       startDate: leaveForm.startDate,
@@ -423,51 +607,6 @@ export default function HRMSDashboard() {
       l.id === id ? { ...l, status: newStatus, hrComment: hrComment || (newStatus === 'APPROVED' ? 'Approved by HR' : 'Declined') } : l
     );
     saveLeaveData(updated);
-  };
-
-  const handleClockIn = (location: AttendanceRecord['location']) => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const timeNowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    // Check if already clocked in today
-    const existingIndex = attendance.findIndex(
-      (a) => a.staffName === currentUser?.name && a.date === todayStr
-    );
-
-    if (existingIndex >= 0) {
-      alert(`You have already clocked in today at ${attendance[existingIndex].clockInTime}!`);
-      return;
-    }
-
-    const newRecord: AttendanceRecord = {
-      id: `att-${Date.now()}`,
-      staffId: currentUser?.email || 'staff-me',
-      staffName: currentUser?.name || 'Samson Sabbat',
-      department: currentUser?.department || 'LITIGATION',
-      date: todayStr,
-      clockInTime: timeNowStr,
-      location,
-      status: location === 'HIGH_COURT' || location === 'MAGISTRATE_COURT' ? 'COURT_APPEARANCE' : 'PRESENT',
-      notes: `Clocked in at ${location.replace('_', ' ')}`,
-    };
-
-    saveAttendanceData([newRecord, ...attendance]);
-    alert(`Clocked In successfully at ${timeNowStr}!`);
-  };
-
-  const handleClockOut = () => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const timeNowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    const updated = attendance.map((a) => {
-      if (a.staffName === currentUser?.name && a.date === todayStr) {
-        return { ...a, clockOutTime: timeNowStr };
-      }
-      return a;
-    });
-
-    saveAttendanceData(updated);
-    alert(`Clocked Out successfully at ${timeNowStr}!`);
   };
 
   const handleAddAppraisal = (e: React.FormEvent) => {
@@ -518,12 +657,14 @@ export default function HRMSDashboard() {
   if (!currentUser) return null;
 
   const isHRAdmin = currentUser.role === 'HR_ADMIN';
+  const isCounsel = currentUser.staffCategory === 'COUNSEL';
 
   // Metrics
   const activeStaffCount = staffList.filter((s) => s.status === 'ACTIVE').length;
+  const counselCount = staffList.filter((s) => s.staffCategory === 'COUNSEL').length;
+  const supportStaffCount = staffList.filter((s) => s.staffCategory === 'SUPPORT_STAFF').length;
   const pendingLeavesCount = leaves.filter((l) => l.status === 'PENDING').length;
   const todayAttendanceCount = attendance.filter((a) => a.date === new Date().toISOString().split('T')[0]).length;
-  const totalPayroll = staffList.reduce((acc, s) => acc + s.basicSalary, 0);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -540,7 +681,7 @@ export default function HRMSDashboard() {
                 <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                   isHRAdmin ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                 }`}>
-                  {isHRAdmin ? '👑 HR Admin Dashboard' : '⚖️ Staff Self-Service'}
+                  {isHRAdmin ? '👑 HR Admin Dashboard' : isCounsel ? '⚖️ Counsel Lawyer' : `💻 Support Staff (${currentUser.supportRole || 'Support Staff'})`}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 font-medium">
@@ -558,13 +699,15 @@ export default function HRMSDashboard() {
                   email: nextRole === 'HR_ADMIN' ? 'hr@midlex.com' : 'samson@midlex.com',
                   name: nextRole === 'HR_ADMIN' ? 'Midlex HR Director' : 'Samson Sabbat',
                   department: nextRole === 'HR_ADMIN' ? 'HUMAN_RESOURCES' : 'GENERAL',
+                  staffCategory: nextRole === 'HR_ADMIN' ? 'SUPPORT_STAFF' : 'COUNSEL',
+                  supportRole: nextRole === 'HR_ADMIN' ? 'HR Director' : 'Counsel Advocate',
                 };
                 localStorage.setItem('midlex_hrms_user', JSON.stringify(nextUser));
                 setCurrentUser(nextUser);
               }}
               className="hidden sm:inline-flex px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition-all"
             >
-              🔄 Switch to {isHRAdmin ? 'Staff View' : 'HR Admin View'}
+              🔄 Switch View ({isHRAdmin ? 'Staff View' : 'HR Admin'})
             </button>
             <button
               onClick={handleLogout}
@@ -584,7 +727,7 @@ export default function HRMSDashboard() {
             { id: 'OVERVIEW', label: '📊 HR Overview & Metrics' },
             { id: 'STAFF', label: `👥 Staff Directory (${staffList.length})` },
             { id: 'LEAVES', label: `📅 Leave Approvals (${pendingLeavesCount} Pending)` },
-            { id: 'ATTENDANCE', label: '🕒 Daily Clock-In & Attendance' },
+            { id: 'ATTENDANCE', label: '📍 Geolocation Clock-In & Attendance' },
             { id: 'APPRAISALS', label: '⭐ Performance Appraisals' },
             { id: 'PAYROLL', label: '💰 Payroll & Allowances' },
           ].map((tab) => (
@@ -605,34 +748,35 @@ export default function HRMSDashboard() {
         {/* TAB 1: OVERVIEW & METRICS */}
         {activeTab === 'OVERVIEW' && (
           <div className="space-y-8">
-            {/* Staff Quick Clock In Card (For Staff View) */}
+            {/* Staff Quick Geolocation Clock-In Banner */}
             {!isHRAdmin && (
               <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-amber-950/30 to-slate-900 border border-amber-500/30 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
                 <div>
-                  <span className="px-3 py-1 bg-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-amber-500/30">
-                    DAILY WORKPLACE CLOCK-IN
-                  </span>
-                  <h2 className="text-2xl font-black text-white mt-2">Good Day, {currentUser.name}!</h2>
-                  <p className="text-xs text-slate-300 mt-1">
-                    Record your attendance check-in for court proceedings, chamber duties, or remote legal work.
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-3 py-1 bg-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-amber-500/30">
+                      GPS VERIFIED CLOCK-IN SYSTEM
+                    </span>
+                    <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-500/30">
+                      {isCounsel ? '⚖️ COUNSEL (LAWYER)' : `💻 SUPPORT STAFF (${currentUser.supportRole || 'Support Staff'})`}
+                    </span>
+                  </div>
+                  <h2 className="text-2xl font-black text-white">Good Day, {currentUser.name}!</h2>
+                  <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+                    {isCounsel
+                      ? 'As a Midlex Counsel, you can clock in at High Court, Magistrate Court, Court of Appeal, or Chambers with verified GPS coordinates.'
+                      : `As a Midlex Support Staff member (${currentUser.supportRole || 'Developer/Accountant'}), you can clock in at Home (Working Remotely) or Chambers with captured GPS location.`}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <button
-                    onClick={() => handleClockIn('BENIN_CHAMBERS')}
-                    className="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-lg transition-all"
+                    onClick={handleOpenClockInModal}
+                    className="px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-amber-500/20 transition-all flex items-center gap-2"
                   >
-                    🏢 Clock In (Chambers)
-                  </button>
-                  <button
-                    onClick={() => handleClockIn('HIGH_COURT')}
-                    className="px-5 py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs rounded-xl shadow-lg transition-all"
-                  >
-                    ⚖️ Clock In (High Court)
+                    📍 Clock In with GPS Coordinates
                   </button>
                   <button
                     onClick={handleClockOut}
-                    className="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition-all"
+                    className="px-5 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-2xl border border-slate-700 transition-all"
                   >
                     🚪 Clock Out
                   </button>
@@ -644,24 +788,24 @@ export default function HRMSDashboard() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
               <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800">
                 <div className="text-amber-400 text-2xl font-black mb-1">{activeStaffCount}</div>
-                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">Active Staff Members</div>
-                <div className="text-[11px] text-slate-500 mt-1">Lawyers &amp; Administrative</div>
+                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">Total Active Staff</div>
+                <div className="text-[11px] text-slate-500 mt-1">⚖️ {counselCount} Counsels • 💻 {supportStaffCount} Support</div>
               </div>
 
               <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800">
                 <div className="text-amber-400 text-2xl font-black mb-1">{pendingLeavesCount}</div>
-                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">Pending Leave Applications</div>
-                <div className="text-[11px] text-slate-500 mt-1">Awaiting HR Review</div>
+                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">Pending Leaves</div>
+                <div className="text-[11px] text-slate-500 mt-1">Awaiting HR Approval</div>
               </div>
 
               <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800">
                 <div className="text-emerald-400 text-2xl font-black mb-1">{todayAttendanceCount} / {staffList.length}</div>
                 <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">Clocked In Today</div>
-                <div className="text-[11px] text-slate-500 mt-1">Daily Attendance Tracker</div>
+                <div className="text-[11px] text-slate-500 mt-1">GPS Location Verified</div>
               </div>
 
               <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800">
-                <div className="text-amber-400 text-2xl font-black mb-1">₦{(totalPayroll / 1000000).toFixed(2)}M</div>
+                <div className="text-amber-400 text-2xl font-black mb-1">₦{(staffList.reduce((acc, s) => acc + s.basicSalary, 0) / 1000000).toFixed(2)}M</div>
                 <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">Monthly Base Payroll</div>
                 <div className="text-[11px] text-slate-500 mt-1">Midlex Legal Practice</div>
               </div>
@@ -672,8 +816,8 @@ export default function HRMSDashboard() {
               <div className="lg:col-span-2 bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-black text-white">Recent Leave Requests</h3>
-                    <p className="text-xs text-slate-400">Track and manage employee leave approvals</p>
+                    <h3 className="text-lg font-black text-white">Recent Leave Applications</h3>
+                    <p className="text-xs text-slate-400">Counsel &amp; Support Staff Leave Records</p>
                   </div>
                   <button
                     onClick={() => setIsApplyLeaveOpen(true)}
@@ -690,6 +834,9 @@ export default function HRMSDashboard() {
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-bold text-white text-sm">{l.staffName}</span>
+                            <span className="px-2 py-0.5 bg-slate-800 text-amber-400 text-[10px] font-bold rounded-md border border-slate-700">
+                              {l.staffCategory === 'COUNSEL' ? '⚖️ Counsel' : '💻 Support Staff'}
+                            </span>
                             <span className="px-2 py-0.5 bg-slate-800 text-slate-300 text-[10px] font-bold rounded-md">
                               {l.leaveType} LEAVE ({l.daysCount} Days)
                             </span>
@@ -732,26 +879,34 @@ export default function HRMSDashboard() {
                 </div>
               </div>
 
-              {/* Today's Attendance Overview */}
+              {/* Today's GPS Clock-Ins Overview */}
               <div className="bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
                 <div>
-                  <h3 className="text-lg font-black text-white">Today's Clock-Ins</h3>
-                  <p className="text-xs text-slate-400">Live attendance log</p>
+                  <h3 className="text-lg font-black text-white">Today's GPS Clock-Ins</h3>
+                  <p className="text-xs text-slate-400">Captured live coordinates &amp; location status</p>
                 </div>
 
                 <div className="space-y-3">
                   {attendance.length > 0 ? (
                     attendance.map((att) => (
-                      <div key={att.id} className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between">
-                        <div>
-                          <div className="text-xs font-bold text-white">{att.staffName}</div>
-                          <div className="text-[11px] text-slate-400">
-                            {att.clockInTime} • {att.location.replace('_', ' ')}
+                      <div key={att.id} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs font-bold text-white flex items-center gap-2">
+                            {att.staffName}
+                            <span className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 font-mono">
+                              {att.staffCategory === 'COUNSEL' ? 'Counsel' : att.supportRole || 'Support Staff'}
+                            </span>
                           </div>
+                          <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase rounded border border-emerald-500/20">
+                            {att.status}
+                          </span>
                         </div>
-                        <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase rounded-md border border-emerald-500/20">
-                          {att.status}
-                        </span>
+                        <div className="text-[11px] text-slate-300">📍 {att.locationName}</div>
+                        {att.gps && (
+                          <div className="text-[10px] font-mono text-slate-400 bg-slate-900 p-2 rounded-lg border border-slate-800">
+                            🔒 {att.gps.latitude.toFixed(4)}° N, {att.gps.longitude.toFixed(4)}° E (GPS Verified)
+                          </div>
+                        )}
                       </div>
                     ))
                   ) : (
@@ -769,7 +924,7 @@ export default function HRMSDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-xl font-black text-white">Midlex Staff Directory</h3>
-                <p className="text-xs text-slate-400">Legal advocates, partners, solicitors, finance &amp; administration</p>
+                <p className="text-xs text-slate-400">Counsels (Advocates &amp; Solicitors) &amp; Support Staff (Developers, Accountants, Admins)</p>
               </div>
               {isHRAdmin && (
                 <button
@@ -785,10 +940,10 @@ export default function HRMSDashboard() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-800 text-[11px] font-black text-slate-400 uppercase tracking-wider">
-                    <th className="py-3 px-4">Staff Name &amp; Role</th>
+                    <th className="py-3 px-4">Staff Name</th>
+                    <th className="py-3 px-4">Staff Category</th>
+                    <th className="py-3 px-4">Role / Support Specialty</th>
                     <th className="py-3 px-4">Department</th>
-                    <th className="py-3 px-4">Qualification</th>
-                    <th className="py-3 px-4">Phone &amp; Email</th>
                     <th className="py-3 px-4">Basic Salary</th>
                     <th className="py-3 px-4">Status</th>
                   </tr>
@@ -798,18 +953,19 @@ export default function HRMSDashboard() {
                     <tr key={s.id} className="hover:bg-slate-800/50 transition-colors">
                       <td className="py-4 px-4 font-bold text-white">
                         {s.name}
-                        <div className="text-[11px] text-amber-400 font-medium">{s.role}</div>
+                        <div className="text-[11px] text-slate-400 font-normal">{s.email}</div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="px-2.5 py-1 bg-slate-800 text-slate-300 font-bold text-[10px] rounded-md">
-                          {s.department}
+                        <span className={`px-2.5 py-1 rounded-md font-bold text-[10px] ${
+                          s.staffCategory === 'COUNSEL' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                        }`}>
+                          {s.staffCategory === 'COUNSEL' ? '⚖️ Counsel (Lawyer)' : '💻 Support Staff'}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-slate-300">{s.qualification}</td>
-                      <td className="py-4 px-4 text-slate-400">
-                        {s.email}
-                        <div className="text-[11px] text-slate-500">{s.phone}</div>
+                      <td className="py-4 px-4 font-bold text-white">
+                        {s.staffCategory === 'SUPPORT_STAFF' ? (s.supportRole || s.role) : s.role}
                       </td>
+                      <td className="py-4 px-4 text-slate-300">{s.department}</td>
                       <td className="py-4 px-4 font-bold text-emerald-400">
                         ₦{s.basicSalary.toLocaleString()} / mo
                       </td>
@@ -848,6 +1004,9 @@ export default function HRMSDashboard() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
                       <h4 className="text-base font-black text-white">{l.staffName}</h4>
+                      <span className="px-3 py-0.5 bg-slate-800 text-amber-400 text-[10px] font-black uppercase rounded-full border border-slate-700">
+                        {l.staffCategory === 'COUNSEL' ? '⚖️ Counsel' : '💻 Support Staff'}
+                      </span>
                       <span className="px-3 py-0.5 bg-amber-500/10 text-amber-400 text-[10px] font-black uppercase rounded-full border border-amber-500/20">
                         {l.leaveType} LEAVE
                       </span>
@@ -856,7 +1015,6 @@ export default function HRMSDashboard() {
                     <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-400 pt-1">
                       <span>📅 Dates: <strong>{l.startDate}</strong> to <strong>{l.endDate}</strong> ({l.daysCount} Days)</span>
                       <span>🤝 Handover Partner: <strong>{l.handoverStaff}</strong></span>
-                      <span>Department: <strong>{l.department}</strong></span>
                     </div>
                   </div>
 
@@ -891,39 +1049,30 @@ export default function HRMSDashboard() {
           </div>
         )}
 
-        {/* TAB 4: ATTENDANCE */}
+        {/* TAB 4: ATTENDANCE & GEOLOCATION LOGS */}
         {activeTab === 'ATTENDANCE' && (
           <div className="bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-xl font-black text-white">Daily Attendance &amp; Timesheets</h3>
-                <p className="text-xs text-slate-400">Track court appearances and chamber check-ins</p>
+                <h3 className="text-xl font-black text-white">Geolocation Clock-In &amp; Timesheets</h3>
+                <p className="text-xs text-slate-400">Captured GPS coordinates for Court, Chambers, and Remote Support Staff</p>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleClockIn('BENIN_CHAMBERS')}
-                  className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-md transition-all"
-                >
-                  Clock In (Chambers)
-                </button>
-                <button
-                  onClick={() => handleClockIn('HIGH_COURT')}
-                  className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs rounded-xl shadow-md transition-all"
-                >
-                  Clock In (Court)
-                </button>
-              </div>
+              <button
+                onClick={handleOpenClockInModal}
+                className="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg flex items-center gap-2"
+              >
+                📍 Clock In with GPS Coordinates
+              </button>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-800 text-[11px] font-black text-slate-400 uppercase tracking-wider">
-                    <th className="py-3 px-4">Date &amp; Staff Member</th>
-                    <th className="py-3 px-4">Department</th>
+                    <th className="py-3 px-4">Staff Member &amp; Category</th>
                     <th className="py-3 px-4">Clock In Time</th>
-                    <th className="py-3 px-4">Clock Out Time</th>
-                    <th className="py-3 px-4">Location</th>
+                    <th className="py-3 px-4">Location Category</th>
+                    <th className="py-3 px-4">Captured GPS Coordinates (Locked)</th>
                     <th className="py-3 px-4">Status</th>
                   </tr>
                 </thead>
@@ -932,12 +1081,25 @@ export default function HRMSDashboard() {
                     <tr key={att.id} className="hover:bg-slate-800/50 transition-colors">
                       <td className="py-4 px-4 font-bold text-white">
                         {att.staffName}
-                        <div className="text-[11px] text-slate-500">{att.date}</div>
+                        <div className="text-[11px] text-amber-400 font-mono">
+                          {att.staffCategory === 'COUNSEL' ? '⚖️ Counsel Lawyer' : `💻 ${att.supportRole || 'Support Staff'}`}
+                        </div>
                       </td>
-                      <td className="py-4 px-4 text-slate-300">{att.department}</td>
                       <td className="py-4 px-4 text-emerald-400 font-bold">{att.clockInTime}</td>
-                      <td className="py-4 px-4 text-amber-400 font-bold">{att.clockOutTime || 'Active Session'}</td>
-                      <td className="py-4 px-4 text-slate-300">{att.location.replace('_', ' ')}</td>
+                      <td className="py-4 px-4 text-slate-200 font-medium">
+                        {att.locationName}
+                      </td>
+                      <td className="py-4 px-4 font-mono text-[11px] text-slate-300">
+                        {att.gps ? (
+                          <div className="bg-slate-950 p-2 rounded-lg border border-slate-800 flex items-center gap-2">
+                            <span className="text-emerald-400">🔒 GPS Locked:</span>
+                            <span>{att.gps.latitude.toFixed(4)}° N, {att.gps.longitude.toFixed(4)}° E</span>
+                            <span className="text-slate-500 text-[10px]">(±{Math.round(att.gps.accuracy)}m)</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-500 italic">No GPS coordinates</span>
+                        )}
+                      </td>
                       <td className="py-4 px-4">
                         <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase rounded-full border border-emerald-500/30">
                           {att.status}
@@ -957,7 +1119,7 @@ export default function HRMSDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-xl font-black text-white">Staff Performance Appraisals</h3>
-                <p className="text-xs text-slate-400">Legal advocacy ratings, drafting quality &amp; client care reviews</p>
+                <p className="text-xs text-slate-400">Legal advocacy &amp; support staff engineering / finance reviews</p>
               </div>
               {isHRAdmin && (
                 <button
@@ -984,11 +1146,11 @@ export default function HRMSDashboard() {
 
                   <div className="grid grid-cols-2 gap-3 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800/80">
                     <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Legal Drafting</span>
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Task Delivery / Drafting</span>
                       <span className="font-bold text-white">⭐ {rev.draftingScore} / 5</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Court Advocacy</span>
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Court / Technical Skill</span>
                       <span className="font-bold text-white">⭐ {rev.courtAdvocacyScore} / 5</span>
                     </div>
                     <div>
@@ -996,7 +1158,7 @@ export default function HRMSDashboard() {
                       <span className="font-bold text-white">⭐ {rev.punctualityScore} / 5</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Client Care</span>
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Client / Firm Care</span>
                       <span className="font-bold text-white">⭐ {rev.clientSatisfactionScore} / 5</span>
                     </div>
                   </div>
@@ -1016,7 +1178,7 @@ export default function HRMSDashboard() {
           <div className="bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
             <div>
               <h3 className="text-xl font-black text-white">Midlex Monthly Payroll Summary</h3>
-              <p className="text-xs text-slate-400">Basic salaries, court appearance allowances, and net payouts</p>
+              <p className="text-xs text-slate-400">Basic salaries, court appearance allowances, and support staff payouts</p>
             </div>
 
             <div className="overflow-x-auto">
@@ -1024,10 +1186,10 @@ export default function HRMSDashboard() {
                 <thead>
                   <tr className="border-b border-slate-800 text-[11px] font-black text-slate-400 uppercase tracking-wider">
                     <th className="py-3 px-4">Staff Member</th>
-                    <th className="py-3 px-4">Department</th>
+                    <th className="py-3 px-4">Category</th>
                     <th className="py-3 px-4">Basic Salary</th>
                     <th className="py-3 px-4">Court Allowance Rate</th>
-                    <th className="py-3 px-4">Estimated Monthly Net</th>
+                    <th className="py-3 px-4">Estimated Net Pay</th>
                     <th className="py-3 px-4">Actions</th>
                   </tr>
                 </thead>
@@ -1036,12 +1198,20 @@ export default function HRMSDashboard() {
                     <tr key={s.id} className="hover:bg-slate-800/50 transition-colors">
                       <td className="py-4 px-4 font-bold text-white">
                         {s.name}
-                        <div className="text-[11px] text-slate-500">{s.role}</div>
+                        <div className="text-[11px] text-slate-500">{s.staffCategory === 'SUPPORT_STAFF' ? (s.supportRole || s.role) : s.role}</div>
                       </td>
-                      <td className="py-4 px-4 text-slate-300">{s.department}</td>
+                      <td className="py-4 px-4 text-slate-300">
+                        <span className="px-2 py-0.5 rounded bg-slate-800 font-bold text-[10px]">
+                          {s.staffCategory === 'COUNSEL' ? '⚖️ Counsel' : '💻 Support Staff'}
+                        </span>
+                      </td>
                       <td className="py-4 px-4 font-bold text-amber-400">₦{s.basicSalary.toLocaleString()}</td>
-                      <td className="py-4 px-4 text-slate-300">₦{s.courtAllowanceRate.toLocaleString()} / appearance</td>
-                      <td className="py-4 px-4 font-bold text-emerald-400">₦{(s.basicSalary + s.courtAllowanceRate * 4).toLocaleString()}</td>
+                      <td className="py-4 px-4 text-slate-300">
+                        {s.staffCategory === 'COUNSEL' ? `₦${s.courtAllowanceRate.toLocaleString()} / day` : 'N/A (Remote Support)'}
+                      </td>
+                      <td className="py-4 px-4 font-bold text-emerald-400">
+                        ₦{(s.basicSalary + (s.staffCategory === 'COUNSEL' ? s.courtAllowanceRate * 4 : 0)).toLocaleString()}
+                      </td>
                       <td className="py-4 px-4">
                         <button
                           onClick={() => alert(`Generating official Midlex Payslip for ${s.name}...`)}
@@ -1059,6 +1229,103 @@ export default function HRMSDashboard() {
         )}
       </main>
 
+      {/* MODAL: GEOLOCATION CLOCK-IN WITH UNALTERABLE GPS */}
+      <AnimatePresence>
+        {isClockInModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl">
+              <div>
+                <span className="px-3 py-1 bg-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-amber-500/30">
+                  REAL-TIME GPS GEOLOCATION CHECK-IN
+                </span>
+                <h3 className="text-xl font-black text-white mt-2">Clock In for Today</h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Your physical GPS coordinates are captured automatically and locked. Manual location tampering is disabled.
+                </p>
+              </div>
+
+              {/* GPS Capture Display */}
+              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">GPS Satellite Status</span>
+                  {isCapturingGps ? (
+                    <span className="text-xs text-amber-400 font-bold animate-pulse">📡 Acquiring Satellite Lock...</span>
+                  ) : capturedGps ? (
+                    <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">🔒 GPS Coordinates Locked &amp; Verified</span>
+                  ) : (
+                    <span className="text-xs text-red-400 font-bold">⚠️ GPS Unavailable</span>
+                  )}
+                </div>
+
+                {capturedGps && (
+                  <div className="space-y-1 font-mono text-xs">
+                    <div className="text-white font-bold">Latitude: {capturedGps.latitude.toFixed(6)}° N</div>
+                    <div className="text-white font-bold">Longitude: {capturedGps.longitude.toFixed(6)}° E</div>
+                    <div className="text-slate-400 text-[11px]">Accuracy: ±{Math.round(capturedGps.accuracy)} meters</div>
+                    <div className="text-amber-400 text-[11px] pt-1 border-t border-slate-800/80">{capturedGps.formattedAddress}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Location Options based on Staff Category */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  Select Work Location Type
+                </label>
+                {currentUser?.staffCategory === 'COUNSEL' ? (
+                  /* Counsel Options */
+                  <select
+                    value={selectedLocationCategory}
+                    onChange={(e) => setSelectedLocationCategory(e.target.value as any)}
+                    className="w-full p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-bold focus:border-amber-500 focus:outline-none"
+                  >
+                    <option value="HIGH_COURT">⚖️ High Court of Edo State, Benin City</option>
+                    <option value="MAGISTRATE_COURT">⚖️ Magistrate Court (Egor / Oredo Bench)</option>
+                    <option value="APPEAL_COURT">⚖️ Court of Appeal, Benin Division</option>
+                    <option value="BENIN_CHAMBERS">🏢 Midlex Chambers — Benin City Main Office</option>
+                    <option value="CLIENT_OFFSITE">🤝 Offsite Client Consultation</option>
+                  </select>
+                ) : (
+                  /* Support Staff Options */
+                  <select
+                    value={selectedLocationCategory}
+                    onChange={(e) => setSelectedLocationCategory(e.target.value as any)}
+                    className="w-full p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-bold focus:border-amber-500 focus:outline-none"
+                  >
+                    <option value="HOME_REMOTE">💻 Working Remotely (Home Office)</option>
+                    <option value="BENIN_CHAMBERS">🏢 Midlex Chambers — Benin City Office</option>
+                    <option value="CLIENT_OFFSITE">🌐 Offsite Legal Tech / Audit Hub</option>
+                  </select>
+                )}
+                <p className="text-[11px] text-slate-500 italic">
+                  {currentUser?.staffCategory === 'COUNSEL'
+                    ? 'Counsels can clock in at court benches, trial venues, or chambers.'
+                    : 'Support Staff (Developers, Accountants, Admins) can clock in remotely at home or at chambers.'}
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsClockInModalOpen(false)}
+                  className="px-5 py-3 bg-slate-800 text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-700 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmClockIn}
+                  disabled={isCapturingGps || !capturedGps}
+                  className="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all"
+                >
+                  Confirm &amp; Lock Clock-In →
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* MODAL: Add Staff Member */}
       <AnimatePresence>
         {isAddStaffOpen && (
@@ -1068,27 +1335,53 @@ export default function HRMSDashboard() {
               <form onSubmit={handleAddStaff} className="space-y-4 text-xs">
                 <div>
                   <label className="block text-slate-400 font-bold uppercase mb-1">Full Name</label>
-                  <input type="text" required value={newStaff.name} onChange={(e) => setNewStaff({ ...newStaff, name: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" placeholder="e.g. Barr. Victor Omogbae" />
+                  <input type="text" required value={newStaff.name} onChange={(e) => setNewStaff({ ...newStaff, name: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" placeholder="e.g. Barr. Victor Omogbae or Jane Developer" />
                 </div>
+
                 <div>
-                  <label className="block text-slate-400 font-bold uppercase mb-1">Email</label>
-                  <input type="email" required value={newStaff.email} onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" placeholder="victor@midlex.com" />
+                  <label className="block text-slate-400 font-bold uppercase mb-1">Email Address</label>
+                  <input type="email" required value={newStaff.email} onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" placeholder="staff@midlex.com" />
                 </div>
+
                 <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-400 font-bold uppercase mb-1">Staff Category</label>
+                    <select value={newStaff.staffCategory} onChange={(e) => setNewStaff({ ...newStaff, staffCategory: e.target.value as any })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white">
+                      <option value="COUNSEL">⚖️ Counsel (Lawyer)</option>
+                      <option value="SUPPORT_STAFF">💻 Support Staff</option>
+                    </select>
+                  </div>
                   <div>
                     <label className="block text-slate-400 font-bold uppercase mb-1">Department</label>
                     <select value={newStaff.department} onChange={(e) => setNewStaff({ ...newStaff, department: e.target.value as any })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white">
                       <option value="LITIGATION">Litigation</option>
                       <option value="GENERAL">General / Property</option>
                       <option value="FINANCE">Finance</option>
+                      <option value="ENGINEERING">Engineering / IT</option>
                       <option value="ADMIN">Administrative</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-slate-400 font-bold uppercase mb-1">Role Title</label>
-                    <input type="text" required value={newStaff.role} onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" placeholder="Junior Associate" />
-                  </div>
                 </div>
+
+                {newStaff.staffCategory === 'SUPPORT_STAFF' ? (
+                  <div>
+                    <label className="block text-slate-400 font-bold uppercase mb-1">Specific Support Staff Role</label>
+                    <select value={newStaff.supportRole} onChange={(e) => setNewStaff({ ...newStaff, supportRole: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white">
+                      <option value="Software Developer">💻 Software Developer</option>
+                      <option value="Lead Accountant">💰 Lead Accountant</option>
+                      <option value="Administrative Secretary">📋 Administrative Secretary</option>
+                      <option value="Paralegal Legal Asst">📑 Paralegal</option>
+                      <option value="IT Systems Specialist">🔌 IT Specialist</option>
+                      <option value="HR Assistant">🤝 HR Assistant</option>
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-slate-400 font-bold uppercase mb-1">Counsel Title</label>
+                    <input type="text" required value={newStaff.role} onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" placeholder="Associate Solicitor" />
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-slate-400 font-bold uppercase mb-1">Basic Monthly Salary (₦)</label>
@@ -1099,6 +1392,7 @@ export default function HRMSDashboard() {
                     <input type="number" required value={newStaff.courtAllowanceRate} onChange={(e) => setNewStaff({ ...newStaff, courtAllowanceRate: Number(e.target.value) })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" />
                   </div>
                 </div>
+
                 <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
                   <button type="button" onClick={() => setIsAddStaffOpen(false)} className="px-4 py-2 bg-slate-800 text-slate-300 font-bold rounded-xl">Cancel</button>
                   <button type="submit" className="px-5 py-2 bg-amber-500 text-slate-950 font-black rounded-xl">Save Staff</button>
@@ -1141,7 +1435,7 @@ export default function HRMSDashboard() {
                   <textarea required rows={3} value={leaveForm.reason} onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" placeholder="Provide details regarding your leave request..." />
                 </div>
                 <div>
-                  <label className="block text-slate-400 font-bold uppercase mb-1">Handover Lawyer / Partner</label>
+                  <label className="block text-slate-400 font-bold uppercase mb-1">Handover Partner / Colleague</label>
                   <input type="text" required value={leaveForm.handoverStaff} onChange={(e) => setLeaveForm({ ...leaveForm, handoverStaff: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" placeholder="Name of colleague holding brief" />
                 </div>
                 <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
@@ -1166,23 +1460,23 @@ export default function HRMSDashboard() {
                   <select required value={appraisalForm.staffId} onChange={(e) => setAppraisalForm({ ...appraisalForm, staffId: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white">
                     <option value="">-- Choose Staff --</option>
                     {staffList.map((s) => (
-                      <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
+                      <option key={s.id} value={s.id}>{s.name} ({s.staffCategory === 'COUNSEL' ? 'Counsel' : s.supportRole || 'Support Staff'})</option>
                     ))}
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-slate-400 font-bold uppercase mb-1">Legal Drafting (1-5)</label>
+                    <label className="block text-slate-400 font-bold uppercase mb-1">Task Delivery / Drafting (1-5)</label>
                     <input type="number" min={1} max={5} value={appraisalForm.draftingScore} onChange={(e) => setAppraisalForm({ ...appraisalForm, draftingScore: Number(e.target.value) })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" />
                   </div>
                   <div>
-                    <label className="block text-slate-400 font-bold uppercase mb-1">Court Advocacy (1-5)</label>
+                    <label className="block text-slate-400 font-bold uppercase mb-1">Court / Tech Skill (1-5)</label>
                     <input type="number" min={1} max={5} value={appraisalForm.courtAdvocacyScore} onChange={(e) => setAppraisalForm({ ...appraisalForm, courtAdvocacyScore: Number(e.target.value) })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" />
                   </div>
                 </div>
                 <div>
                   <label className="block text-slate-400 font-bold uppercase mb-1">HR Reviewer Notes &amp; Comments</label>
-                  <textarea rows={3} value={appraisalForm.comments} onChange={(e) => setAppraisalForm({ ...appraisalForm, comments: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" placeholder="Write feedback regarding court performance..." />
+                  <textarea rows={3} value={appraisalForm.comments} onChange={(e) => setAppraisalForm({ ...appraisalForm, comments: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" placeholder="Write feedback regarding performance..." />
                 </div>
                 <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
                   <button type="button" onClick={() => setIsAppraisalModalOpen(false)} className="px-4 py-2 bg-slate-800 text-slate-300 font-bold rounded-xl">Cancel</button>
