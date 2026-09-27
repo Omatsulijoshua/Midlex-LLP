@@ -1,9 +1,16 @@
-import type { Metadata } from 'react';
+import type { Metadata, Viewport } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Midlex Analytics & Law Publishing | Law Reports, Legal Books & Research Analytics',
   description: 'Midlex Law Publishing & Analytics Platform for legal authors, advocates, law reporting, Supreme Court digests, and academic legal journals.',
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -12,8 +19,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-amber-500 selection:text-slate-950">
+    <html lang="en" className="w-full max-w-full overflow-x-hidden">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+      </head>
+      <body className="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-amber-500 selection:text-slate-950 w-full max-w-full overflow-x-hidden">
         {children}
       </body>
     </html>
