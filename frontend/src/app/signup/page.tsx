@@ -273,7 +273,7 @@ export default function SignupPage() {
 
         <div className="mt-8 text-center text-gray-600 text-sm">
           Already registered?{" "}
-          <Link href="/signup" className="text-secondary font-bold hover:underline">Sign In Here</Link>
+          <Link href="/login" className="text-secondary font-bold hover:underline">Sign In Here</Link>
         </div>
       </motion.div>
     </main>
