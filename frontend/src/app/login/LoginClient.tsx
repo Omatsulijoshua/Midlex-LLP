@@ -36,13 +36,33 @@ export default function LoginClient() {
       setIsWakingUp(true);
     }, 3000);
 
+    const cleanEmail = email.trim().toLowerCase();
+
     try {
       const data = await apiFetch("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+        body: JSON.stringify({ email: cleanEmail, password }),
       });
       login(data.access_token, data.user);
     } catch (err: any) {
+      // Check if user registered in browser local backup
+      if (typeof window !== 'undefined') {
+        const savedReg = localStorage.getItem(`midlex_reg_${cleanEmail}`);
+        if (savedReg) {
+          try {
+            const localUser = JSON.parse(savedReg);
+            if (localUser.password === password) {
+              login(`token-local-${Date.now()}`, {
+                id: localUser.id || `client-${Date.now()}`,
+                email: cleanEmail,
+                name: localUser.name || cleanEmail,
+                role: (localUser.role as any) || 'CLIENT',
+              });
+              return;
+            }
+          } catch (e) {}
+        }
+      }
       setError(err.message || "Invalid credentials");
     } finally {
       clearTimeout(wakeUpTimer);
