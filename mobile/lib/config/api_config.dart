@@ -14,7 +14,8 @@ class ApiConfig {
 
   // Auth
   static String get login => '$baseUrl/auth/login';
-  static String get register => '$baseUrl/auth/register';
+  static String get register => '$baseUrl/auth/signup';
+  static String get signup => '$baseUrl/auth/signup';
   static String get me => '$baseUrl/auth/me';
   static String get forgotPassword => '$baseUrl/auth/forgot-password';
 

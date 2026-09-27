@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageService {
@@ -34,6 +35,25 @@ class StorageService {
   static Future<bool> hasSeenOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(onboardingKey) ?? false;
+  }
+
+  static Future<void> saveRegisteredUser(String email, String password, Map<String, dynamic> userData) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cleanEmail = email.trim().toLowerCase();
+    await prefs.setString('midlex_reg_$cleanEmail', jsonEncode({
+      'password': password,
+      'user': userData,
+    }));
+  }
+
+  static Future<Map<String, dynamic>?> getRegisteredUser(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cleanEmail = email.trim().toLowerCase();
+    final dataStr = prefs.getString('midlex_reg_$cleanEmail');
+    if (dataStr != null) {
+      return jsonDecode(dataStr) as Map<String, dynamic>;
+    }
+    return null;
   }
 
   static Future<void> clearAuth() async {
