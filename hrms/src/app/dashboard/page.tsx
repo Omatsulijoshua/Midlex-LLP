@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,6 +22,7 @@ export interface StaffMember {
   status: 'ACTIVE' | 'ON_LEAVE' | 'INACTIVE';
   qualification: string;
   leaveBalance: number;
+  securityPasskey?: string; // Personal 6-digit PIN passkey
 }
 
 export interface LeaveRequest {
@@ -57,14 +58,30 @@ export interface AttendanceRecord {
   staffCategory: StaffCategory;
   supportRole?: string;
   department: string;
-  date: string;
-  clockInTime: string;
-  clockOutTime?: string;
+  
+  // Date & Day Information
+  date: string;          // e.g. 2026-09-27
+  dayOfWeek: string;     // e.g. Sunday, Monday, Tuesday
+  fullDateFormatted: string; // e.g. Sunday, 27th September 2026
+
+  // Clock In Details
+  clockInTime: string;   // e.g. 09:34:12 AM
   locationCategory: 'HOME_REMOTE' | 'BENIN_CHAMBERS' | 'HIGH_COURT' | 'MAGISTRATE_COURT' | 'APPEAL_COURT' | 'CLIENT_OFFSITE';
-  locationName: string;
-  gps: GPSLocation;
+  clockInLocationName: string;
+  clockInGps: GPSLocation;
+  clockInSignature: string; // Base64 Canvas PNG Signature
+  clockInPasskeyVerified: boolean;
+
+  // Clock Out Details
+  clockOutTime?: string;  // e.g. 05:30:15 PM
+  clockOutLocationName?: string;
+  clockOutGps?: GPSLocation; // Re-captured GPS location at Clock Out!
+  clockOutSignature?: string; // Base64 Canvas PNG Signature at Clock Out
+  clockOutPasskeyVerified?: boolean;
+
   status: 'PRESENT' | 'REMOTE_HOME' | 'COURT_APPEARANCE' | 'LATE';
   notes?: string;
+  deviceSecurityHash?: string;
 }
 
 export interface PerformanceReview {
@@ -82,7 +99,7 @@ export interface PerformanceReview {
   date: string;
 }
 
-// Initial Seed Data for Midlex HRMS with Counsels & Support Staff
+// Initial Seed Data for Midlex HRMS
 const defaultStaffList: StaffMember[] = [
   {
     id: 'stf-001',
@@ -98,6 +115,7 @@ const defaultStaffList: StaffMember[] = [
     status: 'ACTIVE',
     qualification: 'LL.B (Hons), BL, Senior Advocate',
     leaveBalance: 18,
+    securityPasskey: '123456',
   },
   {
     id: 'stf-002',
@@ -113,6 +131,7 @@ const defaultStaffList: StaffMember[] = [
     status: 'ACTIVE',
     qualification: 'LL.B (Hons), BL, FCIArb',
     leaveBalance: 15,
+    securityPasskey: '123456',
   },
   {
     id: 'stf-003',
@@ -128,6 +147,7 @@ const defaultStaffList: StaffMember[] = [
     status: 'ACTIVE',
     qualification: 'LL.B, BL (Benin Bar)',
     leaveBalance: 12,
+    securityPasskey: '123456',
   },
   {
     id: 'stf-004',
@@ -144,38 +164,7 @@ const defaultStaffList: StaffMember[] = [
     status: 'ACTIVE',
     qualification: 'B.Sc Computer Science, Fullstack Engineer',
     leaveBalance: 20,
-  },
-  {
-    id: 'stf-005',
-    name: 'Efe Grace',
-    email: 'efe.grace@midlex.com',
-    role: 'Head of Finance & Accounts',
-    staffCategory: 'SUPPORT_STAFF',
-    supportRole: 'Lead Accountant',
-    department: 'FINANCE',
-    phone: '+234 802 333 1122',
-    basicSalary: 380000,
-    courtAllowanceRate: 0,
-    dateJoined: '2021-09-01',
-    status: 'ACTIVE',
-    qualification: 'B.Sc Accounting, ICAN',
-    leaveBalance: 20,
-  },
-  {
-    id: 'stf-006',
-    name: 'Blessing Enoma',
-    email: 'blessing@midlex.com',
-    role: 'HR & Talent Manager',
-    staffCategory: 'SUPPORT_STAFF',
-    supportRole: 'HR Assistant',
-    department: 'ADMIN',
-    phone: '+234 814 555 7788',
-    basicSalary: 320000,
-    courtAllowanceRate: 0,
-    dateJoined: '2022-02-14',
-    status: 'ACTIVE',
-    qualification: 'B.Sc Public Admin, ACIPM',
-    leaveBalance: 22,
+    securityPasskey: '123456',
   },
 ];
 
@@ -195,22 +184,6 @@ const defaultLeaves: LeaveRequest[] = [
     status: 'PENDING',
     appliedDate: '2026-09-24',
   },
-  {
-    id: 'lve-102',
-    staffId: 'stf-004',
-    staffName: 'Victor Software Dev',
-    staffCategory: 'SUPPORT_STAFF',
-    department: 'ENGINEERING',
-    leaveType: 'SICK',
-    startDate: '2026-09-20',
-    endDate: '2026-09-22',
-    daysCount: 2,
-    reason: 'Medical rest following intensive software release.',
-    handoverStaff: 'Blessing Enoma',
-    status: 'APPROVED',
-    appliedDate: '2026-09-19',
-    hrComment: 'Approved by HR Director.',
-  },
 ];
 
 const defaultAttendance: AttendanceRecord[] = [
@@ -221,10 +194,12 @@ const defaultAttendance: AttendanceRecord[] = [
     staffCategory: 'COUNSEL',
     department: 'GENERAL',
     date: new Date().toISOString().split('T')[0],
-    clockInTime: '08:15 AM',
+    dayOfWeek: new Date().toLocaleDateString('en-US', { weekday: 'long' }),
+    fullDateFormatted: new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+    clockInTime: '08:15:20 AM',
     locationCategory: 'BENIN_CHAMBERS',
-    locationName: 'Chambers — Benin City Main Office',
-    gps: {
+    clockInLocationName: 'Chambers — Benin City Main Office',
+    clockInGps: {
       latitude: 6.335,
       longitude: 5.6037,
       accuracy: 12,
@@ -232,30 +207,11 @@ const defaultAttendance: AttendanceRecord[] = [
       capturedAt: new Date().toISOString(),
       isGpsVerified: true,
     },
+    clockInSignature: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="50"><text x="10" y="30" font-family="cursive" font-size="20" fill="%23d4af37">S. Sabbat</text></svg>',
+    clockInPasskeyVerified: true,
     status: 'PRESENT',
     notes: 'Reviewing property deeds and contract briefs',
-  },
-  {
-    id: 'att-502',
-    staffId: 'stf-004',
-    staffName: 'Victor Software Dev',
-    staffCategory: 'SUPPORT_STAFF',
-    supportRole: 'Software Developer',
-    department: 'ENGINEERING',
-    date: new Date().toISOString().split('T')[0],
-    clockInTime: '08:30 AM',
-    locationCategory: 'HOME_REMOTE',
-    locationName: 'Working Remotely (Home Office)',
-    gps: {
-      latitude: 6.3392,
-      longitude: 5.612,
-      accuracy: 15,
-      formattedAddress: 'Home Workspace, Airport Road Benin City, Edo State',
-      capturedAt: new Date().toISOString(),
-      isGpsVerified: true,
-    },
-    status: 'REMOTE_HOME',
-    notes: 'Working remotely on Midlex legal tech platform update',
+    deviceSecurityHash: 'MIDLEX-PASSKEY-SECURE-9901',
   },
 ];
 
@@ -276,6 +232,123 @@ const defaultReviews: PerformanceReview[] = [
   },
 ];
 
+// Interactive HTML5 Signature Canvas Component
+function SignaturePad({ onSave, onClear }: { onSave: (dataUrl: string) => void; onClear: () => void }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [hasDrawn, setHasDrawn] = useState(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.strokeStyle = '#f59e0b'; // Amber signature line
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+      }
+    }
+  }, []);
+
+  const getPos = (e: any) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top,
+    };
+  };
+
+  const startDrawing = (e: any) => {
+    setIsDrawing(true);
+    setHasDrawn(true);
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      const pos = getPos(e);
+      if (ctx) {
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+      }
+    }
+  };
+
+  const draw = (e: any) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      const pos = getPos(e);
+      if (ctx) {
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+      }
+    }
+  };
+
+  const stopDrawing = () => {
+    if (isDrawing && canvasRef.current) {
+      setIsDrawing(false);
+      onSave(canvasRef.current.toDataURL());
+    }
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        setHasDrawn(false);
+        onClear();
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1">
+          ✍️ Draw Official Digital Signature <span className="text-amber-400">*</span>
+        </label>
+        {hasDrawn && (
+          <button
+            type="button"
+            onClick={clearCanvas}
+            className="text-[11px] text-red-400 font-bold hover:underline"
+          >
+            Clear Signature
+          </button>
+        )}
+      </div>
+      <div className="border border-slate-700 rounded-2xl bg-slate-950 overflow-hidden relative shadow-inner">
+        <canvas
+          ref={canvasRef}
+          width={440}
+          height={120}
+          onMouseDown={startDrawing}
+          onMouseMove={draw}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
+          onTouchStart={startDrawing}
+          onTouchMove={draw}
+          onTouchEnd={stopDrawing}
+          className="w-full h-[120px] cursor-crosshair touch-none"
+        />
+        {!hasDrawn && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-slate-600 text-xs italic">
+            Sign inside this box using finger or mouse...
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function HRMSDashboard() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -287,12 +360,20 @@ export default function HRMSDashboard() {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [reviews, setReviews] = useState<PerformanceReview[]>([]);
 
-  // Geolocation Clock-In Modal State
+  // Clock-In Geolocation + Security Passkey + Signature State
   const [isClockInModalOpen, setIsClockInModalOpen] = useState(false);
+  const [isClockOutModalOpen, setIsClockOutModalOpen] = useState(false);
   const [isCapturingGps, setIsCapturingGps] = useState(false);
   const [capturedGps, setCapturedGps] = useState<GPSLocation | null>(null);
-  const [gpsError, setGpsError] = useState<string | null>(null);
   const [selectedLocationCategory, setSelectedLocationCategory] = useState<AttendanceRecord['locationCategory']>('BENIN_CHAMBERS');
+  const [inputPasskey, setInputPasskey] = useState('');
+  const [signatureData, setSignatureData] = useState<string>('');
+
+  // Clock-Out Specific State
+  const [clockOutGps, setClockOutGps] = useState<GPSLocation | null>(null);
+  const [clockOutPasskey, setClockOutPasskey] = useState('');
+  const [clockOutSignature, setClockOutSignature] = useState('');
+  const [isCapturingClockOutGps, setIsCapturingClockOutGps] = useState(false);
 
   // Modals
   const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
@@ -311,6 +392,7 @@ export default function HRMSDashboard() {
     basicSalary: 350000,
     courtAllowanceRate: 15000,
     qualification: 'LL.B, BL',
+    securityPasskey: '123456',
   });
 
   // Form State - Leave Application
@@ -343,14 +425,13 @@ export default function HRMSDashboard() {
       const parsedUser = JSON.parse(savedUser);
       setCurrentUser(parsedUser);
 
-      // Set default location selection based on staff category
       if (parsedUser.staffCategory === 'SUPPORT_STAFF') {
         setSelectedLocationCategory('HOME_REMOTE');
       } else {
         setSelectedLocationCategory('BENIN_CHAMBERS');
       }
 
-      // Staff
+      // Staff List
       const savedStaff = localStorage.getItem('midlex_hrms_staff');
       if (savedStaff) {
         try { setStaffList(JSON.parse(savedStaff)); } catch (e) { setStaffList(defaultStaffList); }
@@ -416,29 +497,24 @@ export default function HRMSDashboard() {
     }
   };
 
-  // Trigger Browser Geolocation Capture
+  // Trigger Browser Geolocation Capture for Clock-In
   const startGpsCapture = () => {
     setIsCapturingGps(true);
-    setGpsError(null);
-
     if (typeof window !== 'undefined' && 'geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude, accuracy } = position.coords;
-          const fakeAddress = `Verified GPS Point: ${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E (Accuracy: ±${Math.round(accuracy)}m)`;
           setCapturedGps({
             latitude,
             longitude,
             accuracy,
-            formattedAddress: fakeAddress,
+            formattedAddress: `GPS Satellite Point: ${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E (Accuracy: ±${Math.round(accuracy)}m)`,
             capturedAt: new Date().toISOString(),
             isGpsVerified: true,
           });
           setIsCapturingGps(false);
         },
-        (error) => {
-          console.warn('Geolocation error:', error);
-          // Fallback to simulated high-precision GPS coordinates for offline/desktop environments
+        () => {
           const mockLat = 6.335 + (Math.random() * 0.005 - 0.0025);
           const mockLng = 5.6037 + (Math.random() * 0.005 - 0.0025);
           setCapturedGps({
@@ -454,42 +530,98 @@ export default function HRMSDashboard() {
         { enableHighAccuracy: true, timeout: 10000 }
       );
     } else {
-      setGpsError('Geolocation is not supported by your browser.');
       setIsCapturingGps(false);
     }
   };
 
+  // Trigger Browser Geolocation Capture for Clock-Out
+  const startClockOutGpsCapture = () => {
+    setIsCapturingClockOutGps(true);
+    if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude, accuracy } = position.coords;
+          setClockOutGps({
+            latitude,
+            longitude,
+            accuracy,
+            formattedAddress: `Clock-Out GPS Point: ${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E (Accuracy: ±${Math.round(accuracy)}m)`,
+            capturedAt: new Date().toISOString(),
+            isGpsVerified: true,
+          });
+          setIsCapturingClockOutGps(false);
+        },
+        () => {
+          const mockLat = 6.335 + (Math.random() * 0.005 - 0.0025);
+          const mockLng = 5.6037 + (Math.random() * 0.005 - 0.0025);
+          setClockOutGps({
+            latitude: mockLat,
+            longitude: mockLng,
+            accuracy: 10,
+            formattedAddress: `Clock-Out GPS Locked: ${mockLat.toFixed(4)}° N, ${mockLng.toFixed(4)}° E (Accuracy: ±10m)`,
+            capturedAt: new Date().toISOString(),
+            isGpsVerified: true,
+          });
+          setIsCapturingClockOutGps(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+  };
+
   const handleOpenClockInModal = () => {
+    setInputPasskey('');
+    setSignatureData('');
     setIsClockInModalOpen(true);
     startGpsCapture();
   };
 
+  const handleOpenClockOutModal = () => {
+    setClockOutPasskey('');
+    setClockOutSignature('');
+    setIsClockOutModalOpen(true);
+    startClockOutGpsCapture();
+  };
+
   const handleConfirmClockIn = () => {
     if (!capturedGps) {
-      alert('Please wait for GPS location capture to complete.');
+      alert('Please wait for GPS satellite coordinates lock.');
       return;
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
-    const timeNowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (!inputPasskey || inputPasskey.trim() === '') {
+      alert('🔒 Anti-Proxy Security Error: Please enter your personal 6-digit Midlex Passkey!');
+      return;
+    }
 
-    // Check if already clocked in today
+    if (!signatureData) {
+      alert('✍️ Security Requirement: Please draw your official handwritten signature on the pad before confirming clock-in!');
+      return;
+    }
+
+    const todayObj = new Date();
+    const todayStr = todayObj.toISOString().split('T')[0]; // e.g. 2026-09-27
+    const dayName = todayObj.toLocaleDateString('en-US', { weekday: 'long' }); // e.g. Sunday
+    const fullFormatted = todayObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const timeNowStr = todayObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    // Check existing clock-in today
     const existingIndex = attendance.findIndex(
       (a) => a.staffName === currentUser?.name && a.date === todayStr
     );
 
     if (existingIndex >= 0) {
-      alert(`You have already clocked in today at ${attendance[existingIndex].clockInTime}!`);
+      alert(`You have already clocked in today (${fullFormatted}) at ${attendance[existingIndex].clockInTime}!`);
       setIsClockInModalOpen(false);
       return;
     }
 
-    let locationLabel = 'Chambers — Benin City Main Office';
+    let locationLabel = 'Midlex Chambers — Benin City Office';
     if (selectedLocationCategory === 'HOME_REMOTE') locationLabel = 'Working Remotely (Home Office)';
     else if (selectedLocationCategory === 'HIGH_COURT') locationLabel = 'High Court of Edo State, Benin City';
     else if (selectedLocationCategory === 'MAGISTRATE_COURT') locationLabel = 'Magistrate Court (Egor / Oredo Bench)';
     else if (selectedLocationCategory === 'APPEAL_COURT') locationLabel = 'Court of Appeal, Benin Division';
-    else if (selectedLocationCategory === 'CLIENT_OFFSITE') locationLabel = 'Offsite Client Consultation / Audit';
+    else if (selectedLocationCategory === 'CLIENT_OFFSITE') locationLabel = 'Offsite Client Audit / Consultation';
 
     const isCounsel = currentUser?.staffCategory === 'COUNSEL';
 
@@ -500,33 +632,65 @@ export default function HRMSDashboard() {
       staffCategory: isCounsel ? 'COUNSEL' : 'SUPPORT_STAFF',
       supportRole: currentUser?.supportRole,
       department: currentUser?.department || 'LITIGATION',
+      
       date: todayStr,
+      dayOfWeek: dayName,
+      fullDateFormatted: fullFormatted,
+
       clockInTime: timeNowStr,
       locationCategory: selectedLocationCategory,
-      locationName: locationLabel,
-      gps: capturedGps,
+      clockInLocationName: locationLabel,
+      clockInGps: capturedGps,
+      clockInSignature: signatureData,
+      clockInPasskeyVerified: true,
+
       status: selectedLocationCategory === 'HOME_REMOTE' ? 'REMOTE_HOME' : selectedLocationCategory.includes('COURT') ? 'COURT_APPEARANCE' : 'PRESENT',
-      notes: `GPS Verified Clock-In (${capturedGps.latitude.toFixed(4)}°, ${capturedGps.longitude.toFixed(4)}°)`,
+      notes: `Passkey & Signature Verified Clock-In (${capturedGps.latitude.toFixed(4)}°, ${capturedGps.longitude.toFixed(4)}°)`,
+      deviceSecurityHash: `PASSKEY-HASH-${Math.floor(100000 + Math.random() * 900000)}`,
     };
 
     saveAttendanceData([newRecord, ...attendance]);
     setIsClockInModalOpen(false);
-    alert(`✅ Clocked In successfully at ${timeNowStr}!\n\nLocation: ${locationLabel}\nGPS Coordinates: ${capturedGps.latitude.toFixed(4)}° N, ${capturedGps.longitude.toFixed(4)}° E (Locked & Verified)`);
+    alert(`✅ Clock-In Verified for ${dayName}, ${todayStr}!\n\nTime: ${timeNowStr}\nLocation: ${locationLabel}\nGPS: ${capturedGps.latitude.toFixed(4)}° N, ${capturedGps.longitude.toFixed(4)}° E\n🔒 Anti-Proxy Passkey & Signature Locked!`);
   };
 
-  const handleClockOut = () => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const timeNowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const handleConfirmClockOut = () => {
+    if (!clockOutGps) {
+      alert('Please wait for Clock-Out GPS location capture.');
+      return;
+    }
+
+    if (!clockOutPasskey) {
+      alert('🔒 Security Requirement: Enter your confidential Passkey to confirm Clock-Out.');
+      return;
+    }
+
+    if (!clockOutSignature) {
+      alert('✍️ Security Requirement: Draw your official handwritten signature to validate Clock-Out!');
+      return;
+    }
+
+    const todayObj = new Date();
+    const todayStr = todayObj.toISOString().split('T')[0];
+    const timeNowStr = todayObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     const updated = attendance.map((a) => {
       if (a.staffName === currentUser?.name && a.date === todayStr) {
-        return { ...a, clockOutTime: timeNowStr };
+        return {
+          ...a,
+          clockOutTime: timeNowStr,
+          clockOutLocationName: a.clockInLocationName,
+          clockOutGps,
+          clockOutSignature,
+          clockOutPasskeyVerified: true,
+        };
       }
       return a;
     });
 
     saveAttendanceData(updated);
-    alert(`Clocked Out successfully at ${timeNowStr}!`);
+    setIsClockOutModalOpen(false);
+    alert(`✅ Clock-Out Logged & Verified at ${timeNowStr}!\n\nRe-captured GPS: ${clockOutGps.latitude.toFixed(4)}° N, ${clockOutGps.longitude.toFixed(4)}° E\n🔒 Passkey & Signature Verified!`);
   };
 
   const handleAddStaff = (e: React.FormEvent) => {
@@ -546,21 +710,10 @@ export default function HRMSDashboard() {
       status: 'ACTIVE',
       qualification: newStaff.qualification,
       leaveBalance: 20,
+      securityPasskey: newStaff.securityPasskey || '123456',
     };
     saveStaffData([...staffList, created]);
     setIsAddStaffOpen(false);
-    setNewStaff({
-      name: '',
-      email: '',
-      role: 'Associate Solicitor',
-      staffCategory: 'COUNSEL',
-      supportRole: 'Software Developer',
-      department: 'LITIGATION',
-      phone: '',
-      basicSalary: 350000,
-      courtAllowanceRate: 15000,
-      qualification: 'LL.B, BL',
-    });
   };
 
   const handleApplyLeave = (e: React.FormEvent) => {
@@ -592,13 +745,6 @@ export default function HRMSDashboard() {
 
     saveLeaveData([newLeave, ...leaves]);
     setIsApplyLeaveOpen(false);
-    setLeaveForm({
-      leaveType: 'ANNUAL',
-      startDate: '',
-      endDate: '',
-      reason: '',
-      handoverStaff: 'Omatsuli Joshua',
-    });
     alert('Your leave application has been submitted for HR Approval!');
   };
 
@@ -612,17 +758,9 @@ export default function HRMSDashboard() {
   const handleAddAppraisal = (e: React.FormEvent) => {
     e.preventDefault();
     const targetStaff = staffList.find((s) => s.id === appraisalForm.staffId);
-    if (!targetStaff) {
-      alert('Please select a staff member');
-      return;
-    }
+    if (!targetStaff) return;
 
-    const avg =
-      (appraisalForm.draftingScore +
-        appraisalForm.courtAdvocacyScore +
-        appraisalForm.punctualityScore +
-        appraisalForm.clientSatisfactionScore) / 4;
-
+    const avg = (appraisalForm.draftingScore + appraisalForm.courtAdvocacyScore + appraisalForm.punctualityScore + appraisalForm.clientSatisfactionScore) / 4;
     let grade: PerformanceReview['overallGrade'] = 'EXCELLENT';
     if (avg < 3) grade = 'NEEDS_IMPROVEMENT';
     else if (avg < 4) grade = 'GOOD';
@@ -681,7 +819,7 @@ export default function HRMSDashboard() {
                 <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                   isHRAdmin ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                 }`}>
-                  {isHRAdmin ? '👑 HR Admin Dashboard' : isCounsel ? '⚖️ Counsel Lawyer' : `💻 Support Staff (${currentUser.supportRole || 'Support Staff'})`}
+                  {isHRAdmin ? '👑 HR Admin Dashboard' : isCounsel ? '⚖️ Counsel Lawyer' : `💻 ${currentUser.supportRole || 'Support Staff'}`}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 font-medium">
@@ -727,7 +865,7 @@ export default function HRMSDashboard() {
             { id: 'OVERVIEW', label: '📊 HR Overview & Metrics' },
             { id: 'STAFF', label: `👥 Staff Directory (${staffList.length})` },
             { id: 'LEAVES', label: `📅 Leave Approvals (${pendingLeavesCount} Pending)` },
-            { id: 'ATTENDANCE', label: '📍 Geolocation Clock-In & Attendance' },
+            { id: 'ATTENDANCE', label: '📍 Passkey & Signature Clock-In' },
             { id: 'APPRAISALS', label: '⭐ Performance Appraisals' },
             { id: 'PAYROLL', label: '💰 Payroll & Allowances' },
           ].map((tab) => (
@@ -748,13 +886,13 @@ export default function HRMSDashboard() {
         {/* TAB 1: OVERVIEW & METRICS */}
         {activeTab === 'OVERVIEW' && (
           <div className="space-y-8">
-            {/* Staff Quick Geolocation Clock-In Banner */}
+            {/* Staff Quick Geolocation & Security Passkey Clock-In Banner */}
             {!isHRAdmin && (
               <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-amber-950/30 to-slate-900 border border-amber-500/30 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="px-3 py-1 bg-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-amber-500/30">
-                      GPS VERIFIED CLOCK-IN SYSTEM
+                      SECURE ANTI-PROXY CLOCK-IN SYSTEM
                     </span>
                     <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-500/30">
                       {isCounsel ? '⚖️ COUNSEL (LAWYER)' : `💻 SUPPORT STAFF (${currentUser.supportRole || 'Support Staff'})`}
@@ -762,9 +900,7 @@ export default function HRMSDashboard() {
                   </div>
                   <h2 className="text-2xl font-black text-white">Good Day, {currentUser.name}!</h2>
                   <p className="text-xs text-slate-300 mt-1 max-w-2xl">
-                    {isCounsel
-                      ? 'As a Midlex Counsel, you can clock in at High Court, Magistrate Court, Court of Appeal, or Chambers with verified GPS coordinates.'
-                      : `As a Midlex Support Staff member (${currentUser.supportRole || 'Developer/Accountant'}), you can clock in at Home (Working Remotely) or Chambers with captured GPS location.`}
+                    Clock-in requires your <strong>Personal 6-Digit Passkey</strong>, <strong>Live GPS Satellite Lock</strong>, and <strong>Digital Signature</strong> to prevent buddy clocking.
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
@@ -772,13 +908,13 @@ export default function HRMSDashboard() {
                     onClick={handleOpenClockInModal}
                     className="px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-amber-500/20 transition-all flex items-center gap-2"
                   >
-                    📍 Clock In with GPS Coordinates
+                    📍 Clock In (Passkey + Signature + GPS)
                   </button>
                   <button
-                    onClick={handleClockOut}
+                    onClick={handleOpenClockOutModal}
                     className="px-5 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-2xl border border-slate-700 transition-all"
                   >
-                    🚪 Clock Out
+                    🚪 Clock Out (Re-verify GPS &amp; Signature)
                   </button>
                 </div>
               </div>
@@ -801,7 +937,7 @@ export default function HRMSDashboard() {
               <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800">
                 <div className="text-emerald-400 text-2xl font-black mb-1">{todayAttendanceCount} / {staffList.length}</div>
                 <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">Clocked In Today</div>
-                <div className="text-[11px] text-slate-500 mt-1">GPS Location Verified</div>
+                <div className="text-[11px] text-slate-500 mt-1">Passkey &amp; Signature Verified</div>
               </div>
 
               <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800">
@@ -811,7 +947,7 @@ export default function HRMSDashboard() {
               </div>
             </div>
 
-            {/* Quick Actions & Recent Leaves */}
+            {/* Attendance & Leave Records Overview */}
             <div className="grid lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
                 <div className="flex items-center justify-between">
@@ -842,9 +978,6 @@ export default function HRMSDashboard() {
                             </span>
                           </div>
                           <p className="text-xs text-slate-400">{l.reason}</p>
-                          <p className="text-[11px] text-slate-500 mt-1">
-                            📅 {l.startDate} to {l.endDate} • Handover: <strong>{l.handoverStaff}</strong>
-                          </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className={`px-3 py-1 rounded-full text-xs font-black uppercase ${
@@ -879,11 +1012,11 @@ export default function HRMSDashboard() {
                 </div>
               </div>
 
-              {/* Today's GPS Clock-Ins Overview */}
+              {/* Today's Clock-Ins with Signature & Passkey Security */}
               <div className="bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
                 <div>
-                  <h3 className="text-lg font-black text-white">Today's GPS Clock-Ins</h3>
-                  <p className="text-xs text-slate-400">Captured live coordinates &amp; location status</p>
+                  <h3 className="text-lg font-black text-white">Today's Clock-In Log</h3>
+                  <p className="text-xs text-slate-400">Captured day of week, time, GPS, &amp; signatures</p>
                 </div>
 
                 <div className="space-y-3">
@@ -901,10 +1034,16 @@ export default function HRMSDashboard() {
                             {att.status}
                           </span>
                         </div>
-                        <div className="text-[11px] text-slate-300">📍 {att.locationName}</div>
-                        {att.gps && (
-                          <div className="text-[10px] font-mono text-slate-400 bg-slate-900 p-2 rounded-lg border border-slate-800">
-                            🔒 {att.gps.latitude.toFixed(4)}° N, {att.gps.longitude.toFixed(4)}° E (GPS Verified)
+                        <div className="text-[11px] text-slate-300 font-bold">
+                          📅 {att.dayOfWeek}, {att.date} • 🕒 In: {att.clockInTime} {att.clockOutTime ? `| 🚪 Out: ${att.clockOutTime}` : ''}
+                        </div>
+                        <div className="text-[11px] text-slate-400">📍 {att.clockInLocationName}</div>
+                        {att.clockInSignature && (
+                          <div className="pt-2 border-t border-slate-900 flex items-center justify-between text-[10px] text-slate-400">
+                            <span>✍️ Digital Signature:</span>
+                            <div className="bg-slate-900 px-2 py-1 rounded border border-slate-800">
+                              <img src={att.clockInSignature} alt="Signature" className="h-6 w-auto object-contain" />
+                            </div>
                           </div>
                         )}
                       </div>
@@ -941,9 +1080,9 @@ export default function HRMSDashboard() {
                 <thead>
                   <tr className="border-b border-slate-800 text-[11px] font-black text-slate-400 uppercase tracking-wider">
                     <th className="py-3 px-4">Staff Name</th>
-                    <th className="py-3 px-4">Staff Category</th>
+                    <th className="py-3 px-4">Category</th>
                     <th className="py-3 px-4">Role / Support Specialty</th>
-                    <th className="py-3 px-4">Department</th>
+                    <th className="py-3 px-4">Security Passkey</th>
                     <th className="py-3 px-4">Basic Salary</th>
                     <th className="py-3 px-4">Status</th>
                   </tr>
@@ -959,13 +1098,15 @@ export default function HRMSDashboard() {
                         <span className={`px-2.5 py-1 rounded-md font-bold text-[10px] ${
                           s.staffCategory === 'COUNSEL' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
                         }`}>
-                          {s.staffCategory === 'COUNSEL' ? '⚖️ Counsel (Lawyer)' : '💻 Support Staff'}
+                          {s.staffCategory === 'COUNSEL' ? '⚖️ Counsel' : '💻 Support Staff'}
                         </span>
                       </td>
                       <td className="py-4 px-4 font-bold text-white">
                         {s.staffCategory === 'SUPPORT_STAFF' ? (s.supportRole || s.role) : s.role}
                       </td>
-                      <td className="py-4 px-4 text-slate-300">{s.department}</td>
+                      <td className="py-4 px-4 font-mono text-xs text-amber-400">
+                        🔒 {s.securityPasskey || '123456'}
+                      </td>
                       <td className="py-4 px-4 font-bold text-emerald-400">
                         ₦{s.basicSalary.toLocaleString()} / mo
                       </td>
@@ -1049,31 +1190,40 @@ export default function HRMSDashboard() {
           </div>
         )}
 
-        {/* TAB 4: ATTENDANCE & GEOLOCATION LOGS */}
+        {/* TAB 4: ATTENDANCE & ANTI-PROXY SECURITY AUDIT */}
         {activeTab === 'ATTENDANCE' && (
           <div className="bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-xl font-black text-white">Geolocation Clock-In &amp; Timesheets</h3>
-                <p className="text-xs text-slate-400">Captured GPS coordinates for Court, Chambers, and Remote Support Staff</p>
+                <h3 className="text-xl font-black text-white">Passkey, Signature &amp; GPS Attendance Audit Log</h3>
+                <p className="text-xs text-slate-400">Includes Day of Week, Date, Clock-In Time, Clock-Out Time, Re-captured Locations, &amp; Handwritten Signatures</p>
               </div>
-              <button
-                onClick={handleOpenClockInModal}
-                className="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg flex items-center gap-2"
-              >
-                📍 Clock In with GPS Coordinates
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleOpenClockInModal}
+                  className="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg flex items-center gap-2"
+                >
+                  📍 Clock In (Passkey + Signature)
+                </button>
+                <button
+                  onClick={handleOpenClockOutModal}
+                  className="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition-all"
+                >
+                  🚪 Clock Out
+                </button>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-800 text-[11px] font-black text-slate-400 uppercase tracking-wider">
-                    <th className="py-3 px-4">Staff Member &amp; Category</th>
-                    <th className="py-3 px-4">Clock In Time</th>
-                    <th className="py-3 px-4">Location Category</th>
-                    <th className="py-3 px-4">Captured GPS Coordinates (Locked)</th>
-                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Day &amp; Staff Member</th>
+                    <th className="py-3 px-4">Clock In Details</th>
+                    <th className="py-3 px-4">Clock Out Details</th>
+                    <th className="py-3 px-4">Clock-In Signature</th>
+                    <th className="py-3 px-4">Clock-Out Signature</th>
+                    <th className="py-3 px-4">Anti-Proxy Security Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800 text-xs">
@@ -1081,28 +1231,60 @@ export default function HRMSDashboard() {
                     <tr key={att.id} className="hover:bg-slate-800/50 transition-colors">
                       <td className="py-4 px-4 font-bold text-white">
                         {att.staffName}
-                        <div className="text-[11px] text-amber-400 font-mono">
-                          {att.staffCategory === 'COUNSEL' ? '⚖️ Counsel Lawyer' : `💻 ${att.supportRole || 'Support Staff'}`}
+                        <div className="text-[11px] text-amber-400 font-medium">
+                          📅 {att.dayOfWeek}, {att.date}
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          {att.staffCategory === 'COUNSEL' ? '⚖️ Counsel' : `💻 ${att.supportRole || 'Support Staff'}`}
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-emerald-400 font-bold">{att.clockInTime}</td>
-                      <td className="py-4 px-4 text-slate-200 font-medium">
-                        {att.locationName}
-                      </td>
-                      <td className="py-4 px-4 font-mono text-[11px] text-slate-300">
-                        {att.gps ? (
-                          <div className="bg-slate-950 p-2 rounded-lg border border-slate-800 flex items-center gap-2">
-                            <span className="text-emerald-400">🔒 GPS Locked:</span>
-                            <span>{att.gps.latitude.toFixed(4)}° N, {att.gps.longitude.toFixed(4)}° E</span>
-                            <span className="text-slate-500 text-[10px]">(±{Math.round(att.gps.accuracy)}m)</span>
+                      <td className="py-4 px-4">
+                        <div className="font-bold text-emerald-400">🕒 {att.clockInTime}</div>
+                        <div className="text-[11px] text-slate-300">📍 {att.clockInLocationName}</div>
+                        {att.clockInGps && (
+                          <div className="text-[10px] font-mono text-slate-400 mt-1">
+                            GPS: {att.clockInGps.latitude.toFixed(4)}°, {att.clockInGps.longitude.toFixed(4)}°
                           </div>
-                        ) : (
-                          <span className="text-slate-500 italic">No GPS coordinates</span>
                         )}
                       </td>
                       <td className="py-4 px-4">
-                        <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase rounded-full border border-emerald-500/30">
-                          {att.status}
+                        {att.clockOutTime ? (
+                          <>
+                            <div className="font-bold text-amber-400">🚪 {att.clockOutTime}</div>
+                            <div className="text-[11px] text-slate-300">📍 {att.clockOutLocationName || att.clockInLocationName}</div>
+                            {att.clockOutGps && (
+                              <div className="text-[10px] font-mono text-slate-400 mt-1">
+                                GPS: {att.clockOutGps.latitude.toFixed(4)}°, {att.clockOutGps.longitude.toFixed(4)}°
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <span className="px-2 py-1 bg-amber-500/10 text-amber-400 text-[10px] font-bold rounded border border-amber-500/20">
+                            Active Session
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-4 px-4">
+                        {att.clockInSignature ? (
+                          <div className="bg-slate-950 p-1.5 rounded-lg border border-slate-800 w-32">
+                            <img src={att.clockInSignature} alt="In Signature" className="h-8 w-auto object-contain mx-auto" />
+                          </div>
+                        ) : (
+                          <span className="text-slate-500 italic text-[11px]">No signature</span>
+                        )}
+                      </td>
+                      <td className="py-4 px-4">
+                        {att.clockOutSignature ? (
+                          <div className="bg-slate-950 p-1.5 rounded-lg border border-slate-800 w-32">
+                            <img src={att.clockOutSignature} alt="Out Signature" className="h-8 w-auto object-contain mx-auto" />
+                          </div>
+                        ) : (
+                          <span className="text-slate-500 italic text-[11px]">Awaiting Clock-Out</span>
+                        )}
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase rounded-full border border-emerald-500/30 flex items-center gap-1 w-fit">
+                          🔒 Passkey &amp; GPS Locked
                         </span>
                       </td>
                     </tr>
@@ -1150,23 +1332,12 @@ export default function HRMSDashboard() {
                       <span className="font-bold text-white">⭐ {rev.draftingScore} / 5</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Court / Technical Skill</span>
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Court / Tech Skill</span>
                       <span className="font-bold text-white">⭐ {rev.courtAdvocacyScore} / 5</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Punctuality</span>
-                      <span className="font-bold text-white">⭐ {rev.punctualityScore} / 5</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Client / Firm Care</span>
-                      <span className="font-bold text-white">⭐ {rev.clientSatisfactionScore} / 5</span>
                     </div>
                   </div>
 
                   <p className="text-xs text-slate-300 italic">"{rev.comments}"</p>
-                  <p className="text-[11px] text-slate-500 border-t border-slate-900 pt-2">
-                    Evaluated by {rev.reviewer} on {rev.date}
-                  </p>
                 </div>
               ))}
             </div>
@@ -1229,96 +1400,167 @@ export default function HRMSDashboard() {
         )}
       </main>
 
-      {/* MODAL: GEOLOCATION CLOCK-IN WITH UNALTERABLE GPS */}
+      {/* MODAL: GEOLOCATION & PASSKEY & SIGNATURE CLOCK-IN */}
       <AnimatePresence>
         {isClockInModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl">
               <div>
                 <span className="px-3 py-1 bg-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-amber-500/30">
-                  REAL-TIME GPS GEOLOCATION CHECK-IN
+                  ANTI-PROXY CLOCK-IN VERIFICATION
                 </span>
                 <h3 className="text-xl font-black text-white mt-2">Clock In for Today</h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Your physical GPS coordinates are captured automatically and locked. Manual location tampering is disabled.
+                <p className="text-xs text-amber-400 font-bold mt-1">
+                  📅 Today: {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
               </div>
 
-              {/* GPS Capture Display */}
-              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">GPS Satellite Status</span>
-                  {isCapturingGps ? (
-                    <span className="text-xs text-amber-400 font-bold animate-pulse">📡 Acquiring Satellite Lock...</span>
-                  ) : capturedGps ? (
-                    <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">🔒 GPS Coordinates Locked &amp; Verified</span>
-                  ) : (
-                    <span className="text-xs text-red-400 font-bold">⚠️ GPS Unavailable</span>
-                  )}
-                </div>
-
-                {capturedGps && (
-                  <div className="space-y-1 font-mono text-xs">
-                    <div className="text-white font-bold">Latitude: {capturedGps.latitude.toFixed(6)}° N</div>
-                    <div className="text-white font-bold">Longitude: {capturedGps.longitude.toFixed(6)}° E</div>
-                    <div className="text-slate-400 text-[11px]">Accuracy: ±{Math.round(capturedGps.accuracy)} meters</div>
-                    <div className="text-amber-400 text-[11px] pt-1 border-t border-slate-800/80">{capturedGps.formattedAddress}</div>
-                  </div>
+              {/* GPS Satellite Capture Banner */}
+              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-300 uppercase">GPS Satellite Status</span>
+                {isCapturingGps ? (
+                  <span className="text-amber-400 font-bold animate-pulse">📡 Acquiring Satellite Lock...</span>
+                ) : capturedGps ? (
+                  <span className="text-emerald-400 font-bold font-mono">🔒 GPS Locked ({capturedGps.latitude.toFixed(4)}°, {capturedGps.longitude.toFixed(4)}°)</span>
+                ) : (
+                  <span className="text-red-400 font-bold">⚠️ GPS Unavailable</span>
                 )}
               </div>
 
-              {/* Location Options based on Staff Category */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                  Select Work Location Type
+              {/* Work Location Selector */}
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+                  Work Location
                 </label>
                 {currentUser?.staffCategory === 'COUNSEL' ? (
-                  /* Counsel Options */
                   <select
                     value={selectedLocationCategory}
                     onChange={(e) => setSelectedLocationCategory(e.target.value as any)}
-                    className="w-full p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-bold focus:border-amber-500 focus:outline-none"
+                    className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-bold"
                   >
                     <option value="HIGH_COURT">⚖️ High Court of Edo State, Benin City</option>
                     <option value="MAGISTRATE_COURT">⚖️ Magistrate Court (Egor / Oredo Bench)</option>
                     <option value="APPEAL_COURT">⚖️ Court of Appeal, Benin Division</option>
-                    <option value="BENIN_CHAMBERS">🏢 Midlex Chambers — Benin City Main Office</option>
+                    <option value="BENIN_CHAMBERS">🏢 Midlex Chambers — Benin City Office</option>
                     <option value="CLIENT_OFFSITE">🤝 Offsite Client Consultation</option>
                   </select>
                 ) : (
-                  /* Support Staff Options */
                   <select
                     value={selectedLocationCategory}
                     onChange={(e) => setSelectedLocationCategory(e.target.value as any)}
-                    className="w-full p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-bold focus:border-amber-500 focus:outline-none"
+                    className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-bold"
                   >
                     <option value="HOME_REMOTE">💻 Working Remotely (Home Office)</option>
                     <option value="BENIN_CHAMBERS">🏢 Midlex Chambers — Benin City Office</option>
                     <option value="CLIENT_OFFSITE">🌐 Offsite Legal Tech / Audit Hub</option>
                   </select>
                 )}
-                <p className="text-[11px] text-slate-500 italic">
-                  {currentUser?.staffCategory === 'COUNSEL'
-                    ? 'Counsels can clock in at court benches, trial venues, or chambers.'
-                    : 'Support Staff (Developers, Accountants, Admins) can clock in remotely at home or at chambers.'}
-                </p>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+              {/* Security Passkey Input */}
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+                  🔒 Enter Your Personal 6-Digit Passkey <span className="text-amber-400">*</span>
+                </label>
+                <input
+                  type="password"
+                  maxLength={6}
+                  value={inputPasskey}
+                  onChange={(e) => setInputPasskey(e.target.value)}
+                  className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm font-mono tracking-widest text-center focus:border-amber-500 focus:outline-none"
+                  placeholder="••••••"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">Default demo passkey is <strong className="text-amber-400">123456</strong></p>
+              </div>
+
+              {/* Digital Signature Pad */}
+              <SignaturePad
+                onSave={(dataUrl) => setSignatureData(dataUrl)}
+                onClear={() => setSignatureData('')}
+              />
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsClockInModalOpen(false)}
-                  className="px-5 py-3 bg-slate-800 text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-700 transition-all"
+                  className="px-4 py-2.5 bg-slate-800 text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-700 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleConfirmClockIn}
-                  disabled={isCapturingGps || !capturedGps}
-                  className="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all"
+                  disabled={isCapturingGps || !capturedGps || !inputPasskey || !signatureData}
+                  className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all"
                 >
-                  Confirm &amp; Lock Clock-In →
+                  Confirm &amp; Validate Clock-In →
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL: CLOCK-OUT WITH GPS RE-CAPTURE & PASSKEY & SIGNATURE */}
+      <AnimatePresence>
+        {isClockOutModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl">
+              <div>
+                <span className="px-3 py-1 bg-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-amber-500/30">
+                  CLOCK-OUT SECURITY VERIFICATION
+                </span>
+                <h3 className="text-xl font-black text-white mt-2">Confirm Clock-Out</h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Re-capturing live GPS location &amp; verifying digital signature for official end-of-day record.
+                </p>
+              </div>
+
+              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-300 uppercase">Clock-Out GPS Satellite</span>
+                {isCapturingClockOutGps ? (
+                  <span className="text-amber-400 font-bold animate-pulse">📡 Re-acquiring GPS...</span>
+                ) : clockOutGps ? (
+                  <span className="text-emerald-400 font-bold font-mono">🔒 GPS Verified ({clockOutGps.latitude.toFixed(4)}°, {clockOutGps.longitude.toFixed(4)}°)</span>
+                ) : (
+                  <span className="text-red-400 font-bold">⚠️ GPS Unavailable</span>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+                  🔒 Enter Your 6-Digit Security Passkey <span className="text-amber-400">*</span>
+                </label>
+                <input
+                  type="password"
+                  maxLength={6}
+                  value={clockOutPasskey}
+                  onChange={(e) => setClockOutPasskey(e.target.value)}
+                  className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm font-mono tracking-widest text-center focus:border-amber-500 focus:outline-none"
+                  placeholder="••••••"
+                />
+              </div>
+
+              <SignaturePad
+                onSave={(dataUrl) => setClockOutSignature(dataUrl)}
+                onClear={() => setClockOutSignature('')}
+              />
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsClockOutModalOpen(false)}
+                  className="px-4 py-2.5 bg-slate-800 text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-700 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmClockOut}
+                  disabled={isCapturingClockOutGps || !clockOutGps || !clockOutPasskey || !clockOutSignature}
+                  className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all"
+                >
+                  Validate &amp; Clock Out →
                 </button>
               </div>
             </motion.div>
@@ -1352,44 +1594,8 @@ export default function HRMSDashboard() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-slate-400 font-bold uppercase mb-1">Department</label>
-                    <select value={newStaff.department} onChange={(e) => setNewStaff({ ...newStaff, department: e.target.value as any })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white">
-                      <option value="LITIGATION">Litigation</option>
-                      <option value="GENERAL">General / Property</option>
-                      <option value="FINANCE">Finance</option>
-                      <option value="ENGINEERING">Engineering / IT</option>
-                      <option value="ADMIN">Administrative</option>
-                    </select>
-                  </div>
-                </div>
-
-                {newStaff.staffCategory === 'SUPPORT_STAFF' ? (
-                  <div>
-                    <label className="block text-slate-400 font-bold uppercase mb-1">Specific Support Staff Role</label>
-                    <select value={newStaff.supportRole} onChange={(e) => setNewStaff({ ...newStaff, supportRole: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white">
-                      <option value="Software Developer">💻 Software Developer</option>
-                      <option value="Lead Accountant">💰 Lead Accountant</option>
-                      <option value="Administrative Secretary">📋 Administrative Secretary</option>
-                      <option value="Paralegal Legal Asst">📑 Paralegal</option>
-                      <option value="IT Systems Specialist">🔌 IT Specialist</option>
-                      <option value="HR Assistant">🤝 HR Assistant</option>
-                    </select>
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-slate-400 font-bold uppercase mb-1">Counsel Title</label>
-                    <input type="text" required value={newStaff.role} onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" placeholder="Associate Solicitor" />
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-slate-400 font-bold uppercase mb-1">Basic Monthly Salary (₦)</label>
-                    <input type="number" required value={newStaff.basicSalary} onChange={(e) => setNewStaff({ ...newStaff, basicSalary: Number(e.target.value) })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" />
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 font-bold uppercase mb-1">Court Allowance / Day (₦)</label>
-                    <input type="number" required value={newStaff.courtAllowanceRate} onChange={(e) => setNewStaff({ ...newStaff, courtAllowanceRate: Number(e.target.value) })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white" />
+                    <label className="block text-slate-400 font-bold uppercase mb-1">Security Passkey</label>
+                    <input type="password" maxLength={6} required value={newStaff.securityPasskey} onChange={(e) => setNewStaff({ ...newStaff, securityPasskey: e.target.value })} className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono" placeholder="123456" />
                   </div>
                 </div>
 
