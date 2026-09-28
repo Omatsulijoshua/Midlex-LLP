@@ -239,8 +239,43 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-6"
+            className="flex items-center gap-4 sm:gap-6"
           >
+            {/* Quick Profile Switcher Pill for Admin & Lawyers */}
+            {(user.role === 'ADMIN' || user.role === 'LAWYER') && (
+              <div className="hidden md:flex items-center bg-slate-900 border border-amber-400/30 rounded-2xl p-1 shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('midlex_admin_dept', 'LITIGATION');
+                      window.dispatchEvent(new Event('storage'));
+                      window.location.href = '/dashboard';
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-xl text-[11px] font-black tracking-wider uppercase transition-all flex items-center gap-1 text-amber-300 hover:bg-slate-800"
+                  title="Switch to Litigation Profile"
+                >
+                  ⚖️ LITIGATION
+                </button>
+                <div className="h-4 w-px bg-slate-700 mx-0.5" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('midlex_admin_dept', 'GENERAL');
+                      window.dispatchEvent(new Event('storage'));
+                      window.location.href = '/dashboard';
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-xl text-[11px] font-black tracking-wider uppercase transition-all flex items-center gap-1 text-amber-400 hover:bg-slate-800"
+                  title="Switch to General & Property Profile"
+                >
+                  🏢 GENERAL
+                </button>
+              </div>
+            )}
+
             <NotificationBell />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-bold text-primary">{user.name}</p>
