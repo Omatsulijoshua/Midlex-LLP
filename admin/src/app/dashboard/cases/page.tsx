@@ -124,15 +124,11 @@ export default function CasesPage() {
     };
     fetchCases();
 
-    // Load saved case overrides & admin department preference from localStorage if present
+    // Load saved case overrides from localStorage if present
     if (typeof window !== 'undefined') {
       const savedOverrides = localStorage.getItem('midlex_case_overrides');
       if (savedOverrides) {
         try { setOverrides(JSON.parse(savedOverrides)); } catch (e) {}
-      }
-      const savedDept = localStorage.getItem('midlex_admin_dept');
-      if (savedDept === 'LITIGATION' || savedDept === 'GENERAL') {
-        setCategoryFilter(savedDept);
       }
     }
   }, [user]);
@@ -415,7 +411,7 @@ export default function CasesPage() {
         countLabel="cases in directory"
       />
 
-      {/* Very Bold Team Case Directory Section */}
+      {/* Very Bold Team & Department Case Directory Section */}
       {isStaff && (
         <div className="bg-slate-900 border-2 border-amber-400/40 rounded-3xl p-6 shadow-xl space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
@@ -425,17 +421,23 @@ export default function CasesPage() {
               </div>
               <div>
                 <h3 className="text-sm font-black tracking-wider text-white uppercase">
-                  {user?.role === 'ADMIN' ? 'SUPER ADMIN LITIGATION TEAM DIRECTORIES' : `${(user as any)?.litigationTeam || 'TEAM ANCHOR'} CASE DIRECTORY`}
+                  {categoryFilter === 'GENERAL'
+                    ? 'SUPER ADMIN GENERAL & PROPERTY REALTY DIRECTORIES'
+                    : user?.role === 'ADMIN'
+                    ? 'SUPER ADMIN LITIGATION & PRACTICE DIRECTORIES'
+                    : `${(user as any)?.litigationTeam || 'TEAM ANCHOR'} CASE DIRECTORY`}
                 </h3>
                 <p className="text-xs text-amber-200/80 font-medium">
-                  {user?.role === 'ADMIN'
-                    ? 'Super Admin Access: Open any team case directory register below.'
+                  {categoryFilter === 'GENERAL'
+                    ? 'General & Realty Access: Land title verification, C of O searches, & Samson Sabbat property conveyancing registers.'
+                    : user?.role === 'ADMIN'
+                    ? 'Super Admin Access: Open any practice team or court case directory register below.'
                     : 'Counsel Access: Open your assigned litigation team case directory.'}
                 </p>
               </div>
             </div>
             <span className="text-[10px] bg-amber-400/10 border border-amber-400/40 text-amber-300 px-3 py-1 rounded-full font-black uppercase tracking-widest self-start sm:self-auto">
-              {user?.role === 'ADMIN' ? 'Super Admin Exclusive' : 'Litigation Team Counsel'}
+              {categoryFilter === 'GENERAL' ? '🏢 General & Property Practice' : user?.role === 'ADMIN' ? 'Super Admin Exclusive' : 'Litigation Team Counsel'}
             </span>
           </div>
 
@@ -577,20 +579,21 @@ export default function CasesPage() {
             <thead>
               <tr className="bg-primary text-white">
                 <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">S/N</th>
-                <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">SUIT NO.</th>
+                <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">{categoryFilter === 'GENERAL' ? 'MATTER REF / SUIT' : 'SUIT NO.'}</th>
                 <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">CASE TITLE</th>
                 <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">CLIENT DETAILS</th>
-                <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">COURT</th>
-                <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">LITIGATION TEAM</th>
+                <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">{categoryFilter === 'GENERAL' ? 'PRACTICE / JURISDICTION' : 'COURT'}</th>
+                <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest">{categoryFilter === 'GENERAL' ? 'ASSIGNED COUNSEL / TEAM' : 'LITIGATION TEAM'}</th>
                 <th className="px-6 py-5 text-xs font-bold uppercase tracking-widest text-right">ACTION</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredCases.map((c, index) => {
+                const isGeneral = ((c as any).category || '').toUpperCase() === 'GENERAL';
                 const ov = overrides[c.id] || {};
-                const suitNo = ov.suitNumber || c.suitNumber || '';
-                const courtName = ov.court || c.court || '';
-                const teamName = ov.litigationTeam || c.litigationTeam || '';
+                const suitNo = ov.suitNumber || c.suitNumber || (isGeneral ? `MATTER REF: GENERAL-${c.id.slice(-4).toUpperCase()}` : '');
+                const courtName = ov.court || c.court || (isGeneral ? '🏢 PROPERTY & REALTY CONVEYANCING' : '');
+                const teamName = ov.litigationTeam || c.litigationTeam || (isGeneral ? '👨‍⚖️ Samson Sabbat (Lead Counsel)' : '');
 
                 const latestTimeline = c.timeline && c.timeline.length > 0 ? c.timeline[c.timeline.length - 1] : null;
                 const realStatus = (latestTimeline?.status || c.status || 'OPEN').toUpperCase();
@@ -601,7 +604,7 @@ export default function CasesPage() {
                     <td className="px-6 py-5">
                       {suitNo ? (
                         <span className="px-3 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-xs font-bold tracking-wide">
-                          {suitNo.startsWith('SUIT') ? suitNo : `SUIT NO: ${suitNo}`}
+                          {suitNo.startsWith('SUIT') || suitNo.startsWith('MATTER') ? suitNo : `SUIT NO: ${suitNo}`}
                         </span>
                       ) : (
                         <span className="text-gray-400 font-normal italic text-xs">—</span>
@@ -611,11 +614,11 @@ export default function CasesPage() {
                       <div className="font-bold text-primary text-base">{c.title}</div>
                       <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-                          ((c as any).category || 'LITIGATION').toUpperCase() === 'GENERAL'
+                          isGeneral
                             ? 'bg-amber-100 text-amber-900 border-amber-300'
                             : 'bg-indigo-50 text-indigo-700 border-indigo-200'
                         }`}>
-                          {((c as any).category || 'LITIGATION').toUpperCase() === 'GENERAL' ? '🏛️ GENERAL / RETAINER' : '⚖️ LITIGATION ISSUE'}
+                          {isGeneral ? '🏛️ GENERAL / RETAINER' : '⚖️ LITIGATION ISSUE'}
                         </span>
                         {(c as any).subCategory && (
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700 border border-gray-200">
@@ -648,7 +651,7 @@ export default function CasesPage() {
                           <svg className="w-4 h-4 text-secondary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0v-4m0 4h4" />
                           </svg>
-                          <span>{courtName}</span>
+                          <span className="font-bold text-gray-800">{courtName}</span>
                         </div>
                       ) : (
                         <span className="text-gray-400 font-normal italic text-xs">—</span>
