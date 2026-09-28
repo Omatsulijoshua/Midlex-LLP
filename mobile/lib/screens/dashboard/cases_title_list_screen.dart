@@ -62,12 +62,72 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Top Profile Department Selector Bar
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0C2B18),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppTheme.secondary, width: 1.5),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () => dashboard.setDepartment('LITIGATION'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: dashboard.selectedDepartment == 'LITIGATION' ? AppTheme.secondary : Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '⚖️ LITIGATION MATTERS',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: dashboard.selectedDepartment == 'LITIGATION' ? Colors.white : Colors.white70,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () => dashboard.setDepartment('GENERAL'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: dashboard.selectedDepartment == 'GENERAL' ? AppTheme.secondary : Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '🏢 GENERAL & REALTY',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: dashboard.selectedDepartment == 'GENERAL' ? Colors.white : Colors.white70,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   // Top Banner
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.primary,
+                      color: dashboard.selectedDepartment == 'GENERAL' ? const Color(0xFF3D2706) : AppTheme.primary,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
@@ -80,9 +140,9 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: AppTheme.secondary),
                           ),
-                          child: const Text(
-                            'REGISTRY CASES LIST',
-                            style: TextStyle(
+                          child: Text(
+                            dashboard.selectedDepartment == 'GENERAL' ? '🏢 GENERAL & PROPERTY REALTY REGISTER' : '⚖️ LITIGATION & COURT MATTERS REGISTER',
+                            style: const TextStyle(
                               color: AppTheme.secondary,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -91,18 +151,20 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Cases',
-                          style: TextStyle(
+                        Text(
+                          dashboard.selectedDepartment == 'GENERAL' ? 'General & Property Matters' : 'Litigation & Court Suits',
+                          style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 22,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          'Select any registered case title below to inspect matter specifications.',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        Text(
+                          dashboard.selectedDepartment == 'GENERAL'
+                              ? 'Land title verification, C of O searches, & Samson Sabbat conveyancing registers.'
+                              : 'Select any registered case title below to inspect matter specifications.',
+                          style: const TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                       ],
                     ),

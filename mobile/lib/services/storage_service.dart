@@ -56,6 +56,18 @@ class StorageService {
     return null;
   }
 
+  static const String departmentKey = 'midlex_dept';
+
+  static Future<void> saveDepartment(String dept) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(departmentKey, dept);
+  }
+
+  static Future<String> getDepartment() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(departmentKey) ?? 'LITIGATION';
+  }
+
   static Future<void> clearAuth() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(tokenKey);

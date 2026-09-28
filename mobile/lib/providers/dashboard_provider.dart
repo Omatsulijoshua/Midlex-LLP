@@ -7,6 +7,8 @@ import '../models/notification_model.dart';
 import '../services/api_service.dart';
 import '../config/api_config.dart';
 
+import '../services/storage_service.dart';
+
 class DashboardProvider extends ChangeNotifier {
   List<CaseModel> _cases = [];
   List<PaymentModel> _payments = [];
@@ -14,6 +16,7 @@ class DashboardProvider extends ChangeNotifier {
   List<InquiryModel> _inquiries = [];
   List<NotificationModel> _notifications = [];
   bool _isLoading = false;
+  String _selectedDepartment = 'LITIGATION';
 
   List<CaseModel> get cases => _cases;
   List<PaymentModel> get payments => _payments;
@@ -22,9 +25,22 @@ class DashboardProvider extends ChangeNotifier {
   List<NotificationModel> get notifications => _notifications;
   int get unreadNotificationCount => _notifications.where((n) => !n.isRead).length;
   bool get isLoading => _isLoading;
+  String get selectedDepartment => _selectedDepartment;
+
+  Future<void> initDepartment() async {
+    _selectedDepartment = await StorageService.getDepartment();
+    notifyListeners();
+  }
+
+  Future<void> setDepartment(String dept) async {
+    _selectedDepartment = dept;
+    await StorageService.saveDepartment(dept);
+    notifyListeners();
+  }
 
   Future<void> fetchDashboardData() async {
     _isLoading = true;
+    _selectedDepartment = await StorageService.getDepartment();
     notifyListeners();
 
     try {

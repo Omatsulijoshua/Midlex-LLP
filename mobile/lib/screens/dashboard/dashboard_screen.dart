@@ -38,7 +38,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _activeNavIndex = 0;
-  String _selectedDept = 'LITIGATION';
 
   @override
   void initState() {
@@ -133,6 +132,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: Text(isStaff ? currentItem.name : 'Client Dashboard'),
         actions: [
+          // Quick Header Profile Switcher Pill
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: ActionChip(
+              avatar: Text(
+                dashboard.selectedDepartment == 'GENERAL' ? '🏢' : '⚖️',
+                style: const TextStyle(fontSize: 12),
+              ),
+              label: Text(
+                dashboard.selectedDepartment == 'GENERAL' ? 'GENERAL' : 'LITIGATION',
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              backgroundColor: dashboard.selectedDepartment == 'GENERAL'
+                  ? const Color(0xFFC69A59)
+                  : const Color(0xFF0C2B18),
+              side: const BorderSide(color: Color(0xFFC69A59), width: 1.5),
+              onPressed: () => _showDepartmentSwitcherModal(context, dashboard),
+            ),
+          ),
           IconButton(
             icon: Stack(
               children: [
@@ -271,8 +294,151 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _showDepartmentSwitcherModal(BuildContext context, DashboardProvider dashboard) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0C2B18),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        final currentDept = dashboard.selectedDepartment;
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'CHOOSE PRACTICE PROFILE',
+                    style: TextStyle(
+                      color: AppTheme.secondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Switch your monitoring workspace between Litigation matters and General / Property matters.',
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  // LITIGATION PROFILE CARD
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        dashboard.setDepartment('LITIGATION');
+                        Navigator.pop(ctx);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: currentDept == 'LITIGATION' ? const Color(0xFF1B4D2E) : const Color(0xFF121212),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: currentDept == 'LITIGATION' ? AppTheme.secondary : Colors.white24,
+                            width: currentDept == 'LITIGATION' ? 2 : 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('⚖️', style: TextStyle(fontSize: 28)),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Litigation Profile',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Trial suits & court dates',
+                              style: TextStyle(color: Colors.white70, fontSize: 10),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              currentDept == 'LITIGATION' ? '● CURRENT PROFILE' : 'Tap to Switch',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: currentDept == 'LITIGATION' ? Colors.greenAccent : AppTheme.secondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // GENERAL & PROPERTY PROFILE CARD
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        dashboard.setDepartment('GENERAL');
+                        Navigator.pop(ctx);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: currentDept == 'GENERAL' ? const Color(0xFF3D2706) : const Color(0xFF121212),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: currentDept == 'GENERAL' ? AppTheme.secondary : Colors.white24,
+                            width: currentDept == 'GENERAL' ? 2 : 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('🏢', style: TextStyle(fontSize: 28)),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'General / Realty',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Land titles & property',
+                              style: TextStyle(color: Colors.white70, fontSize: 10),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              currentDept == 'GENERAL' ? '● CURRENT PROFILE' : 'Tap to Switch',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: currentDept == 'GENERAL' ? Colors.greenAccent : AppTheme.secondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildOverviewTab(BuildContext context, dynamic user) {
     final dashboard = Provider.of<DashboardProvider>(context);
+    final selectedDept = dashboard.selectedDepartment;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -320,173 +486,171 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
 
-          if (user.isAdmin || user.isLawyer) ...[
-            const SizedBox(height: 16),
-            const Text(
-              'LAW FIRM MONITORING PROFILE (CHOOSE LEFT / RIGHT)',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textMuted, letterSpacing: 0.8),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                // LEFT BUTTON: LITIGATION PROFILE
-                Expanded(
-                  child: InkWell(
-                    onTap: () => setState(() => _selectedDept = 'LITIGATION'),
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: _selectedDept == 'LITIGATION' ? const Color(0xFF0C2B18) : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: _selectedDept == 'LITIGATION' ? AppTheme.secondary : Colors.grey.shade300,
-                          width: _selectedDept == 'LITIGATION' ? 2 : 1,
-                        ),
-                        boxShadow: [
-                          if (_selectedDept == 'LITIGATION')
-                            BoxShadow(color: AppTheme.secondary.withValues(alpha: 0.3), blurRadius: 10, spreadRadius: 1),
-                        ],
+          const SizedBox(height: 16),
+          const Text(
+            'LAW FIRM MONITORING PROFILE (CHOOSE LEFT / RIGHT)',
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textMuted, letterSpacing: 0.8),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              // LEFT BUTTON: LITIGATION PROFILE
+              Expanded(
+                child: InkWell(
+                  onTap: () => dashboard.setDepartment('LITIGATION'),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: selectedDept == 'LITIGATION' ? const Color(0xFF0C2B18) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: selectedDept == 'LITIGATION' ? AppTheme.secondary : Colors.grey.shade300,
+                        width: selectedDept == 'LITIGATION' ? 2 : 1,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('⚖️', style: TextStyle(fontSize: 22)),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: _selectedDept == 'LITIGATION' ? AppTheme.secondary : Colors.blue.shade50,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  'LEFT',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: _selectedDept == 'LITIGATION' ? Colors.white : Colors.blue.shade900,
-                                  ),
-                                ),
+                      boxShadow: [
+                        if (selectedDept == 'LITIGATION')
+                          BoxShadow(color: AppTheme.secondary.withValues(alpha: 0.3), blurRadius: 10, spreadRadius: 1),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('⚖️', style: TextStyle(fontSize: 22)),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: selectedDept == 'LITIGATION' ? AppTheme.secondary : Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Litigation Profile',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: _selectedDept == 'LITIGATION' ? Colors.white : AppTheme.primary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'High Court suits, trial dates & counsel',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: _selectedDept == 'LITIGATION' ? Colors.white70 : Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Text(
-                                _selectedDept == 'LITIGATION' ? '● ACTIVE' : 'Select ➔',
+                              child: Text(
+                                'LEFT',
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 9,
                                   fontWeight: FontWeight.bold,
-                                  color: _selectedDept == 'LITIGATION' ? Colors.greenAccent : AppTheme.secondary,
+                                  color: selectedDept == 'LITIGATION' ? Colors.white : Colors.blue.shade900,
                                 ),
                               ),
-                            ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Litigation Profile',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: selectedDept == 'LITIGATION' ? Colors.white : AppTheme.primary,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'High Court suits, trial dates & counsel',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: selectedDept == 'LITIGATION' ? Colors.white70 : Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Text(
+                              selectedDept == 'LITIGATION' ? '● ACTIVE' : 'Select ➔',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: selectedDept == 'LITIGATION' ? Colors.greenAccent : AppTheme.secondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                // RIGHT BUTTON: GENERAL & PROPERTY PROFILE
-                Expanded(
-                  child: InkWell(
-                    onTap: () => setState(() => _selectedDept = 'GENERAL'),
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: _selectedDept == 'GENERAL' ? const Color(0xFF3D2706) : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: _selectedDept == 'GENERAL' ? AppTheme.secondary : Colors.grey.shade300,
-                          width: _selectedDept == 'GENERAL' ? 2 : 1,
-                        ),
-                        boxShadow: [
-                          if (_selectedDept == 'GENERAL')
-                            BoxShadow(color: AppTheme.secondary.withValues(alpha: 0.3), blurRadius: 10, spreadRadius: 1),
-                        ],
+              ),
+              const SizedBox(width: 12),
+              // RIGHT BUTTON: GENERAL & PROPERTY PROFILE
+              Expanded(
+                child: InkWell(
+                  onTap: () => dashboard.setDepartment('GENERAL'),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: selectedDept == 'GENERAL' ? const Color(0xFF3D2706) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: selectedDept == 'GENERAL' ? AppTheme.secondary : Colors.grey.shade300,
+                        width: selectedDept == 'GENERAL' ? 2 : 1,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('🏢', style: TextStyle(fontSize: 22)),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: _selectedDept == 'GENERAL' ? AppTheme.secondary : Colors.amber.shade50,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  'RIGHT',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: _selectedDept == 'GENERAL' ? Colors.white : Colors.amber.shade900,
-                                  ),
-                                ),
+                      boxShadow: [
+                        if (selectedDept == 'GENERAL')
+                          BoxShadow(color: AppTheme.secondary.withValues(alpha: 0.3), blurRadius: 10, spreadRadius: 1),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('🏢', style: TextStyle(fontSize: 22)),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: selectedDept == 'GENERAL' ? AppTheme.secondary : Colors.amber.shade50,
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'General / Realty',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: _selectedDept == 'GENERAL' ? Colors.white : AppTheme.primary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Land title, C of O, Samson Sabbat property',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: _selectedDept == 'GENERAL' ? Colors.white70 : Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Text(
-                                _selectedDept == 'GENERAL' ? '● ACTIVE' : 'Select ➔',
+                              child: Text(
+                                'RIGHT',
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 9,
                                   fontWeight: FontWeight.bold,
-                                  color: _selectedDept == 'GENERAL' ? Colors.greenAccent : AppTheme.secondary,
+                                  color: selectedDept == 'GENERAL' ? Colors.white : Colors.amber.shade900,
                                 ),
                               ),
-                            ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'General / Realty',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: selectedDept == 'GENERAL' ? Colors.white : AppTheme.primary,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Land title, C of O, Samson Sabbat property',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: selectedDept == 'GENERAL' ? Colors.white70 : Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Text(
+                              selectedDept == 'GENERAL' ? '● ACTIVE' : 'Select ➔',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: selectedDept == 'GENERAL' ? Colors.greenAccent : AppTheme.secondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
 
           if (user.isLawyer) ...[
             const SizedBox(height: 16),
