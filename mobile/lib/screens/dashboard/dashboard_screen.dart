@@ -749,7 +749,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textDark),
               ),
               TextButton(
-                onPressed: () => setState(() => _activeNavIndex = 1),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CasesTitleListScreen()),
+                  );
+                },
                 child: const Text('View All', style: TextStyle(color: AppTheme.secondary)),
               ),
             ],
