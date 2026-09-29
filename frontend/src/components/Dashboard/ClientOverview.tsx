@@ -54,11 +54,19 @@ export default function ClientOverview() {
 
   return (
     <div className="space-y-8">
-      {/* 2 Big Interactive Profile Choice Buttons (Left: Litigation, Right: General) */}
+      {/* 2 Squares Department Choice Modal */}
+      <ClientDepartmentModal
+        isOpen={isDeptModalOpen}
+        onSelectDepartment={handleSelectDepartment}
+        onClose={() => setIsDeptModalOpen(false)}
+        currentDept={selectedDept}
+      />
+
+      {/* 2 Big Interactive Profile Choice Buttons (Litigation vs General) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-black uppercase tracking-widest text-slate-500">
-            CHOOSE CLIENT MATTER PROFILE (LEFT & RIGHT)
+            CHOOSE CLIENT PRACTICE PROFILE
           </span>
           {selectedDept && (
             <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
@@ -68,7 +76,7 @@ export default function ClientOverview() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* LEFT BUTTON: LITIGATION DISPUTES */}
+          {/* LITIGATION DISPUTES BUTTON */}
           <button
             type="button"
             onClick={() => handleSelectDepartment('LITIGATION')}
@@ -87,7 +95,7 @@ export default function ClientOverview() {
               <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${
                 selectedDept === 'LITIGATION' ? 'bg-amber-400 text-slate-950' : 'bg-blue-100 text-blue-800'
               }`}>
-                LEFT PROFILE • COURT & TRIALS
+                LITIGATION MATTERS
               </span>
             </div>
 
@@ -106,7 +114,7 @@ export default function ClientOverview() {
             </div>
           </button>
 
-          {/* RIGHT BUTTON: GENERAL & PROPERTY REALTY */}
+          {/* GENERAL & PROPERTY REALTY BUTTON */}
           <button
             type="button"
             onClick={() => handleSelectDepartment('GENERAL')}
@@ -125,7 +133,7 @@ export default function ClientOverview() {
               <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${
                 selectedDept === 'GENERAL' ? 'bg-amber-400 text-slate-950' : 'bg-amber-100 text-amber-900'
               }`}>
-                RIGHT PROFILE • REALTY & ADVISORY
+                GENERAL / REALTY MATTERS
               </span>
             </div>
 

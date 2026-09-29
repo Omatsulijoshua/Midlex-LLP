@@ -453,14 +453,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
 
           const SizedBox(height: 16),
+          const SizedBox(height: 16),
           const Text(
-            'LAW FIRM MONITORING PROFILE (CHOOSE LEFT / RIGHT)',
+            'LAW FIRM PRACTICE PROFILE WORKSPACE',
             style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textMuted, letterSpacing: 0.8),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              // LEFT BUTTON: LITIGATION PROFILE
+              // LITIGATION PROFILE BUTTON
               Expanded(
                 child: InkWell(
                   onTap: () => dashboard.setDepartment('LITIGATION'),
@@ -492,9 +493,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
-                                'LEFT',
+                                'LITIGATION',
                                 style: TextStyle(
-                                  fontSize: 9,
+                                  fontSize: 8,
                                   fontWeight: FontWeight.bold,
                                   color: selectedDept == 'LITIGATION' ? Colors.white : Colors.blue.shade900,
                                 ),
@@ -538,7 +539,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              // RIGHT BUTTON: GENERAL & PROPERTY PROFILE
+              // GENERAL & PROPERTY PROFILE BUTTON
               Expanded(
                 child: InkWell(
                   onTap: () => dashboard.setDepartment('GENERAL'),
@@ -570,9 +571,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
-                                'RIGHT',
+                                'REALTY',
                                 style: TextStyle(
-                                  fontSize: 9,
+                                  fontSize: 8,
                                   fontWeight: FontWeight.bold,
                                   color: selectedDept == 'GENERAL' ? Colors.white : Colors.amber.shade900,
                                 ),

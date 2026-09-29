@@ -160,11 +160,11 @@ export default function AdminOverview() {
         currentDept={selectedDept}
       />
 
-      {/* 2 Big Profile Choice Buttons (Left: Litigation, Right: General & Property) directly on Screen */}
+      {/* 2 Big Profile Choice Buttons (Litigation vs General & Property) directly on Screen */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-black uppercase tracking-widest text-slate-500">
-            CHOOSE ADMIN LAW FIRM MONITORING PROFILE (LEFT & RIGHT)
+            CHOOSE LAW FIRM PRACTICE PROFILE WORKSPACE
           </span>
           {selectedDept && (
             <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
@@ -174,7 +174,7 @@ export default function AdminOverview() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* LEFT BUTTON: LITIGATION PROFILE */}
+          {/* LITIGATION PROFILE BUTTON */}
           <button
             type="button"
             onClick={() => handleSelectDepartment('LITIGATION')}
@@ -193,7 +193,7 @@ export default function AdminOverview() {
               <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${
                 selectedDept === 'LITIGATION' ? 'bg-amber-400 text-slate-950' : 'bg-blue-100 text-blue-800'
               }`}>
-                LEFT PROFILE • LITIGATION
+                LITIGATION PRACTICE
               </span>
             </div>
 
@@ -212,7 +212,7 @@ export default function AdminOverview() {
             </div>
           </button>
 
-          {/* RIGHT BUTTON: GENERAL & PROPERTY PROFILE */}
+          {/* GENERAL & PROPERTY PROFILE BUTTON */}
           <button
             type="button"
             onClick={() => handleSelectDepartment('GENERAL')}
@@ -231,7 +231,7 @@ export default function AdminOverview() {
               <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${
                 selectedDept === 'GENERAL' ? 'bg-amber-400 text-slate-950' : 'bg-amber-100 text-amber-900'
               }`}>
-                RIGHT PROFILE • GENERAL / REALTY
+                GENERAL / REALTY PRACTICE
               </span>
             </div>
 
