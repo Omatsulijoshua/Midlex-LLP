@@ -6,7 +6,6 @@ import '../dashboard/dashboard_screen.dart';
 import '../public/home_screen.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
-import 'lawyer_login_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -96,32 +95,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 'Client Portal Sign In',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.primary),
               ),
-              const SizedBox(height: 6),
               const Text(
                 'Sign in with your client email to monitor cases, communicate with counsel, and track legal progress.',
                 style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
                 textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.amber.shade300),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, size: 16, color: Colors.amber.shade900),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Lawyers and Admins must sign in via the Midlex Web Portal.',
-                        style: TextStyle(fontSize: 11, color: Colors.amber.shade900, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 24),
               if (_errorMessage != null)
@@ -215,24 +192,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Switcher button for Lawyers & Admin
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LawyerLoginScreen()),
-                  );
-                },
-                icon: const Icon(Icons.gavel, color: AppTheme.primary, size: 18),
-                label: const Text(
-                  'Are you a Lawyer or Admin? Sign In Here',
-                  style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppTheme.primary),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-              ),
               const SizedBox(height: 10),
               TextButton.icon(
                 onPressed: () {
