@@ -1,7 +1,7 @@
 import MarketingShell from "@/components/marketing/MarketingShell";
 
 const partners = [
-  { name: "Uzoma Meshack Okonti, ESQ", role: "Head of Chambers", img: "/uzoma-meshack-okonti.jpg" },
+  { name: "UZOMA MESHACK OKONTI, ESQ", role: "Head of Chambers", img: "/uzoma-meshack-okonti.jpg" },
   { name: "ENYAWUILE C. ABEDNEGO, ESQ", role: "Principal Partner", img: "/enyawuile-c-abednego.jpg" },
   { name: "SHEDRACK U. ENYAWUILE, ESQ", role: "Managing Partner", img: "/shedrack-u-enyawuile.jpg" },
   { name: "HANNAH C. GOODMAN, ESQ", role: "Assistant Secretary Elect", img: "/hannah-c-goodman.png" },

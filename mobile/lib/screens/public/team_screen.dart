@@ -8,7 +8,7 @@ class TeamScreen extends StatelessWidget {
 
   final List<Map<String, String>> team = const [
     {
-      'name': 'Uzoma Meshack Okonti, ESQ',
+      'name': 'UZOMA MESHACK OKONTI, ESQ',
       'role': 'Head of Chambers',
       'spec': 'Corporate Law & Commercial Litigation',
       'image': 'assets/images/uzoma-meshack-okonti.jpg',

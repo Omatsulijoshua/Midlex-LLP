@@ -3,3 +3,4 @@ ios/
 .dart_tool/
 lib/
 test/
+build/app/

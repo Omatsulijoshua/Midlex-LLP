@@ -99,7 +99,7 @@ export default function Home() {
           </Reveal>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { name: "Uzoma Meshack Okonti, ESQ", role: "Head of Chambers", img: "/uzoma-meshack-okonti.jpg" },
+              { name: "UZOMA MESHACK OKONTI, ESQ", role: "Head of Chambers", img: "/uzoma-meshack-okonti.jpg" },
               { name: "ENYAWUILE C. ABEDNEGO, ESQ", role: "Principal Partner", img: "/enyawuile-c-abednego.jpg" },
               { name: "SHEDRACK U. ENYAWUILE, ESQ", role: "Managing Partner", img: "/shedrack-u-enyawuile.jpg" },
               { name: "HANNAH C. GOODMAN, ESQ", role: "Assistant Secretary Elect", img: "/hannah-c-goodman.png" }
