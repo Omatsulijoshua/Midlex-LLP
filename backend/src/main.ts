@@ -8,6 +8,9 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const allowedOrigins = [
     process.env.FRONTEND_URL,
+    'https://midlex-backend.onrender.com',
+    'https://api.thispage.xyz',
+    'https://api.this.xyz',
     'https://midlex.thispage.xyz',
     'https://midlex.this.xyz',
     'https://mobile.thispage.xyz',
