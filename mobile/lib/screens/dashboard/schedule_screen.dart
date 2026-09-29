@@ -217,6 +217,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     }).toList();
 
     return Scaffold(
+      appBar: Navigator.canPop(context)
+          ? AppBar(
+              title: const Text('Court Dates Schedule'),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            )
+          : null,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddCourtDateDialog(dashboard.cases),
         icon: const Icon(Icons.add_task, color: Colors.white),

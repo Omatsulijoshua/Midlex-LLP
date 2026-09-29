@@ -12,6 +12,15 @@ class PaymentsScreen extends StatelessWidget {
     final dashboard = Provider.of<DashboardProvider>(context);
 
     return Scaffold(
+      appBar: Navigator.canPop(context)
+          ? AppBar(
+              title: const Text('Payments & Transactions'),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            )
+          : null,
       body: dashboard.isLoading
           ? const Center(child: CircularProgressIndicator())
           : dashboard.payments.isEmpty

@@ -54,7 +54,13 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cases'),
+        title: const Text('Cases & Legal Matters'),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
       ),
       body: dashboard.isLoading
           ? const Center(child: CircularProgressIndicator())
