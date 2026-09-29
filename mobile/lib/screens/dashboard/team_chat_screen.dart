@@ -19,12 +19,14 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   List<MessageModel> _messages = [];
   List<String> _availableTeams = [];
-  late String _activeTeam;
+  String _activeTeam = 'TEAM ANCHOR';
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    final user = Provider.of<AuthProvider>(context, listen: false).user;
+    _activeTeam = widget.teamName ?? user?.litigationTeam ?? 'TEAM ANCHOR';
     _initTeam();
   }
 
@@ -33,10 +35,12 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
     final teams = await DirectoryService.getTeams();
     final defaultTeam = widget.teamName ?? user?.litigationTeam ?? (teams.isNotEmpty ? teams.first : 'TEAM ANCHOR');
 
-    setState(() {
-      _availableTeams = teams;
-      _activeTeam = defaultTeam;
-    });
+    if (mounted) {
+      setState(() {
+        _availableTeams = teams;
+        _activeTeam = defaultTeam;
+      });
+    }
 
     await _fetchMessages();
   }
@@ -152,7 +156,9 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Litigation Team Channel: Only lawyers & admins assigned to $_activeTeam can view or send messages here.',
+                    currentUser?.isClient == true
+                        ? 'Direct Client Desk: Message your assigned Midlex legal counsel & case management team below.'
+                        : 'Litigation Team Channel: Only lawyers & admins assigned to $_activeTeam can view or send messages here.',
                     style: const TextStyle(fontSize: 11, color: AppTheme.primary, fontWeight: FontWeight.bold),
                   ),
                 ),
