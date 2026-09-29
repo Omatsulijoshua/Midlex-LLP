@@ -8,6 +8,14 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const allowedOrigins = [
     process.env.FRONTEND_URL,
+    'https://midlex.thispage.xyz',
+    'https://midlex.this.xyz',
+    'https://mobile.thispage.xyz',
+    'https://mobile.this.xyz',
+    'https://admin.thispage.xyz',
+    'https://admin.this.xyz',
+    'https://lawyers.thispage.xyz',
+    'https://lawyers.this.xyz',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
   ].filter(Boolean) as string[];
@@ -17,6 +25,10 @@ async function bootstrap() {
       if (
         !origin ||
         allowedOrigins.includes(origin) ||
+        origin.endsWith('.thispage.xyz') ||
+        origin.endsWith('.this.xyz') ||
+        origin.includes('thispage.xyz') ||
+        origin.includes('this.xyz') ||
         origin.endsWith('.vercel.app') ||
         origin.includes('localhost') ||
         origin.includes('127.0.0.1')

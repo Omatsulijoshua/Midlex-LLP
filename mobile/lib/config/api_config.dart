@@ -2,7 +2,7 @@ class ApiConfig {
   // Configurable base URL: Defaults to production, can be overridden via --dart-define=API_URL=... or at runtime
   static const String _defaultUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'https://midlex-backend.onrender.com',
+    defaultValue: 'https://api.thispage.xyz',
   );
 
   static String _baseUrl = _defaultUrl;
