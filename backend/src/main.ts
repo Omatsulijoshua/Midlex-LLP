@@ -16,6 +16,12 @@ async function bootstrap() {
     'https://admin.this.xyz',
     'https://lawyers.thispage.xyz',
     'https://lawyers.this.xyz',
+    'https://cbt.thispage.xyz',
+    'https://cbt.this.xyz',
+    'https://media.thispage.xyz',
+    'https://media.this.xyz',
+    'https://mip.thispage.xyz',
+    'https://mip.this.xyz',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
   ].filter(Boolean) as string[];
