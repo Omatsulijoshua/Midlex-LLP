@@ -150,7 +150,7 @@ export default function Home() {
 
                 <div className="flex flex-wrap items-center gap-4 pt-2">
                   <a
-                    href="https://drive.google.com/file/d/1nm0LJc1iXuLCma6rlCDyiS8sj_TIdIKL/view?usp=sharing"
+                    href="https://drive.google.com/file/d/1WPu4QDjyHalkAYdAPHH2CV1zIe4WJbkq/view?usp=sharing"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-3 bg-secondary hover:bg-[#b89047] text-primary font-bold px-8 py-4 rounded-2xl shadow-xl shadow-secondary/20 transition-all transform hover:scale-105"
@@ -191,7 +191,7 @@ export default function Home() {
                     <p className="flex justify-between"><span>Storage:</span> <span className="text-secondary">Google Drive</span></p>
                   </div>
                   <a
-                    href="https://drive.google.com/file/d/1nm0LJc1iXuLCma6rlCDyiS8sj_TIdIKL/view?usp=sharing"
+                    href="https://drive.google.com/file/d/1WPu4QDjyHalkAYdAPHH2CV1zIe4WJbkq/view?usp=sharing"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block w-full py-3 bg-secondary text-primary font-bold rounded-xl text-sm hover:bg-opacity-90 transition-all shadow-md"
@@ -248,7 +248,7 @@ export default function Home() {
                 <li><Link href="#lawyers" className="hover:text-secondary transition-colors">Our Team</Link></li>
                 <li>
                   <a 
-                    href="https://drive.google.com/file/d/1nm0LJc1iXuLCma6rlCDyiS8sj_TIdIKL/view?usp=sharing" 
+                    href="https://drive.google.com/file/d/1WPu4QDjyHalkAYdAPHH2CV1zIe4WJbkq/view?usp=sharing" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="text-secondary font-semibold hover:underline flex items-center gap-1.5"

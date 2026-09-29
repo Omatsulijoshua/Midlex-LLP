@@ -57,7 +57,7 @@ export default function Navbar() {
             ))}
             <div className="flex items-center gap-3 ml-4">
               <a
-                href="https://drive.google.com/file/d/1nm0LJc1iXuLCma6rlCDyiS8sj_TIdIKL/view?usp=sharing"
+                href="https://drive.google.com/file/d/1WPu4QDjyHalkAYdAPHH2CV1zIe4WJbkq/view?usp=sharing"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-secondary bg-primary/5 hover:bg-primary/10 border border-secondary/30 px-3.5 py-2 rounded-full transition-all"
@@ -121,7 +121,7 @@ export default function Navbar() {
               <hr className="border-gray-100" />
               <div className="flex flex-col gap-3">
                 <a
-                  href="https://drive.google.com/file/d/1nm0LJc1iXuLCma6rlCDyiS8sj_TIdIKL/view?usp=sharing"
+                  href="https://drive.google.com/file/d/1WPu4QDjyHalkAYdAPHH2CV1zIe4WJbkq/view?usp=sharing"
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsOpen(false)}

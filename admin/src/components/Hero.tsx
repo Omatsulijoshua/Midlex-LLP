@@ -85,7 +85,7 @@ export default function Hero() {
                 </motion.button>
               </Link>
               <a
-                href="https://drive.google.com/file/d/1nm0LJc1iXuLCma6rlCDyiS8sj_TIdIKL/view?usp=sharing"
+                href="https://drive.google.com/file/d/1WPu4QDjyHalkAYdAPHH2CV1zIe4WJbkq/view?usp=sharing"
                 target="_blank"
                 rel="noopener noreferrer"
               >
