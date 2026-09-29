@@ -10,7 +10,6 @@ import '../screens/public/contact_screen.dart';
 import '../screens/public/book_consultation_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
-import '../screens/auth/lawyer_login_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/dashboard/cases_title_list_screen.dart';
 
@@ -156,14 +155,6 @@ class CustomDrawer extends StatelessWidget {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const LoginScreen()),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.gavel, color: AppTheme.secondary),
-              title: const Text('Lawyer & Admin Portal'),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const LawyerLoginScreen()),
               ),
             ),
           ],

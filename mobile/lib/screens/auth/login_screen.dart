@@ -58,66 +58,27 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Top Role Switcher Toggle Bar
+              // Client App Header Badge
               Container(
-                margin: const EdgeInsets.only(bottom: 24),
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppTheme.accentLight,
-                  borderRadius: BorderRadius.circular(25),
-                  border: Border.all(color: AppTheme.border),
+                  color: const Color(0xFF0C2B18),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppTheme.secondary, width: 1.5),
                 ),
-                child: Row(
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary,
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.person, color: Colors.white, size: 18),
-                            SizedBox(width: 6),
-                            Text(
-                              'Client Sign In',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => const LawyerLoginScreen()),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.gavel, color: AppTheme.primary, size: 18),
-                              SizedBox(width: 6),
-                              Text(
-                                'Lawyer / Admin',
-                                style: TextStyle(
-                                  color: AppTheme.primary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                    Icon(Icons.person, color: AppTheme.secondary, size: 18),
+                    SizedBox(width: 8),
+                    Text(
+                      'CLIENT MOBILE APP',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        letterSpacing: 1.1,
                       ),
                     ),
                   ],
@@ -132,14 +93,35 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 14),
               const Text(
-                'Customer & Client Sign In',
+                'Client Portal Sign In',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.primary),
               ),
               const SizedBox(height: 6),
               const Text(
-                'Enter your registered client email to access your Midlex cases and direct legal portal',
+                'Sign in with your client email to monitor cases, communicate with counsel, and track legal progress.',
                 style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.amber.shade300),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 16, color: Colors.amber.shade900),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Lawyers and Admins must sign in via the Midlex Web Portal.',
+                        style: TextStyle(fontSize: 11, color: Colors.amber.shade900, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 24),
               if (_errorMessage != null)

@@ -49,48 +49,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  // Exact Web Role-Based Sidebar Navigation Items (matched to frontend/src/app/dashboard/layout.tsx)
+  // Client-Only Navigation Items
   List<SidebarMenuItem> _getRoleSidebarItems(dynamic user) {
-    if (user.isAdmin) {
-      return [
-        SidebarMenuItem(name: 'Overview', icon: Icons.home_outlined, screen: _buildOverviewTab(context, user)),
-        const SidebarMenuItem(name: 'Cases', icon: Icons.cases_outlined, screen: CasesTitleListScreen()),
-        const SidebarMenuItem(name: 'Accountant Portal', icon: Icons.attach_money, screen: AccountantDashboardScreen()),
-        const SidebarMenuItem(name: 'MIDLEX CASE DIRECTORY', icon: Icons.insert_drive_file_outlined, screen: CasesListScreen()),
-        SidebarMenuItem(name: 'Clients', icon: Icons.groups_outlined, screen: _buildUserDirectoryView('CLIENT')),
-        SidebarMenuItem(name: 'Lawyers', icon: Icons.gavel_outlined, screen: _buildUserDirectoryView('LAWYER')),
-        SidebarMenuItem(name: 'Admins', icon: Icons.person_outline, screen: _buildUserDirectoryView('ADMIN')),
-        const SidebarMenuItem(name: 'Messages', icon: Icons.chat_bubble_outline, screen: TeamChatScreen()),
-        const SidebarMenuItem(name: 'Payments', icon: Icons.monetization_on_outlined, screen: PaymentsScreen()),
-        const SidebarMenuItem(name: 'Profile & Request', icon: Icons.person_outline, screen: ProfileScreen()),
-        const SidebarMenuItem(name: 'Inquiries', icon: Icons.chat_outlined, screen: InquiriesScreen()),
-        const SidebarMenuItem(name: 'Notifications', icon: Icons.notifications_none_outlined, screen: NotificationsScreen()),
-      ];
-    } else if (user.isLawyer) {
-      return [
-        const SidebarMenuItem(name: 'Cases', icon: Icons.cases_outlined, screen: CasesTitleListScreen()),
-        const SidebarMenuItem(name: 'MIDLEX CASE DIRECTORY', icon: Icons.insert_drive_file_outlined, screen: CasesListScreen()),
-        SidebarMenuItem(name: 'Clients', icon: Icons.groups_outlined, screen: _buildUserDirectoryView('CLIENT')),
-        const SidebarMenuItem(name: 'Messages', icon: Icons.chat_bubble_outline, screen: TeamChatScreen()),
-        const SidebarMenuItem(name: 'Profile & Request', icon: Icons.person_outline, screen: ProfileScreen()),
-        const SidebarMenuItem(name: 'Schedule', icon: Icons.calendar_today_outlined, screen: ScheduleScreen()),
-      ];
-    } else if (user.isAccountant) {
-      return [
-        const SidebarMenuItem(name: 'Accountant Portal', icon: Icons.attach_money, screen: AccountantDashboardScreen()),
-        const SidebarMenuItem(name: 'Payments & Receipts', icon: Icons.monetization_on_outlined, screen: PaymentsScreen()),
-        SidebarMenuItem(name: 'Client-Lawyer Directory', icon: Icons.groups_outlined, screen: _buildUserDirectoryView('CLIENT')),
-      ];
-    } else {
-      // CLIENT Role
-      return [
-        SidebarMenuItem(name: 'My Case', icon: Icons.dashboard_outlined, screen: _buildOverviewTab(context, user)),
-        const SidebarMenuItem(name: 'Messages', icon: Icons.chat_bubble_outline, screen: TeamChatScreen()),
-        const SidebarMenuItem(name: 'Profile & Request', icon: Icons.person_outline, screen: ProfileScreen()),
-        const SidebarMenuItem(name: 'Payments', icon: Icons.payment_outlined, screen: PaymentsScreen()),
-        const SidebarMenuItem(name: 'Schedule', icon: Icons.calendar_today_outlined, screen: ScheduleScreen()),
-      ];
-    }
+    return [
+      SidebarMenuItem(name: 'My Case', icon: Icons.dashboard_outlined, screen: _buildOverviewTab(context, user)),
+      const SidebarMenuItem(name: 'Messages', icon: Icons.chat_bubble_outline, screen: TeamChatScreen()),
+      const SidebarMenuItem(name: 'Profile & Request', icon: Icons.person_outline, screen: ProfileScreen()),
+      const SidebarMenuItem(name: 'Payments', icon: Icons.payment_outlined, screen: PaymentsScreen()),
+      const SidebarMenuItem(name: 'Schedule', icon: Icons.calendar_today_outlined, screen: ScheduleScreen()),
+    ];
   }
 
   @override
@@ -130,7 +97,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       drawer: isStaff ? _buildStaffSidebar(context, user, items) : null,
       appBar: AppBar(
-        title: Text(isStaff ? currentItem.name : 'Client Dashboard'),
+        title: const Text('Midlex Client Portal'),
         actions: [
           // Quick Header Profile Switcher Pill
           Padding(
@@ -198,9 +165,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       body: currentItem.screen,
-      bottomNavigationBar: isStaff
-          ? null
-          : BottomNavigationBar(
+      bottomNavigationBar: BottomNavigationBar(
               currentIndex: activeIndex,
               selectedItemColor: AppTheme.primary,
               unselectedItemColor: Colors.grey,

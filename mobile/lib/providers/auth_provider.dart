@@ -28,8 +28,16 @@ class AuthProvider extends ChangeNotifier {
       final savedUserData = await StorageService.getUserData();
 
       if (savedToken != null && savedUserData != null) {
-        _token = savedToken;
-        _user = UserModel.fromJson(jsonDecode(savedUserData));
+        final parsedUser = UserModel.fromJson(jsonDecode(savedUserData));
+        if (parsedUser.role == 'ADMIN' || parsedUser.role == 'LAWYER') {
+          // Clear staff accounts on client mobile app
+          await StorageService.clearAuth();
+          _token = null;
+          _user = null;
+        } else {
+          _token = savedToken;
+          _user = parsedUser;
+        }
       }
     } catch (e) {
       await StorageService.clearAuth();
@@ -44,6 +52,13 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
     final cleanEmail = email.trim().toLowerCase();
 
+    // Reject staff email addresses upfront
+    if (cleanEmail == 'admin@midlex.com' || cleanEmail == 'admin' || cleanEmail == 'lawyer@midlex.com' || cleanEmail == 'counsel@midlex.com') {
+      _isLoading = false;
+      notifyListeners();
+      throw Exception('This mobile app is exclusively for Clients. Admins and Lawyers must sign in using the Midlex Web Portal.');
+    }
+
     try {
       try {
         final response = await ApiService.post(ApiConfig.login, {
@@ -51,51 +66,39 @@ class AuthProvider extends ChangeNotifier {
           'password': password,
         });
 
+        final loggedUser = UserModel.fromJson(response['user']);
+        if (loggedUser.role == 'ADMIN' || loggedUser.role == 'LAWYER') {
+          throw Exception('This mobile app is exclusively for Clients. Admins and Lawyers must sign in using the Midlex Web Portal.');
+        }
+
         _token = response['access_token'];
-        _user = UserModel.fromJson(response['user']);
+        _user = loggedUser;
 
         await StorageService.saveToken(_token!);
         await StorageService.saveUserData(jsonEncode(_user!.toJson()));
         await StorageService.saveRegisteredUser(cleanEmail, password, _user!.toJson());
         return;
       } catch (backendError) {
+        if (backendError.toString().contains('exclusively for Clients')) {
+          rethrow;
+        }
+
         // Try local registered user fallback matching
         final localReg = await StorageService.getRegisteredUser(cleanEmail);
         if (localReg != null && localReg['password'] == password) {
+          final localUser = UserModel.fromJson(Map<String, dynamic>.from(localReg['user']));
+          if (localUser.role == 'ADMIN' || localUser.role == 'LAWYER') {
+            throw Exception('This mobile app is exclusively for Clients. Admins and Lawyers must sign in using the Midlex Web Portal.');
+          }
+
           _token = 'demo-token-${DateTime.now().millisecondsSinceEpoch}';
-          _user = UserModel.fromJson(Map<String, dynamic>.from(localReg['user']));
+          _user = localUser;
           await StorageService.saveToken(_token!);
           await StorageService.saveUserData(jsonEncode(_user!.toJson()));
           return;
         }
 
-        // Demo user fallback matching
-        if (cleanEmail == 'admin@midlex.com' || cleanEmail == 'admin') {
-          _token = 'demo-admin-token';
-          _user = UserModel(
-            id: 'admin-1',
-            email: 'admin@midlex.com',
-            name: 'Midlex Managing Partner',
-            role: 'ADMIN',
-          );
-          await StorageService.saveToken(_token!);
-          await StorageService.saveUserData(jsonEncode(_user!.toJson()));
-          return;
-        }
-
-        if (cleanEmail == 'lawyer@midlex.com' || cleanEmail == 'counsel@midlex.com') {
-          _token = 'demo-lawyer-token';
-          _user = UserModel(
-            id: 'lawyer-1',
-            email: 'lawyer@midlex.com',
-            name: 'Senior Counsel Barr. Ovie',
-            role: 'LAWYER',
-          );
-          await StorageService.saveToken(_token!);
-          await StorageService.saveUserData(jsonEncode(_user!.toJson()));
-          return;
-        }
-
+        // Client demo user fallback matching
         if (cleanEmail == 'client@midlex.com' || cleanEmail == 'user@midlex.com') {
           _token = 'demo-client-token';
           _user = UserModel(
