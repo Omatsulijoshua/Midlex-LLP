@@ -4,7 +4,7 @@ const partners = [
   { name: "UZOMA MESHACK OKONTI, ESQ", role: "Head of Chambers", img: "/uzoma-meshack-okonti.jpg" },
   { name: "ENYAWUILE C. ABEDNEGO, ESQ", role: "Principal Partner", img: "/enyawuile-c-abednego.jpg" },
   { name: "SHEDRACK U. ENYAWUILE, ESQ", role: "Managing Partner", img: "/shedrack-u-enyawuile.jpg" },
-  { name: "HANNAH C. GOODMAN, ESQ", role: "Assistant Secretary Elect", img: "/hannah-c-goodman.png" },
+  { name: "HANNAH C. GOODMAN, ESQ", role: "Head of Midlex Port Harcourt Nigeria", img: "/hannah-c-goodman.png" },
   { name: "SAMUEL OKANNI", role: "Head, Pro Bono Services & Community Relations", img: "/samuel-okanni.png" },
   { name: "SUSAN OKANNI", role: "Head, Real Estate & Property Law", img: "/susan-okanni.png" },
   { name: "OMATSULI JOSHUA", role: "Corporate & Litigation", img: "/omatsuli-joshua.png" },

@@ -102,7 +102,7 @@ export default function Home() {
               { name: "UZOMA MESHACK OKONTI, ESQ", role: "Head of Chambers", img: "/uzoma-meshack-okonti.jpg" },
               { name: "ENYAWUILE C. ABEDNEGO, ESQ", role: "Principal Partner", img: "/enyawuile-c-abednego.jpg" },
               { name: "SHEDRACK U. ENYAWUILE, ESQ", role: "Managing Partner", img: "/shedrack-u-enyawuile.jpg" },
-              { name: "HANNAH C. GOODMAN, ESQ", role: "Assistant Secretary Elect", img: "/hannah-c-goodman.png" }
+              { name: "HANNAH C. GOODMAN, ESQ", role: "Head of Midlex Port Harcourt Nigeria", img: "/hannah-c-goodman.png" }
             ].map((lawyer, i) => (
               <Reveal key={i} delay={i * 0.1}>
                 <motion.div 
@@ -260,10 +260,16 @@ export default function Home() {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-6">Headquarters</h4>
-              <p className="text-white/60 leading-relaxed">
+              <h4 className="font-bold mb-3">Headquarters</h4>
+              <p className="text-white/60 leading-relaxed mb-6">
                 Owa Street, Off Wire Road,<br />
                 Benin City, Edo State,<br />
+                Nigeria.
+              </p>
+              <h4 className="font-bold mb-3">Port Harcourt Branch</h4>
+              <p className="text-white/60 leading-relaxed">
+                Midlex Law Chambers,<br />
+                Port Harcourt, Rivers State,<br />
                 Nigeria.
               </p>
             </div>

@@ -91,11 +91,19 @@ export default function MarketingFooter() {
           </div>
 
           <div>
-            <h4 className="font-bold mb-6">Headquarters</h4>
-            <p className="text-white/60 leading-relaxed">
+            <h4 className="font-bold mb-3">Headquarters</h4>
+            <p className="text-white/60 leading-relaxed mb-6">
               Owa Street, Off Wire Road,
               <br />
               Benin City, Edo State,
+              <br />
+              Nigeria.
+            </p>
+            <h4 className="font-bold mb-3">Port Harcourt Branch</h4>
+            <p className="text-white/60 leading-relaxed">
+              Midlex Law Chambers,
+              <br />
+              Port Harcourt, Rivers State,
               <br />
               Nigeria.
             </p>

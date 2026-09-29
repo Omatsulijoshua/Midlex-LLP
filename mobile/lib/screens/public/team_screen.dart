@@ -26,8 +26,8 @@ class TeamScreen extends StatelessWidget {
       'image': 'assets/images/head-of-chambers.png',
     },
     {
-      'name': 'Hannah C. Goodman, ESQ',
-      'role': 'Assistant Secretary Elect',
+      'name': 'HANNAH C. GOODMAN, ESQ',
+      'role': 'Head of Midlex Port Harcourt Nigeria',
       'spec': 'Intellectual Property & Corporate Secretarial',
       'image': 'assets/images/ec-hannah.png',
     },
