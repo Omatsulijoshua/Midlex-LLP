@@ -9,6 +9,7 @@ import '../../services/api_service.dart';
 import 'accountant_dashboard_screen.dart';
 import 'cases_list_screen.dart';
 import 'cases_title_list_screen.dart';
+import 'case_detail_screen.dart';
 import 'payments_screen.dart';
 import 'schedule_screen.dart';
 import 'inquiries_screen.dart';
@@ -683,11 +684,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             children: [
               Expanded(
-                child: _buildMetricCard('Total Cases', '${dashboard.cases.length}', Icons.folder, Colors.blue),
+                child: _buildMetricCard(
+                  'Total Cases',
+                  '${dashboard.cases.length}',
+                  Icons.folder,
+                  Colors.blue,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CasesTitleListScreen()),
+                    );
+                  },
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildMetricCard('Court Dates', '${dashboard.courtDates.length}', Icons.event, Colors.orange),
+                child: _buildMetricCard(
+                  'Court Dates',
+                  '${dashboard.courtDates.length}',
+                  Icons.event,
+                  Colors.orange,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ScheduleScreen()),
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -695,7 +718,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             children: [
               Expanded(
-                child: _buildMetricCard('Payments', '${dashboard.payments.length}', Icons.account_balance_wallet, Colors.green),
+                child: _buildMetricCard(
+                  'Payments',
+                  '${dashboard.payments.length}',
+                  Icons.account_balance_wallet,
+                  Colors.green,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PaymentsScreen()),
+                    );
+                  },
+                ),
               ),
               if (user.isAdmin) ...[
                 const SizedBox(width: 12),
@@ -736,6 +770,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     title: Text(c.title, style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text('Status: ${c.status}'),
                     trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => CaseDetailScreen(caseModel: c)),
+                      );
+                    },
                   ),
                 )),
         ],
@@ -743,22 +783,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildMetricCard(String title, String count, IconData icon, Color color) {
+  Widget _buildMetricCard(String title, String count, IconData icon, Color color, {VoidCallback? onTap}) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 12),
-            Text(
-              count,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
-            ),
-            const SizedBox(height: 4),
-            Text(title, style: const TextStyle(color: AppTheme.textMuted, fontSize: 13)),
-          ],
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(icon, color: color, size: 28),
+                  if (onTap != null)
+                    Icon(Icons.arrow_forward_ios, color: color.withValues(alpha: 0.6), size: 12),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                count,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Text(title, style: const TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                  if (onTap != null) ...[
+                    const SizedBox(width: 4),
+                    Text('(Open ➔)', style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+                  ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

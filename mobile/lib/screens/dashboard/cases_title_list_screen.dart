@@ -5,6 +5,7 @@ import '../../providers/dashboard_provider.dart';
 import '../../models/case_model.dart';
 import '../../widgets/status_chip.dart';
 import 'case_detail_screen.dart';
+import 'new_case_screen.dart';
 
 class CasesTitleListScreen extends StatefulWidget {
   const CasesTitleListScreen({super.key});
@@ -165,6 +166,28 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                               ? 'Land title verification, C of O searches, & Samson Sabbat conveyancing registers.'
                               : 'Select any registered case title below to inspect matter specifications.',
                           style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const NewCaseScreen()),
+                              );
+                            },
+                            icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 18),
+                            label: const Text(
+                              '+ CREATE / REGISTER NEW LEGAL CASE',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.secondary,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
                         ),
                       ],
                     ),

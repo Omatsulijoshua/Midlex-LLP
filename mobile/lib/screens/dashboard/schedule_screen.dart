@@ -196,8 +196,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthProvider>(context);
-    final isStaff = auth.user?.isAdmin == true || auth.user?.isLawyer == true;
     final dashboard = Provider.of<DashboardProvider>(context);
 
     final filteredDates = dashboard.courtDates.where((item) {
@@ -219,14 +217,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     }).toList();
 
     return Scaffold(
-      floatingActionButton: isStaff
-          ? FloatingActionButton.extended(
-              onPressed: () => _showAddCourtDateDialog(dashboard.cases),
-              icon: const Icon(Icons.add_task),
-              label: const Text('Schedule Date'),
-              backgroundColor: AppTheme.secondary,
-            )
-          : null,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddCourtDateDialog(dashboard.cases),
+        icon: const Icon(Icons.add_task, color: Colors.white),
+        label: const Text('+ Schedule / Request Court Date', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: AppTheme.secondary,
+      ),
       body: Column(
         children: [
           Container(
