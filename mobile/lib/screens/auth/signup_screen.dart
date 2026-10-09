@@ -14,6 +14,7 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _dobController = TextEditingController();
   final _phoneController = TextEditingController();
   final _secondaryPhoneController = TextEditingController();
   final _cityController = TextEditingController();
@@ -29,6 +30,7 @@ class _SignupScreenState extends State<SignupScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _dobController.dispose();
     _phoneController.dispose();
     _secondaryPhoneController.dispose();
     _cityController.dispose();
@@ -42,6 +44,7 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _handleSignup() async {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
+    final dob = _dobController.text.trim();
     final password = _passwordController.text.trim();
     final phone = _phoneController.text.trim();
     final secondaryPhone = _secondaryPhoneController.text.trim();
@@ -52,6 +55,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (name.isEmpty ||
         email.isEmpty ||
+        dob.isEmpty ||
         password.isEmpty ||
         phone.isEmpty ||
         city.isEmpty ||
@@ -59,7 +63,7 @@ class _SignupScreenState extends State<SignupScreen> {
         caseTitle.isEmpty ||
         caseDescription.isEmpty) {
       setState(() => _errorMessage =
-          'Please fill in all required fields including primary phone number, location, and case details.');
+          'Please fill in all required fields including Date of Birth (DOB), primary phone number, location, and case details.');
       return;
     }
 
@@ -71,6 +75,7 @@ class _SignupScreenState extends State<SignupScreen> {
         name: name,
         email: email,
         password: password,
+        dateOfBirth: dob,
         phone: phone,
         secondaryPhone: secondaryPhone,
         city: city,
@@ -161,6 +166,17 @@ class _SignupScreenState extends State<SignupScreen> {
                 labelText: 'Email Address *',
                 hintText: 'anthony@example.com',
                 prefixIcon: Icon(Icons.email_outlined),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            TextField(
+              controller: _dobController,
+              keyboardType: TextInputType.datetime,
+              decoration: const InputDecoration(
+                labelText: 'Date of Birth (DOB) *',
+                hintText: 'YYYY-MM-DD (e.g. 1985-06-15)',
+                prefixIcon: Icon(Icons.calendar_today_outlined),
               ),
             ),
             const SizedBox(height: 14),

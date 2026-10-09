@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Gavel, Mail, Lock, User, ArrowRight, Phone, MapPin, Building, FileText, FileEdit } from "lucide-react";
+import { Gavel, Mail, Lock, User, ArrowRight, Phone, MapPin, Building, FileText, FileEdit, Calendar } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
 
@@ -10,6 +10,7 @@ export default function SignupPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    dateOfBirth: "",
     phone: "",
     secondaryPhone: "",
     city: "",
@@ -103,6 +104,22 @@ export default function SignupPage() {
                     style={{ color: '#000000', backgroundColor: '#ffffff', WebkitTextFillColor: '#000000' }}
                     className="w-full bg-white border border-gray-300 rounded-2xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-slate-900 font-semibold text-sm"
                     placeholder="anthony@example.com"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-primary mb-1.5">Date of Birth (DOB) *</label>
+                <div className="relative">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    suppressHydrationWarning
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
+                    style={{ color: '#000000', backgroundColor: '#ffffff', WebkitTextFillColor: '#000000' }}
+                    className="w-full bg-white border border-gray-300 rounded-2xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-slate-900 font-semibold text-sm"
                     required
                   />
                 </div>
