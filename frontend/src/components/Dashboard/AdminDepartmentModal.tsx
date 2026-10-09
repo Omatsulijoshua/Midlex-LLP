@@ -126,12 +126,12 @@ export default function AdminDepartmentModal({
                 </h3>
 
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Monitor land title verification, Certificate of Occupancy searches, Samson Sabbat auto-allocated property matters, commercial contracts, and general consultations.
+                  Monitor Midlex Royalty retainers, property matters, commercial contracts, general claims, and allocated advisory teams.
                 </p>
 
                 <ul className="mt-4 space-y-2 text-[11px] text-slate-300 font-medium">
                   <li className="flex items-center gap-2">✔️ Property Title & Certificate of Occupancy</li>
-                  <li className="flex items-center gap-2">✔️ Samson Sabbat Auto-Allocations</li>
+                  <li className="flex items-center gap-2">✔️ General Retainer Team Allocations</li>
                   <li className="flex items-center gap-2">✔️ Commercial Contracts & Advisory</li>
                 </ul>
               </div>

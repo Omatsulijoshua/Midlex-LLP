@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
-import '../dashboard/dashboard_screen.dart';
+import 'login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -50,8 +50,16 @@ class _SignupScreenState extends State<SignupScreen> {
     final caseTitle = _caseTitleController.text.trim();
     final caseDescription = _caseDescriptionController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty || phone.isEmpty || city.isEmpty || address.isEmpty || caseTitle.isEmpty || caseDescription.isEmpty) {
-      setState(() => _errorMessage = 'Please fill in all required fields including primary phone number, location, and case details.');
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        phone.isEmpty ||
+        city.isEmpty ||
+        address.isEmpty ||
+        caseTitle.isEmpty ||
+        caseDescription.isEmpty) {
+      setState(() => _errorMessage =
+          'Please fill in all required fields including primary phone number, location, and case details.');
       return;
     }
 
@@ -71,14 +79,17 @@ class _SignupScreenState extends State<SignupScreen> {
         caseDescription: caseDescription,
       );
 
+      await auth.logout();
+
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       }
     } catch (e) {
-      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+      setState(
+          () => _errorMessage = e.toString().replaceAll('Exception: ', ''));
     }
   }
 
@@ -95,7 +106,10 @@ class _SignupScreenState extends State<SignupScreen> {
           children: [
             const Text(
               'Register Client Account & File Case',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.primary),
+              style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primary),
             ),
             const SizedBox(height: 6),
             const Text(
@@ -113,13 +127,20 @@ class _SignupScreenState extends State<SignupScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.red.shade200),
                 ),
-                child: Text(_errorMessage!, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 12)),
+                child: Text(_errorMessage!,
+                    style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12)),
               ),
 
             // Section 1: Personal Details
             const Text(
               '1. Personal & Contact Information',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.secondary),
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.secondary),
             ),
             const SizedBox(height: 12),
 
@@ -161,7 +182,8 @@ class _SignupScreenState extends State<SignupScreen> {
               decoration: const InputDecoration(
                 labelText: 'Secondary Phone Number (Optional)',
                 hintText: '+234 805 111 2222 (Optional)',
-                prefixIcon: Icon(Icons.phone_android_outlined, color: AppTheme.secondary),
+                prefixIcon: Icon(Icons.phone_android_outlined,
+                    color: AppTheme.secondary),
               ),
             ),
             const SizedBox(height: 14),
@@ -193,8 +215,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 labelText: 'Password *',
                 prefixIcon: const Icon(Icons.lock_outline),
                 suffixIcon: IconButton(
-                  icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  icon: Icon(_obscurePassword
+                      ? Icons.visibility_off
+                      : Icons.visibility),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
               ),
             ),
@@ -203,7 +228,10 @@ class _SignupScreenState extends State<SignupScreen> {
             // Section 2: Initial Case Registration
             const Text(
               '2. Initial Case Matter Registration',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.secondary),
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.secondary),
             ),
             const SizedBox(height: 12),
 
@@ -212,7 +240,8 @@ class _SignupScreenState extends State<SignupScreen> {
               decoration: const InputDecoration(
                 labelText: 'Case Title *',
                 hintText: 'e.g. Land Title Dispute at Okada Property',
-                prefixIcon: Icon(Icons.gavel_outlined, color: AppTheme.secondary),
+                prefixIcon:
+                    Icon(Icons.gavel_outlined, color: AppTheme.secondary),
               ),
             ),
             const SizedBox(height: 14),
@@ -222,11 +251,13 @@ class _SignupScreenState extends State<SignupScreen> {
               maxLines: 4,
               decoration: const InputDecoration(
                 labelText: 'Explain Case Matter Details *',
-                hintText: 'Please describe your legal issue, key facts, parties involved, and expected resolution...',
+                hintText:
+                    'Please describe your legal issue, key facts, parties involved, and expected resolution...',
                 alignLabelWithHint: true,
                 prefixIcon: Padding(
                   padding: EdgeInsets.only(bottom: 50),
-                  child: Icon(Icons.description_outlined, color: AppTheme.secondary),
+                  child: Icon(Icons.description_outlined,
+                      color: AppTheme.secondary),
                 ),
               ),
             ),
@@ -239,13 +270,17 @@ class _SignupScreenState extends State<SignupScreen> {
                 onPressed: auth.isLoading ? null : _handleSignup,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                 ),
                 child: auth.isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
                         'Register Account & File Case',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15),
                       ),
               ),
             ),

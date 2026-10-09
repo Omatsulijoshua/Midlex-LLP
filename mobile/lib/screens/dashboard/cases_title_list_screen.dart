@@ -32,6 +32,13 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
     final List<CaseModel> cases = dashboard.cases;
 
     final List<CaseModel> filteredCases = cases.where((item) {
+      final isLitigation = item.category == 'LITIGATION';
+      if (dashboard.selectedDepartment == 'LITIGATION' && !isLitigation) {
+        return false;
+      }
+      if (dashboard.selectedDepartment == 'GENERAL' && isLitigation) {
+        return false;
+      }
       if (_selectedMonth != 'ALL' && item.createdAt != null) {
         if (!item.createdAt!.startsWith(_selectedMonth)) {
           return false;
@@ -69,11 +76,12 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top Profile Department Selector Bar
+                  // Current workspace selected at sign in
                   Container(
                     width: double.infinity,
                     margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0C2B18),
                       borderRadius: BorderRadius.circular(16),
@@ -81,48 +89,33 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                     ),
                     child: Row(
                       children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: () => dashboard.setDepartment('LITIGATION'),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                color: dashboard.selectedDepartment == 'LITIGATION' ? AppTheme.secondary : Colors.transparent,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '⚖️ LITIGATION MATTERS',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: dashboard.selectedDepartment == 'LITIGATION' ? Colors.white : Colors.white70,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                        Text(
+                          dashboard.selectedDepartment == 'GENERAL'
+                              ? '🏢'
+                              : '⚖️',
+                          style: const TextStyle(fontSize: 22),
                         ),
+                        const SizedBox(width: 10),
                         Expanded(
-                          child: InkWell(
-                            onTap: () => dashboard.setDepartment('GENERAL'),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                color: dashboard.selectedDepartment == 'GENERAL' ? AppTheme.secondary : Colors.transparent,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '🏢 GENERAL & REALTY',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: dashboard.selectedDepartment == 'GENERAL' ? Colors.white : Colors.white70,
-                                  ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                dashboard.selectedDepartment == 'GENERAL'
+                                    ? 'GENERAL & PROPERTY WORKSPACE'
+                                    : 'LITIGATION WORKSPACE',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
                                 ),
                               ),
-                            ),
+                              const Text(
+                                'Sign out to change workspace',
+                                style: TextStyle(
+                                    fontSize: 10, color: Colors.white70),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -134,21 +127,26 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: dashboard.selectedDepartment == 'GENERAL' ? const Color(0xFF3D2706) : AppTheme.primary,
+                      color: dashboard.selectedDepartment == 'GENERAL'
+                          ? const Color(0xFF3D2706)
+                          : AppTheme.primary,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppTheme.secondary.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: AppTheme.secondary),
                           ),
                           child: Text(
-                            dashboard.selectedDepartment == 'GENERAL' ? '🏢 GENERAL & PROPERTY REALTY REGISTER' : '⚖️ LITIGATION & COURT MATTERS REGISTER',
+                            dashboard.selectedDepartment == 'GENERAL'
+                                ? '🏢 GENERAL & PROPERTY REALTY REGISTER'
+                                : '⚖️ LITIGATION & COURT MATTERS REGISTER',
                             style: const TextStyle(
                               color: AppTheme.secondary,
                               fontSize: 10,
@@ -159,7 +157,9 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          dashboard.selectedDepartment == 'GENERAL' ? 'General & Property Matters' : 'Litigation & Court Suits',
+                          dashboard.selectedDepartment == 'GENERAL'
+                              ? 'General & Property Matters'
+                              : 'Litigation & Court Suits',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -169,9 +169,10 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                         const SizedBox(height: 4),
                         Text(
                           dashboard.selectedDepartment == 'GENERAL'
-                              ? 'Land title verification, C of O searches, & Samson Sabbat conveyancing registers.'
+                              ? 'Midlex Royalty claims, property work, corporate advisory, and assigned team registers.'
                               : 'Select any registered case title below to inspect matter specifications.',
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 12),
                         ),
                         const SizedBox(height: 14),
                         SizedBox(
@@ -180,18 +181,25 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                             onPressed: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const NewCaseScreen()),
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const NewCaseScreen()),
                               );
                             },
-                            icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 18),
+                            icon: const Icon(Icons.add_circle_outline,
+                                color: Colors.white, size: 18),
                             label: const Text(
                               '+ CREATE / REGISTER NEW LEGAL CASE',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.secondary,
                               padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
                             ),
                           ),
                         ),
@@ -226,7 +234,8 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                               ),
                               if (_selectedCaseId != 'ALL')
                                 TextButton(
-                                  onPressed: () => setState(() => _selectedCaseId = 'ALL'),
+                                  onPressed: () =>
+                                      setState(() => _selectedCaseId = 'ALL'),
                                   child: const Text(
                                     'Show All',
                                     style: TextStyle(
@@ -248,7 +257,9 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                                 selected: _selectedCaseId == 'ALL',
                                 selectedColor: AppTheme.primary,
                                 labelStyle: TextStyle(
-                                  color: _selectedCaseId == 'ALL' ? Colors.white : AppTheme.textDark,
+                                  color: _selectedCaseId == 'ALL'
+                                      ? Colors.white
+                                      : AppTheme.textDark,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 11,
                                 ),
@@ -268,7 +279,9 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                                   selected: isSelected,
                                   selectedColor: AppTheme.secondary,
                                   labelStyle: TextStyle(
-                                    color: isSelected ? Colors.white : AppTheme.textDark,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : AppTheme.textDark,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 11,
                                   ),
@@ -287,7 +300,8 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                   ),
                   // Month Filter Row
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
@@ -295,11 +309,15 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.calendar_month, color: AppTheme.primary, size: 18),
+                        const Icon(Icons.calendar_month,
+                            color: AppTheme.primary, size: 18),
                         const SizedBox(width: 8),
                         const Text(
                           'Filter Month:',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.textDark),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: AppTheme.textDark),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -307,19 +325,44 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                             child: DropdownButton<String>(
                               value: _selectedMonth,
                               isExpanded: true,
-                              icon: const Icon(Icons.arrow_drop_down, color: AppTheme.primary, size: 20),
-                              style: const TextStyle(color: AppTheme.textDark, fontSize: 11, fontWeight: FontWeight.bold),
+                              icon: const Icon(Icons.arrow_drop_down,
+                                  color: AppTheme.primary, size: 20),
+                              style: const TextStyle(
+                                  color: AppTheme.textDark,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold),
                               items: const [
-                                DropdownMenuItem(value: 'ALL', child: Text('🗓️ All Recorded Months')),
-                                DropdownMenuItem(value: '2026-09', child: Text('🗓️ September 2026 (Current)')),
-                                DropdownMenuItem(value: '2026-08', child: Text('🗓️ August 2026')),
-                                DropdownMenuItem(value: '2026-07', child: Text('🗓️ July 2026')),
-                                DropdownMenuItem(value: '2026-06', child: Text('🗓️ June 2026')),
-                                DropdownMenuItem(value: '2026-05', child: Text('🗓️ May 2026')),
-                                DropdownMenuItem(value: '2026-04', child: Text('🗓️ April 2026')),
-                                DropdownMenuItem(value: '2026-03', child: Text('🗓️ March 2026')),
-                                DropdownMenuItem(value: '2026-02', child: Text('🗓️ February 2026')),
-                                DropdownMenuItem(value: '2026-01', child: Text('🗓️ January 2026')),
+                                DropdownMenuItem(
+                                    value: 'ALL',
+                                    child: Text('🗓️ All Recorded Months')),
+                                DropdownMenuItem(
+                                    value: '2026-09',
+                                    child:
+                                        Text('🗓️ September 2026 (Current)')),
+                                DropdownMenuItem(
+                                    value: '2026-08',
+                                    child: Text('🗓️ August 2026')),
+                                DropdownMenuItem(
+                                    value: '2026-07',
+                                    child: Text('🗓️ July 2026')),
+                                DropdownMenuItem(
+                                    value: '2026-06',
+                                    child: Text('🗓️ June 2026')),
+                                DropdownMenuItem(
+                                    value: '2026-05',
+                                    child: Text('🗓️ May 2026')),
+                                DropdownMenuItem(
+                                    value: '2026-04',
+                                    child: Text('🗓️ April 2026')),
+                                DropdownMenuItem(
+                                    value: '2026-03',
+                                    child: Text('🗓️ March 2026')),
+                                DropdownMenuItem(
+                                    value: '2026-02',
+                                    child: Text('🗓️ February 2026')),
+                                DropdownMenuItem(
+                                    value: '2026-01',
+                                    child: Text('🗓️ January 2026')),
                               ],
                               onChanged: (val) {
                                 if (val != null) {
@@ -331,8 +374,10 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                         ),
                         if (_selectedMonth != 'ALL')
                           IconButton(
-                            icon: const Icon(Icons.close, size: 16, color: Colors.red),
-                            onPressed: () => setState(() => _selectedMonth = 'ALL'),
+                            icon: const Icon(Icons.close,
+                                size: 16, color: Colors.red),
+                            onPressed: () =>
+                                setState(() => _selectedMonth = 'ALL'),
                           ),
                       ],
                     ),
@@ -343,11 +388,14 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                   TextField(
                     controller: _searchController,
                     onChanged: (val) => setState(() => _searchQuery = val),
-                    style: const TextStyle(color: AppTheme.textDark, fontSize: 14),
+                    style:
+                        const TextStyle(color: AppTheme.textDark, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'Search case titles, clients, or counsel...',
-                      hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 13),
-                      prefixIcon: const Icon(Icons.search, color: AppTheme.primary),
+                      hintStyle: const TextStyle(
+                          color: AppTheme.textMuted, fontSize: 13),
+                      prefixIcon:
+                          const Icon(Icons.search, color: AppTheme.primary),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
                               icon: const Icon(Icons.clear, color: Colors.grey),
@@ -359,7 +407,8 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                           : null,
                       fillColor: Colors.white,
                       filled: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 16),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: const BorderSide(color: AppTheme.border),
@@ -381,7 +430,10 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                       ),
                       child: const Text(
                         'No cases matched your search.',
-                        style: TextStyle(color: AppTheme.textMuted, fontStyle: FontStyle.italic, fontSize: 14),
+                        style: TextStyle(
+                            color: AppTheme.textMuted,
+                            fontStyle: FontStyle.italic,
+                            fontSize: 14),
                       ),
                     ),
                   ] else ...[
@@ -394,7 +446,8 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                           side: const BorderSide(color: AppTheme.border),
                         ),
                         child: DataTable(
-                          headingRowColor: WidgetStateProperty.all(Colors.grey.shade100),
+                          headingRowColor:
+                              WidgetStateProperty.all(Colors.grey.shade100),
                           dataRowMinHeight: 65,
                           dataRowMaxHeight: 80,
                           horizontalMargin: 16,
@@ -403,44 +456,63 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                             DataColumn(
                               label: Text(
                                 'CASE TITLE',
-                                style: TextStyle(color: AppTheme.textMuted, fontWeight: FontWeight.bold, fontSize: 11),
+                                style: TextStyle(
+                                    color: AppTheme.textMuted,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11),
                               ),
                             ),
                             DataColumn(
                               label: Text(
                                 'CLIENT',
-                                style: TextStyle(color: AppTheme.textMuted, fontWeight: FontWeight.bold, fontSize: 11),
+                                style: TextStyle(
+                                    color: AppTheme.textMuted,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11),
                               ),
                             ),
                             DataColumn(
                               label: Text(
                                 'COUNSEL',
-                                style: TextStyle(color: AppTheme.textMuted, fontWeight: FontWeight.bold, fontSize: 11),
+                                style: TextStyle(
+                                    color: AppTheme.textMuted,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11),
                               ),
                             ),
                             DataColumn(
                               label: Text(
                                 'STATUS',
-                                style: TextStyle(color: AppTheme.textMuted, fontWeight: FontWeight.bold, fontSize: 11),
+                                style: TextStyle(
+                                    color: AppTheme.textMuted,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11),
                               ),
                             ),
                             DataColumn(
                               label: Text(
                                 'DATE',
-                                style: TextStyle(color: AppTheme.textMuted, fontWeight: FontWeight.bold, fontSize: 11),
+                                style: TextStyle(
+                                    color: AppTheme.textMuted,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11),
                               ),
                             ),
                             DataColumn(
                               label: Text(
                                 'ACTION',
-                                style: TextStyle(color: AppTheme.textMuted, fontWeight: FontWeight.bold, fontSize: 11),
+                                style: TextStyle(
+                                    color: AppTheme.textMuted,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11),
                               ),
                             ),
                           ],
                           rows: filteredCases.map((c) {
-                            final dateStr = c.createdAt != null && c.createdAt!.length >= 10
-                                ? c.createdAt!.substring(0, 10)
-                                : 'N/A';
+                            final dateStr =
+                                c.createdAt != null && c.createdAt!.length >= 10
+                                    ? c.createdAt!.substring(0, 10)
+                                    : 'N/A';
 
                             return DataRow(
                               cells: [
@@ -464,7 +536,9 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                                 DataCell(
                                   Text(
                                     c.client?.name ?? 'N/A',
-                                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12),
                                   ),
                                 ),
                                 // 3. COUNSEL
@@ -473,7 +547,10 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                                     c.litigationTeam.isNotEmpty
                                         ? c.litigationTeam
                                         : (c.lawyer?.name ?? 'TEAM ANCHOR'),
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.primary),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                        color: AppTheme.primary),
                                   ),
                                 ),
                                 // 4. STATUS
@@ -482,7 +559,9 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                                 DataCell(
                                   Text(
                                     dateStr,
-                                    style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppTheme.textMuted),
                                   ),
                                 ),
                                 // 6. ACTION
@@ -492,21 +571,30 @@ class _CasesTitleListScreenState extends State<CasesTitleListScreen> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => CaseDetailScreen(caseModel: c),
+                                          builder: (context) =>
+                                              CaseDetailScreen(caseModel: c),
                                         ),
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppTheme.primary,
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 8),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
                                     ),
                                     child: const Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text('View', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
+                                        Text('View',
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold)),
                                         SizedBox(width: 4),
-                                        Icon(Icons.chevron_right, size: 14, color: Colors.white),
+                                        Icon(Icons.chevron_right,
+                                            size: 14, color: Colors.white),
                                       ],
                                     ),
                                   ),

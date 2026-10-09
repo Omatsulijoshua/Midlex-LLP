@@ -1,0 +1,12 @@
+ALTER TABLE "User"
+ADD COLUMN IF NOT EXISTS "department" TEXT NOT NULL DEFAULT 'LITIGATION',
+ADD COLUMN IF NOT EXISTS "status" TEXT NOT NULL DEFAULT 'ACTIVE';
+
+UPDATE "User"
+SET "department" = 'GENERAL'
+WHERE "role" = 'LAWYER'
+  AND (
+    UPPER(COALESCE("litigationTeam", '')) LIKE '%PROPERTY%'
+    OR UPPER(COALESCE("litigationTeam", '')) LIKE '%REALTY%'
+    OR UPPER(COALESCE("litigationTeam", '')) LIKE '%RETAINER%'
+  );

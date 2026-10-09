@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { CartProvider } from '@/context/CartContext';
 
 export const metadata: Metadata = {
   title: 'Midlex Realty | Verified Property Sales, Management & Real Estate Conveyancing',
@@ -23,8 +24,8 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </head>
-      <body className="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-amber-500 selection:text-slate-950 w-full max-w-full overflow-x-hidden">
-        {children}
+      <body>
+        <CartProvider>{children}</CartProvider>
       </body>
     </html>
   );

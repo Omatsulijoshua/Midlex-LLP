@@ -70,6 +70,11 @@ export class UsersController {
       role: Role.LAWYER,
       phone: body.phone,
       litigationTeam: body.litigationTeam || 'TEAM ANCHOR',
+      department:
+        String(body.department || 'LITIGATION').toUpperCase() === 'GENERAL'
+          ? 'GENERAL'
+          : 'LITIGATION',
+      status: 'ACTIVE',
     } as any);
   }
 
@@ -77,9 +82,25 @@ export class UsersController {
   @Roles(Role.ADMIN)
   async updateLawyerTeam(
     @Param('id') id: string,
-    @Body('litigationTeam') litigationTeam: string,
+    @Body() body: any,
   ) {
-    return this.usersService.update(id, { litigationTeam } as any);
+    const update: any = {};
+    if (body.litigationTeam !== undefined) {
+      update.litigationTeam = String(body.litigationTeam).trim().toUpperCase();
+    }
+    if (body.department !== undefined) {
+      update.department =
+        String(body.department).toUpperCase() === 'GENERAL'
+          ? 'GENERAL'
+          : 'LITIGATION';
+    }
+    if (body.status !== undefined) {
+      update.status =
+        String(body.status).toUpperCase() === 'DEACTIVATED'
+          ? 'DEACTIVATED'
+          : 'ACTIVE';
+    }
+    return this.usersService.update(id, update);
   }
 
   @Get('team-messages/:teamName')

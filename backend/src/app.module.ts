@@ -17,6 +17,7 @@ import { ChatModule } from './chat/chat.module';
 import { PaymentAccountsModule } from './payment-accounts/payment-accounts.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { DirectoryModule } from './directory/directory.module';
+import { RealtyModule } from './realty/realty.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { DirectoryModule } from './directory/directory.module';
     PaymentAccountsModule,
     NotificationsModule,
     DirectoryModule,
+    RealtyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

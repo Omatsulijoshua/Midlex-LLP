@@ -2,22 +2,25 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import Link from 'next/link';
-import ClientDepartmentModal, { ClientPracticeDept } from './ClientDepartmentModal';
+import { useAuth } from '@/context/AuthContext';
+import GeneralRetainerOverview from './GeneralRetainerOverview';
+
+type ClientPracticeDept = 'LITIGATION' | 'GENERAL';
 
 export default function ClientOverview() {
   const [cases, setCases] = useState<any[]>([]);
   const [selectedDept, setSelectedDept] = useState<ClientPracticeDept | null>(null);
-  const [isDeptModalOpen, setIsDeptModalOpen] = useState(false);
+  const { logout } = useAuth();
 
   useEffect(() => {
     // Check saved client department
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('midlex_client_dept') as ClientPracticeDept | null;
-      if (saved) {
+      const saved = localStorage.getItem('midlex_client_dept');
+      if (saved === 'LITIGATION' || saved === 'GENERAL') {
         setSelectedDept(saved);
       } else {
-        // Open 2-squares selection modal on client dashboard load
-        setIsDeptModalOpen(true);
+        logout();
+        return;
       }
     }
 
@@ -30,15 +33,9 @@ export default function ClientOverview() {
       }
     };
     fetchCases();
-  }, []);
+  }, [logout]);
 
-  const handleSelectDepartment = (dept: ClientPracticeDept) => {
-    setSelectedDept(dept);
-    setIsDeptModalOpen(false);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('midlex_client_dept', dept);
-    }
-  };
+  if (selectedDept === 'GENERAL') return <GeneralRetainerOverview />;
 
   // Helper to determine Litigation vs General case
   const isLitigationCase = (c: any) => {
@@ -54,106 +51,6 @@ export default function ClientOverview() {
 
   return (
     <div className="space-y-8">
-      {/* 2 Squares Department Choice Modal */}
-      <ClientDepartmentModal
-        isOpen={isDeptModalOpen}
-        onSelectDepartment={handleSelectDepartment}
-        onClose={() => setIsDeptModalOpen(false)}
-        currentDept={selectedDept}
-      />
-
-      {/* 2 Big Interactive Profile Choice Buttons (Litigation vs General) */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-black uppercase tracking-widest text-slate-500">
-            CHOOSE CLIENT PRACTICE PROFILE
-          </span>
-          {selectedDept && (
-            <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-              Active: {selectedDept === 'LITIGATION' ? '⚖️ Litigation Court Matters' : '🏢 General & Property Matters'}
-            </span>
-          )}
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* LITIGATION DISPUTES BUTTON */}
-          <button
-            type="button"
-            onClick={() => handleSelectDepartment('LITIGATION')}
-            className={`p-6 sm:p-8 rounded-[32px] border-2 text-left transition-all relative overflow-hidden group shadow-lg ${
-              selectedDept === 'LITIGATION'
-                ? 'bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white border-blue-500 shadow-blue-900/30 scale-[1.01]'
-                : 'bg-white text-slate-900 border-slate-200 hover:border-blue-500 hover:shadow-xl'
-            }`}
-          >
-            <div className="flex items-start justify-between">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl mb-4 ${
-                selectedDept === 'LITIGATION' ? 'bg-blue-500/20 text-amber-300 border border-blue-400/30' : 'bg-blue-50 text-blue-700 border border-blue-100'
-              }`}>
-                ⚖️
-              </div>
-              <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${
-                selectedDept === 'LITIGATION' ? 'bg-amber-400 text-slate-950' : 'bg-blue-100 text-blue-800'
-              }`}>
-                LITIGATION MATTERS
-              </span>
-            </div>
-
-            <h3 className={`text-2xl font-black mb-2 ${selectedDept === 'LITIGATION' ? 'text-white' : 'text-slate-900'}`}>
-              Litigation Court Cases
-            </h3>
-            <p className={`text-xs leading-relaxed ${selectedDept === 'LITIGATION' ? 'text-slate-300' : 'text-slate-500'}`}>
-              View your High Court suits, hearing dates, trial timelines, court filings, and chat with your trial advocate team.
-            </p>
-
-            <div className={`mt-6 pt-4 border-t flex items-center justify-between text-xs font-bold ${
-              selectedDept === 'LITIGATION' ? 'border-white/10 text-amber-300' : 'border-slate-100 text-blue-700'
-            }`}>
-              <span>View Litigation Matters ➔</span>
-              {selectedDept === 'LITIGATION' && <span className="bg-emerald-500 text-slate-950 px-3.5 py-1 rounded-full text-[10px] font-black">ACTIVE VIEW</span>}
-            </div>
-          </button>
-
-          {/* GENERAL & PROPERTY REALTY BUTTON */}
-          <button
-            type="button"
-            onClick={() => handleSelectDepartment('GENERAL')}
-            className={`p-6 sm:p-8 rounded-[32px] border-2 text-left transition-all relative overflow-hidden group shadow-lg ${
-              selectedDept === 'GENERAL'
-                ? 'bg-gradient-to-br from-amber-950 via-slate-900 to-amber-950 text-white border-amber-500 shadow-amber-900/30 scale-[1.01]'
-                : 'bg-white text-slate-900 border-slate-200 hover:border-amber-500 hover:shadow-xl'
-            }`}
-          >
-            <div className="flex items-start justify-between">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl mb-4 ${
-                selectedDept === 'GENERAL' ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30' : 'bg-amber-50 text-amber-700 border border-amber-100'
-              }`}>
-                🏢
-              </div>
-              <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${
-                selectedDept === 'GENERAL' ? 'bg-amber-400 text-slate-950' : 'bg-amber-100 text-amber-900'
-              }`}>
-                GENERAL / REALTY MATTERS
-              </span>
-            </div>
-
-            <h3 className={`text-2xl font-black mb-2 ${selectedDept === 'GENERAL' ? 'text-white' : 'text-slate-900'}`}>
-              General & Property Matters
-            </h3>
-            <p className={`text-xs leading-relaxed ${selectedDept === 'GENERAL' ? 'text-slate-300' : 'text-slate-500'}`}>
-              View land title verifications, Certificate of Occupancy searches, Samson Sabbat property conveyancing & corporate advisory.
-            </p>
-
-            <div className={`mt-6 pt-4 border-t flex items-center justify-between text-xs font-bold ${
-              selectedDept === 'GENERAL' ? 'border-white/10 text-amber-300' : 'border-slate-100 text-amber-700'
-            }`}>
-              <span>View Property & General Matters ➔</span>
-              {selectedDept === 'GENERAL' && <span className="bg-emerald-500 text-slate-950 px-3.5 py-1 rounded-full text-[10px] font-black">ACTIVE VIEW</span>}
-            </div>
-          </button>
-        </div>
-      </div>
-
       {/* Top Client Branch Status Bar */}
       <div className={`p-6 rounded-[28px] text-white shadow-xl flex flex-wrap items-center justify-between gap-4 border transition-all ${
         selectedDept === 'LITIGATION'
@@ -173,12 +70,10 @@ export default function ClientOverview() {
               </span>
             </div>
             <h3 className="text-xl font-black text-white mt-1">
-              {selectedDept === 'LITIGATION' ? 'Litigation Cases & Disputes' : 'General & Property (Realty) Matters'}
+              Litigation Cases &amp; Disputes
             </h3>
             <p className="text-xs text-slate-300 mt-0.5">
-              {selectedDept === 'LITIGATION'
-                ? 'Viewing court litigation suits, hearing dates, and trial advocate briefs.'
-                : 'Viewing land title verification, Samson Sabbat property matters, & commercial agreements.'}
+              Viewing court litigation suits, hearing dates, and trial advocate briefs.
             </p>
           </div>
         </div>
@@ -188,14 +83,11 @@ export default function ClientOverview() {
             href={`/dashboard/cases/new?category=${selectedDept || 'LITIGATION'}`}
             className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20"
           >
-            ➕ Open New {selectedDept === 'LITIGATION' ? 'Litigation' : 'Property / General'} Case
+            ➕ Open New Litigation Case
           </Link>
-          <button
-            onClick={() => setIsDeptModalOpen(true)}
-            className="px-5 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl text-xs transition-all border border-white/10"
-          >
-            🔄 Switch View (2 Squares)
-          </button>
+          <span className="px-5 py-3 bg-white/10 text-white/80 font-bold rounded-2xl text-xs border border-white/10">
+            Sign out to change workspace
+          </span>
         </div>
       </div>
 
@@ -205,7 +97,7 @@ export default function ClientOverview() {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h3 className="text-2xl font-bold text-primary">
-                  My {selectedDept === 'LITIGATION' ? 'Litigation Cases' : selectedDept === 'GENERAL' ? 'General & Property Cases' : 'Cases'}
+                  My Litigation Cases
                 </h3>
                 <p className="text-xs text-gray-500 mt-1">
                   Showing {filteredCases.length} active matters
@@ -225,7 +117,7 @@ export default function ClientOverview() {
                   <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center gap-2">
                       <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase rounded-full">
-                        {c.category === 'LITIGATION' ? '⚖️ Litigation' : '🏢 Property / General'}
+                        ⚖️ Litigation
                       </span>
                       <h4 className="text-lg font-bold text-primary">{c.title}</h4>
                     </div>
@@ -236,7 +128,7 @@ export default function ClientOverview() {
                   <p className="text-gray-500 text-sm mb-6 leading-relaxed">{c.description}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-gray-400">
-                      Lawyer: <strong className="text-primary">{c.lawyer?.name || (c.category === 'GENERAL' || c.category === 'PROPERTY' ? 'Samson Sabbat' : 'Assigned Counsel')}</strong>
+                      Lawyer: <strong className="text-primary">{c.lawyer?.name || 'Assigned Counsel'}</strong>
                     </span>
                     <Link 
                       href={`/dashboard/cases/${c.id}`}
@@ -249,13 +141,13 @@ export default function ClientOverview() {
               )) : (
                 <div className="text-center py-12 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
                   <p className="text-gray-500 font-bold text-sm">
-                    No active {selectedDept === 'LITIGATION' ? 'litigation suits' : 'general or property cases'} found.
+                    No active litigation suits found.
                   </p>
                   <Link 
                     href={`/dashboard/cases/new?category=${selectedDept || 'LITIGATION'}`}
                     className="mt-4 px-8 py-3.5 bg-secondary text-white font-bold rounded-2xl inline-block text-xs uppercase tracking-wider shadow-lg shadow-secondary/20"
                   >
-                    Open New {selectedDept === 'LITIGATION' ? 'Litigation' : 'Property / General'} Case
+                    Open New Litigation Case
                   </Link>
                 </div>
               )}

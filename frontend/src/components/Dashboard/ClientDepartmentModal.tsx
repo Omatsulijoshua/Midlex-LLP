@@ -126,12 +126,12 @@ export default function ClientDepartmentModal({
                 </h3>
 
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Monitor land title verification, Certificate of Occupancy searches, Samson Sabbat property conveyancing, and general consultations.
+                  Access Midlex Royalty retainers, property support, corporate advisory, and general legal consultations.
                 </p>
 
                 <ul className="mt-4 space-y-2 text-[11px] text-slate-300 font-medium">
                   <li className="flex items-center gap-2">✔️ Property Title & Certificate of Occupancy</li>
-                  <li className="flex items-center gap-2">✔️ Samson Sabbat Conveyancing</li>
+                  <li className="flex items-center gap-2">✔️ Assigned General Retainer Team</li>
                   <li className="flex items-center gap-2">✔️ Commercial Agreements & Advisory</li>
                 </ul>
               </div>

@@ -22,12 +22,22 @@ type Inquiry = {
 
 const statusOptions: InquiryStatus[] = ["NEW", "CONTACTED", "CONVERTED", "CLOSED"];
 
+type InquiryWorkspace = "ALL" | "GENERAL" | "LITIGATION";
+
+const getInquiryWorkspace = (inquiry: Inquiry): Exclude<InquiryWorkspace, "ALL"> => {
+  const text = `${inquiry.serviceNeeded || ""} ${inquiry.message || ""}`.toUpperCase();
+  return text.includes("LITIGATION") || text.includes("COURT") || text.includes("DISPUTE")
+    ? "LITIGATION"
+    : "GENERAL";
+};
+
 export default function InquiriesPage() {
   const { user } = useAuth();
   const [items, setItems] = useState<Inquiry[]>([]);
   const [selected, setSelected] = useState<Inquiry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<InquiryStatus | "ALL">("ALL");
+  const [workspaceFilter, setWorkspaceFilter] = useState<InquiryWorkspace>("ALL");
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
 
@@ -61,8 +71,11 @@ export default function InquiriesPage() {
 
   const filteredItems = useMemo(() => {
     const normalizedQuery = deferredQuery.trim().toLowerCase();
-    if (!normalizedQuery) return items;
-    return items.filter((inq) =>
+    const workspaceItems = workspaceFilter === "ALL"
+      ? items
+      : items.filter((inquiry) => getInquiryWorkspace(inquiry) === workspaceFilter);
+    if (!normalizedQuery) return workspaceItems;
+    return workspaceItems.filter((inq) =>
       [
         inq.name,
         inq.email,
@@ -74,7 +87,7 @@ export default function InquiriesPage() {
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(normalizedQuery)),
     );
-  }, [deferredQuery, items]);
+  }, [deferredQuery, items, workspaceFilter]);
 
   const updateInquiry = async (id: string, patch: Partial<Pick<Inquiry, "status" | "notes">>) => {
     const updated = await apiFetch(`/inquiries/${id}`, {
@@ -160,6 +173,18 @@ export default function InquiriesPage() {
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-2 rounded-2xl border border-gray-100 bg-white p-2 shadow-sm">
+        {(["ALL", "GENERAL", "LITIGATION"] as InquiryWorkspace[]).map((workspace) => (
+          <button
+            key={workspace}
+            onClick={() => setWorkspaceFilter(workspace)}
+            className={`rounded-xl px-5 py-2.5 text-xs font-bold transition-all ${workspaceFilter === workspace ? "bg-primary text-white shadow" : "text-gray-600 hover:bg-gray-50"}`}
+          >
+            {workspace === "ALL" ? "All inquiries" : workspace === "GENERAL" ? "🏢 General & Realty" : "⚖️ Litigation"}
+          </button>
+        ))}
+      </div>
+
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-4">
           {filteredItems.map((inq, i) => (
@@ -183,6 +208,9 @@ export default function InquiriesPage() {
                 </span>
               </div>
               <p className="text-sm text-gray-600 mt-3 line-clamp-2">{inq.message}</p>
+              <p className="mt-2 text-[10px] font-black uppercase tracking-wider text-secondary">
+                {getInquiryWorkspace(inq) === "GENERAL" ? "General / Realty" : "Litigation"}
+              </p>
               <p className="text-[11px] text-gray-400 mt-3">Received {new Date(inq.createdAt).toLocaleString()}</p>
             </motion.button>
           ))}
@@ -298,4 +326,3 @@ export default function InquiriesPage() {
     </div>
   );
 }
-

@@ -1,14 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Gavel, Mail, Lock, User, ArrowRight, Phone, MapPin, Building, FileText, FileEdit } from "lucide-react";
 
-import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 
 export default function SignupPage() {
-  const [mounted, setMounted] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,11 +20,6 @@ export default function SignupPage() {
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,31 +28,17 @@ export default function SignupPage() {
 
     try {
       // Step 1: Signup with full client profile & initial case details
-      const response = await apiFetch('/auth/signup', {
+      await apiFetch('/auth/signup', {
         method: 'POST',
         body: JSON.stringify(formData),
       });
-
-      // Step 2: Auto-login
-      if (response.access_token && response.user) {
-        login(response.access_token, response.user);
-      } else {
-        const loginData = await apiFetch('/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({ email: formData.email, password: formData.password }),
-        });
-        login(loginData.access_token, loginData.user);
-      }
+      window.location.href = '/login';
     } catch (err: any) {
       setError(err.message || "Failed to create account");
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  if (!mounted) {
-    return <main suppressHydrationWarning className="min-h-screen bg-[#fafafa] flex items-center justify-center p-3 sm:p-6 py-6 sm:py-12 w-full max-w-full overflow-x-hidden relative" />;
-  }
 
   return (
     <main suppressHydrationWarning className="min-h-screen bg-[#fafafa] flex items-center justify-center p-3 sm:p-6 py-6 sm:py-12 w-full max-w-full overflow-x-hidden relative">

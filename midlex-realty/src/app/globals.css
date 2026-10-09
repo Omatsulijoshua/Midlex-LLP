@@ -1,19 +1,6 @@
 @import "tailwindcss";
 
-:root {
-  color-scheme: light !important;
-  --background: #ffffff;
-  --foreground: #1a2e1a;
-  --primary: #1b4d2e; /* Midlex Dark Green */
-  --primary-foreground: #ffffff;
-  --secondary: #c5a059; /* Midlex Gold/Tan */
-  --secondary-foreground: #1a2e1a;
-  --accent: #f4f7f4;
-  --accent-foreground: #1b4d2e;
-  --muted: #f4f7f4;
-  --muted-foreground: #6b7280;
-  --border: #e5e7eb;
-}
+:root { --background: #fffdf7; --foreground: #17231c; --primary: #073d22; --secondary: #ddb849; }
 
 @theme inline {
   --color-background: var(--background);
@@ -33,11 +20,10 @@
 }
 
 html, body {
-  color-scheme: light !important;
   scroll-behavior: smooth;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden !important;
   max-width: 100vw !important;
   width: 100% !important;
@@ -53,7 +39,6 @@ html, body {
   }
 }
 
-/* Forced 100% solid pitch black text for all inputs & forms across all devices, themes & dark modes */
 html body input,
 html body select,
 html body textarea,
@@ -63,9 +48,8 @@ input[type="password"],
 input[type="tel"],
 input[type="search"],
 input[type="number"] {
-  color-scheme: light !important;
-  color: #000000 !important;
-  -webkit-text-fill-color: #000000 !important;
+  color: #17231c !important;
+  -webkit-text-fill-color: #17231c !important;
   background-color: #ffffff !important;
   opacity: 1 !important;
   caret-color: #000000 !important;

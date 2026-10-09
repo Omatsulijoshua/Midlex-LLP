@@ -239,7 +239,7 @@ export default function AdminOverview() {
               General & Property Profile
             </h3>
             <p className={`text-xs leading-relaxed ${selectedDept === 'GENERAL' ? 'text-slate-300' : 'text-slate-500'}`}>
-              Monitor land title verification, C of O search, Samson Sabbat property auto-allocations, corporate retainers & client advisory.
+              Monitor Midlex Royalty plans, retainer claims, property work, corporate retainers, and client advisory teams.
             </p>
 
             <div className={`mt-6 pt-4 border-t flex items-center justify-between text-xs font-bold ${
@@ -276,7 +276,7 @@ export default function AdminOverview() {
             <p className="text-xs text-slate-300 mt-0.5">
               {selectedDept === 'LITIGATION'
                 ? 'Monitoring High Court suits, trial calendars, court filings, & advocate team assignments.'
-                : 'Monitoring land title verification, Samson Sabbat property auto-allocations, & commercial advisory.'}
+                : 'Monitoring retainer claims, plan coverage, property work, assigned General teams, and commercial advisory.'}
             </p>
           </div>
         </div>

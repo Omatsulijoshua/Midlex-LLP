@@ -27,6 +27,12 @@ lawyers/.env
 lawyers/.env.*
 !lawyers/.env.example
 
+midlex-realty/.next/
+midlex-realty/out/
+midlex-realty/.env.local
+midlex-realty/.env.development.local
+midlex-realty/.env.test.local
+
 # NestJS backend
 backend/dist/
 backend/uploads/

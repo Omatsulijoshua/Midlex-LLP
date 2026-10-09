@@ -8,6 +8,7 @@ interface Lawyer {
   name: string;
   email: string;
   litigationTeam?: string;
+  department?: 'LITIGATION' | 'GENERAL';
   _count: { casesAsLawyer: number };
 }
 
@@ -19,19 +20,29 @@ const DEFAULT_TEAMS = [
   'CORPORATE DISPUTE TEAM',
 ];
 
+const GENERAL_TEAMS = [
+  'RETAINER ADVISORY TEAM',
+  'CORPORATE RETAINER TEAM',
+  'FAMILY & PRIVATE CLIENT TEAM',
+  'PROPERTY ADVISORY GROUP',
+  'REALTY CONVEYANCING TEAM',
+];
+
 export default function AssignLawyerModal({
   caseId,
   isOpen,
   onClose,
   onAssigned,
+  workspace = 'LITIGATION',
 }: {
   caseId: string;
   isOpen: boolean;
   onClose: () => void;
   onAssigned: () => void;
+  workspace?: 'LITIGATION' | 'GENERAL';
 }) {
   const [lawyers, setLawyers] = useState<Lawyer[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState('TEAM ANCHOR');
+  const [selectedTeam, setSelectedTeam] = useState('');
   const [customTeam, setCustomTeam] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -39,6 +50,7 @@ export default function AssignLawyerModal({
 
   useEffect(() => {
     if (isOpen) {
+      setSelectedTeam(workspace === 'GENERAL' ? GENERAL_TEAMS[0] : DEFAULT_TEAMS[0]);
       apiFetch('/users/lawyers').then(setLawyers).catch(console.error);
       apiFetch<string[]>('/directory/teams')
         .then((t) => {
@@ -59,8 +71,8 @@ export default function AssignLawyerModal({
       onAssigned();
       onClose();
     } catch (error) {
-      console.error('Error assigning litigation team:', error);
-      alert('Failed to assign litigation team.');
+      console.error('Error assigning practice team:', error);
+      alert(`Failed to assign ${workspace === 'GENERAL' ? 'General Retainer' : 'Litigation'} team.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -70,10 +82,19 @@ export default function AssignLawyerModal({
   const availableTeams = Array.from(
     new Set([
       ...backendTeams,
-      ...DEFAULT_TEAMS,
-      ...lawyers.map((l) => (l.litigationTeam || '').trim().toUpperCase()).filter(Boolean),
+      ...(workspace === 'GENERAL' ? GENERAL_TEAMS : DEFAULT_TEAMS),
+      ...lawyers
+        .filter((lawyer) => (lawyer.department || 'LITIGATION') === workspace)
+        .map((l) => (l.litigationTeam || '').trim().toUpperCase())
+        .filter(Boolean),
     ])
-  );
+  ).filter((team) => {
+    const generalMarkers = ['GENERAL', 'RETAINER', 'PROPERTY', 'REALTY', 'FAMILY', 'PRIVATE CLIENT'];
+    const litigationMarkers = ['LITIGATION', 'ANCHOR', 'ALPHA', 'MARITIME', 'DISPUTE'];
+    const isGeneralTeam = generalMarkers.some((marker) => team.includes(marker));
+    const isLitigationTeam = litigationMarkers.some((marker) => team.includes(marker));
+    return workspace === 'GENERAL' ? isGeneralTeam || !isLitigationTeam : isLitigationTeam || !isGeneralTeam;
+  });
 
   return (
     <AnimatePresence>
@@ -94,22 +115,23 @@ export default function AssignLawyerModal({
           >
             <div>
               <h3 className="text-2xl font-bold text-primary mb-1">
-                ⚖️ Assign Litigation Team
+                {workspace === 'GENERAL' ? '🏢 Assign General Retainer Team' : '⚖️ Assign Litigation Team'}
               </h3>
               <p className="text-xs text-gray-500">
-                Select a Midlex Litigation Team to assume lead jurisdiction and representation for this case.
+                Select the Midlex {workspace === 'GENERAL' ? 'General Retainer' : 'Litigation'} team responsible for this matter.
               </p>
             </div>
 
             <div className="space-y-4">
               <label className="block text-xs font-bold text-gray-600 uppercase">
-                Select Midlex Litigation Team
+                Select Midlex {workspace === 'GENERAL' ? 'General Retainer' : 'Litigation'} Team
               </label>
 
               <div className="grid sm:grid-cols-2 gap-3 max-h-[260px] overflow-y-auto pr-1">
                 {availableTeams.map((teamName) => {
                   const teamLawyers = lawyers.filter(
-                    (l) => (l.litigationTeam || 'TEAM ANCHOR').toUpperCase() === teamName.toUpperCase()
+                    (l) => (l.department || 'LITIGATION') === workspace &&
+                      (l.litigationTeam || 'TEAM ANCHOR').toUpperCase() === teamName.toUpperCase()
                   );
                   const isSelected = selectedTeam === teamName;
 
@@ -179,7 +201,7 @@ export default function AssignLawyerModal({
                 disabled={isSubmitting || (!selectedTeam && !customTeam.trim())}
                 className="px-8 py-3 rounded-2xl font-bold text-xs bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 transition-all disabled:opacity-50"
               >
-                {isSubmitting ? 'Assigning...' : 'Assign Litigation Team'}
+                {isSubmitting ? 'Assigning...' : `Assign ${workspace === 'GENERAL' ? 'Retainer' : 'Litigation'} Team`}
               </button>
             </div>
           </motion.div>

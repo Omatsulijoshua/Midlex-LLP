@@ -23,18 +23,13 @@ class DashboardProvider extends ChangeNotifier {
   List<CourtDateModel> get courtDates => _courtDates;
   List<InquiryModel> get inquiries => _inquiries;
   List<NotificationModel> get notifications => _notifications;
-  int get unreadNotificationCount => _notifications.where((n) => !n.isRead).length;
+  int get unreadNotificationCount =>
+      _notifications.where((n) => !n.isRead).length;
   bool get isLoading => _isLoading;
   String get selectedDepartment => _selectedDepartment;
 
   Future<void> initDepartment() async {
     _selectedDepartment = await StorageService.getDepartment();
-    notifyListeners();
-  }
-
-  Future<void> setDepartment(String dept) async {
-    _selectedDepartment = dept;
-    await StorageService.saveDepartment(dept);
     notifyListeners();
   }
 

@@ -77,6 +77,9 @@ export default function AdminOverview() {
 
   // Helper to determine if a case is Litigation vs General / Property
   const isLitigationCase = (c: any) => {
+    const category = String(c.category || '').toUpperCase();
+    if (category === 'GENERAL') return false;
+    if (category === 'LITIGATION') return true;
     const text = `${c.title || ''} ${c.description || ''} ${c.category || ''} ${c.court || ''} ${c.suitNumber || ''}`.toLowerCase();
     return (
       c.suitNumber ||
@@ -91,11 +94,13 @@ export default function AdminOverview() {
   };
 
   const isGeneralCase = (c: any) => {
+    const category = String(c.category || '').toUpperCase();
+    if (category === 'GENERAL') return true;
+    if (category === 'LITIGATION') return false;
     const text = `${c.title || ''} ${c.description || ''} ${c.category || ''} ${c.assignedLawyer || ''}`.toLowerCase();
     return (
-      c.category === 'PROPERTY' ||
-      c.category === 'REALTY' ||
-      c.category === 'GENERAL' ||
+      category === 'PROPERTY' ||
+      category === 'REALTY' ||
       text.includes('property') ||
       text.includes('realty') ||
       text.includes('title') ||
@@ -239,7 +244,7 @@ export default function AdminOverview() {
               General & Property Profile
             </h3>
             <p className={`text-xs leading-relaxed ${selectedDept === 'GENERAL' ? 'text-slate-300' : 'text-slate-500'}`}>
-              Monitor land title verification, C of O search, Samson Sabbat property auto-allocations, corporate retainers & client advisory.
+              Monitor Midlex Royalty plans, retainer claims, property work, corporate retainers, and client advisory teams.
             </p>
 
             <div className={`mt-6 pt-4 border-t flex items-center justify-between text-xs font-bold ${
@@ -276,7 +281,7 @@ export default function AdminOverview() {
             <p className="text-xs text-slate-300 mt-0.5">
               {selectedDept === 'LITIGATION'
                 ? 'Monitoring High Court suits, trial calendars, court filings, & advocate team assignments.'
-                : 'Monitoring land title verification, Samson Sabbat property auto-allocations, & commercial advisory.'}
+                : 'Monitoring retainer claims, plan coverage, property work, assigned General teams, and commercial advisory.'}
             </p>
           </div>
         </div>

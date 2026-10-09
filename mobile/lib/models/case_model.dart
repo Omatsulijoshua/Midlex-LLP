@@ -8,6 +8,7 @@ class CaseModel {
   final String title;
   final String description;
   final String status; // OPEN, IN_PROGRESS, COMPLETED, CLOSED
+  final String category;
   final String clientId;
   final String? lawyerId;
   final UserModel? client;
@@ -28,6 +29,7 @@ class CaseModel {
     required this.title,
     required this.description,
     required this.status,
+    this.category = 'LITIGATION',
     required this.clientId,
     this.lawyerId,
     this.client,
@@ -76,10 +78,13 @@ class CaseModel {
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       status: json['status'] ?? 'OPEN',
+      category: (json['category'] ?? 'LITIGATION').toString().toUpperCase(),
       clientId: json['clientId'] ?? '',
       lawyerId: json['lawyerId'],
-      client: json['client'] != null ? UserModel.fromJson(json['client']) : null,
-      lawyer: json['lawyer'] != null ? UserModel.fromJson(json['lawyer']) : null,
+      client:
+          json['client'] != null ? UserModel.fromJson(json['client']) : null,
+      lawyer:
+          json['lawyer'] != null ? UserModel.fromJson(json['lawyer']) : null,
       documents: (json['documents'] as List<dynamic>?)
               ?.map((e) => DocumentModel.fromJson(e))
               .toList() ??

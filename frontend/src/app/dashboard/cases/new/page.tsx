@@ -3,10 +3,12 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { apiFetch } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 
 function NewCaseFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const initialCategory = searchParams.get('category') === 'GENERAL' ? 'GENERAL' : 'LITIGATION';
 
   const [formData, setFormData] = useState({
@@ -18,7 +20,12 @@ function NewCaseFormContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const cat = searchParams.get('category');
+    const signedInWorkspace = typeof window !== 'undefined'
+      ? localStorage.getItem('midlex_client_dept')
+      : null;
+    const cat = user?.role === 'CLIENT' && (signedInWorkspace === 'GENERAL' || signedInWorkspace === 'LITIGATION')
+      ? signedInWorkspace
+      : searchParams.get('category');
     if (cat === 'GENERAL' || cat === 'LITIGATION') {
       setFormData((prev) => ({
         ...prev,
@@ -26,7 +33,7 @@ function NewCaseFormContent() {
         subCategory: cat === 'LITIGATION' ? 'Commercial Litigation' : 'Property / Realty & Real Estate',
       }));
     }
-  }, [searchParams]);
+  }, [searchParams, user?.role]);
 
   const handleCategoryChange = (cat: string) => {
     const defaultSub = cat === 'LITIGATION' ? 'Commercial Litigation' : 'Property / Realty & Real Estate';
@@ -37,15 +44,9 @@ function NewCaseFormContent() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // General & Property cases automatically auto-assign lawyer Samson Sabbat
-      const payload = {
-        ...formData,
-        autoAssignedLawyerName: formData.category === 'GENERAL' ? 'Samson Sabbat' : undefined,
-      };
-
       const data = await apiFetch('/cases', {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: JSON.stringify(formData),
       });
       router.push(`/dashboard/cases/${data.id}`);
     } catch (error: any) {
@@ -69,9 +70,15 @@ function NewCaseFormContent() {
         className="bg-white p-8 sm:p-10 rounded-[40px] border border-gray-100 shadow-sm"
       >
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Category Selector */}
+          {/* The client workspace is fixed at sign-in. Staff can still classify matters. */}
           <div>
             <label className="block text-xs font-bold text-primary uppercase tracking-widest mb-3">Matter Classification Category</label>
+            {user?.role === 'CLIENT' ? (
+              <div className={`rounded-2xl border p-5 ${formData.category === 'GENERAL' ? 'border-amber-200 bg-amber-50' : 'border-blue-200 bg-blue-50'}`}>
+                <p className="font-bold text-primary">{formData.category === 'GENERAL' ? '🏢 General Retainer Matter' : '⚖️ Litigation Issue'}</p>
+                <p className="mt-1 text-xs text-gray-500">This request will be filed in the workspace selected when you signed in.</p>
+              </div>
+            ) : (
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
@@ -98,12 +105,13 @@ function NewCaseFormContent() {
                 <div className="text-xs text-gray-500 mt-1">Land title verification, Certificate of Occupancy, property conveyancing, corporate retainer</div>
               </button>
             </div>
+            )}
 
             {formData.category === 'GENERAL' && (
               <div className="mt-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 flex items-center gap-3">
-                <span className="text-xl">👨‍⚖️</span>
+                <span className="text-xl">🏢</span>
                 <div>
-                  <strong>Automatic Lawyer Allocation:</strong> Property &amp; General matters are automatically allocated to <strong>Samson Sabbat</strong>.
+                  <strong>General Retainer allocation:</strong> An administrator will assign the appropriate General Retainer team for this request.
                 </div>
               </div>
             )}

@@ -15,15 +15,37 @@ interface Lawyer {
   status?: 'ACTIVE' | 'DEACTIVATED';
 }
 
-const defaultTeams = [
+const litigationTeams = [
   'TEAM ANCHOR',
   'TEAM ALPHA',
   'TITAN LITIGATION',
   'MARITIME PRACTICE GROUP',
   'CORPORATE DISPUTE TEAM',
+];
+
+const generalTeams = [
+  'RETAINER ADVISORY TEAM',
+  'CORPORATE RETAINER TEAM',
+  'FAMILY & PRIVATE CLIENT TEAM',
   'PROPERTY ADVISORY GROUP',
   'REALTY CONVEYANCING TEAM',
 ];
+
+const defaultTeams = [...litigationTeams, ...generalTeams];
+
+const teamsForDepartment = (
+  teams: string[],
+  department: 'LITIGATION' | 'GENERAL',
+) => {
+  const defaults = department === 'GENERAL' ? generalTeams : litigationTeams;
+  const generalMarkers = ['GENERAL', 'RETAINER', 'PROPERTY', 'REALTY', 'FAMILY', 'PRIVATE CLIENT'];
+  const litigationMarkers = ['LITIGATION', 'ANCHOR', 'ALPHA', 'MARITIME', 'DISPUTE'];
+  return Array.from(new Set([...defaults, ...teams.filter((team) => {
+    const isGeneral = generalMarkers.some((marker) => team.includes(marker));
+    const isLitigation = litigationMarkers.some((marker) => team.includes(marker));
+    return department === 'GENERAL' ? isGeneral || !isLitigation : isLitigation || !isGeneral;
+  })]));
+};
 
 export default function LawyersPage() {
   const { user } = useAuth();
@@ -48,6 +70,7 @@ export default function LawyersPage() {
   // Add Team Modal State
   const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
+  const [newTeamDepartment, setNewTeamDepartment] = useState<'LITIGATION' | 'GENERAL'>('LITIGATION');
 
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
@@ -55,22 +78,11 @@ export default function LawyersPage() {
   const fetchLawyers = async () => {
     try {
       const data = await apiFetch<Lawyer[]>('/users/lawyers');
-      // Merge with any local status/dept overrides
-      if (typeof window !== 'undefined') {
-        const localOverrides = localStorage.getItem('midlex_lawyer_overrides');
-        if (localOverrides) {
-          try {
-            const parsed = JSON.parse(localOverrides);
-            const merged = data.map((l) => ({
-              ...l,
-              ...(parsed[l.id] || {}),
-            }));
-            setLawyers(merged);
-            return;
-          } catch (e) {}
-        }
-      }
-      setLawyers(data);
+      setLawyers(data.map((lawyer) => ({
+        ...lawyer,
+        department: lawyer.department || 'LITIGATION',
+        status: lawyer.status || 'ACTIVE',
+      })));
     } catch (error) {
       console.error('Error fetching lawyers:', error);
     } finally {
@@ -114,18 +126,7 @@ export default function LawyersPage() {
         body: JSON.stringify(formData),
       });
 
-      // Save local override for department/status
-      if (typeof window !== 'undefined') {
-        const localOverrides = JSON.parse(localStorage.getItem('midlex_lawyer_overrides') || '{}');
-        localOverrides[newLawyer.id || `lawyer-${Date.now()}`] = {
-          department: formData.department,
-          status: 'ACTIVE',
-          litigationTeam: formData.litigationTeam,
-        };
-        localStorage.setItem('midlex_lawyer_overrides', JSON.stringify(localOverrides));
-      }
-
-      fetchLawyers();
+      setLawyers((current) => [{ ...newLawyer, department: formData.department, status: 'ACTIVE' }, ...current]);
       setIsAddModalOpen(false);
       setFormData({ name: '', email: '', phone: '', password: 'lawyer123', litigationTeam: 'TEAM ANCHOR', department: 'LITIGATION' });
       alert(`Lawyer account '${formData.name}' created successfully for ${formData.department} Department!`);
@@ -154,18 +155,24 @@ export default function LawyersPage() {
     }
   };
 
-  const handleCreateTeam = (e: React.FormEvent) => {
+  const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
-    const clean = newTeamName.trim().toUpperCase();
-    if (!clean) return;
+    const enteredName = newTeamName.trim().toUpperCase();
+    if (!enteredName) return;
+    const prefix = newTeamDepartment === 'GENERAL' ? 'GENERAL RETAINER' : 'LITIGATION';
+    const clean = enteredName.startsWith(prefix) ? enteredName : `${prefix} - ${enteredName}`;
     if (teams.includes(clean)) {
       alert('Team name already exists.');
       return;
     }
-    const updated = [...teams, clean];
-    setTeams(updated);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('midlex_teams', JSON.stringify(updated));
+    try {
+      const updated = await apiFetch<string[]>('/directory/teams', {
+        method: 'POST',
+        body: JSON.stringify({ name: clean }),
+      });
+      setTeams(Array.isArray(updated) ? updated : [...teams, clean]);
+    } catch {
+      setTeams((current) => [...current, clean]);
     }
     setIsAddTeamModalOpen(false);
     setNewTeamName('');
@@ -180,30 +187,28 @@ export default function LawyersPage() {
       });
     } catch (error) {}
 
-    if (typeof window !== 'undefined') {
-      const localOverrides = JSON.parse(localStorage.getItem('midlex_lawyer_overrides') || '{}');
-      localOverrides[lawyerId] = {
-        ...(localOverrides[lawyerId] || {}),
-        litigationTeam: newTeam,
-      };
-      localStorage.setItem('midlex_lawyer_overrides', JSON.stringify(localOverrides));
-    }
-
     setLawyers((prev) =>
       prev.map((l) => (l.id === lawyerId ? { ...l, litigationTeam: newTeam } : l))
     );
   };
 
-  const handleToggleLawyerStatus = (lawyerId: string, currentStatus?: string) => {
+  const handleUpdateDepartment = async (lawyerId: string, department: 'LITIGATION' | 'GENERAL') => {
+    const nextTeam = teamsForDepartment(teams, department)[0];
+    await apiFetch(`/users/lawyers/${lawyerId}/team`, {
+      method: 'PATCH',
+      body: JSON.stringify({ department, litigationTeam: nextTeam }),
+    });
+    setLawyers((prev) => prev.map((lawyer) =>
+      lawyer.id === lawyerId ? { ...lawyer, department, litigationTeam: nextTeam } : lawyer
+    ));
+  };
+
+  const handleToggleLawyerStatus = async (lawyerId: string, currentStatus?: string) => {
     const nextStatus = currentStatus === 'DEACTIVATED' ? 'ACTIVE' : 'DEACTIVATED';
-    if (typeof window !== 'undefined') {
-      const localOverrides = JSON.parse(localStorage.getItem('midlex_lawyer_overrides') || '{}');
-      localOverrides[lawyerId] = {
-        ...(localOverrides[lawyerId] || {}),
-        status: nextStatus,
-      };
-      localStorage.setItem('midlex_lawyer_overrides', JSON.stringify(localOverrides));
-    }
+    await apiFetch(`/users/lawyers/${lawyerId}/team`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: nextStatus }),
+    });
 
     setLawyers((prev) =>
       prev.map((l) => (l.id === lawyerId ? { ...l, status: nextStatus } : l))
@@ -218,7 +223,7 @@ export default function LawyersPage() {
   const filteredLawyers = lawyers.filter((lawyer) => {
     // Dept filter
     if (deptFilter !== 'ALL') {
-      const lawyerDept = lawyer.department || (lawyer.litigationTeam?.includes('PROPERTY') || lawyer.name.includes('Samson') ? 'GENERAL' : 'LITIGATION');
+      const lawyerDept = lawyer.department || 'LITIGATION';
       if (lawyerDept !== deptFilter) return false;
     }
     // Search query
@@ -241,7 +246,10 @@ export default function LawyersPage() {
 
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => setIsAddTeamModalOpen(true)}
+            onClick={() => {
+              setNewTeamDepartment(deptFilter === 'GENERAL' ? 'GENERAL' : 'LITIGATION');
+              setIsAddTeamModalOpen(true);
+            }}
             className="px-6 py-3.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-2xl shadow-lg transition-all text-xs uppercase tracking-wider"
           >
             🛡️ Create Practice Team
@@ -351,13 +359,22 @@ export default function LawyersPage() {
                     {lawyer.phone}
                   </p>
                   <div className="pt-3">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Practice Workspace:</label>
+                    <select
+                      value={lawyer.department || 'LITIGATION'}
+                      onChange={(e) => handleUpdateDepartment(lawyer.id, e.target.value as 'LITIGATION' | 'GENERAL')}
+                      className="w-full px-3 py-2 mb-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800"
+                    >
+                      <option value="LITIGATION">⚖️ Litigation</option>
+                      <option value="GENERAL">🏢 General Retainer</option>
+                    </select>
                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Practice Team Assignment:</label>
                     <select
                       value={lawyer.litigationTeam || 'TEAM ANCHOR'}
                       onChange={(e) => handleUpdateTeam(lawyer.id, e.target.value)}
                       className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800"
                     >
-                      {teams.map((t) => (
+                      {teamsForDepartment(teams, lawyer.department || 'LITIGATION').map((t) => (
                         <option key={t} value={t}>🛡️ {t}</option>
                       ))}
                     </select>
@@ -415,7 +432,7 @@ export default function LawyersPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, department: 'LITIGATION' })}
+                      onClick={() => setFormData({ ...formData, department: 'LITIGATION', litigationTeam: litigationTeams[0] })}
                       className={`py-3 rounded-xl text-xs font-bold transition-all border ${
                         formData.department === 'LITIGATION'
                           ? 'bg-blue-600 text-white border-blue-600 shadow-md font-black'
@@ -426,7 +443,7 @@ export default function LawyersPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, department: 'GENERAL' })}
+                      onClick={() => setFormData({ ...formData, department: 'GENERAL', litigationTeam: generalTeams[0] })}
                       className={`py-3 rounded-xl text-xs font-bold transition-all border ${
                         formData.department === 'GENERAL'
                           ? 'bg-amber-600 text-white border-amber-600 shadow-md font-black'
@@ -479,7 +496,7 @@ export default function LawyersPage() {
                     className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-800"
                     required
                   >
-                    {teams.map((t) => (
+                    {teamsForDepartment(teams, formData.department).map((t) => (
                       <option key={t} value={t}>🛡️ {t}</option>
                     ))}
                   </select>
@@ -535,6 +552,18 @@ export default function LawyersPage() {
             >
               <h3 className="text-xl font-bold text-primary mb-4">Create New Practice Team</h3>
               <form onSubmit={handleCreateTeam} className="space-y-4">
+                <div className="grid grid-cols-2 gap-2">
+                  {(['LITIGATION', 'GENERAL'] as const).map((department) => (
+                    <button
+                      key={department}
+                      type="button"
+                      onClick={() => setNewTeamDepartment(department)}
+                      className={`rounded-xl border px-3 py-3 text-xs font-bold ${newTeamDepartment === department ? 'border-primary bg-primary text-white' : 'border-gray-200 bg-gray-50 text-gray-600'}`}
+                    >
+                      {department === 'GENERAL' ? '🏢 General Retainer' : '⚖️ Litigation'}
+                    </button>
+                  ))}
+                </div>
                 <div>
                   <label className="block text-xs font-bold text-primary uppercase tracking-widest mb-2">Team Name *</label>
                   <input
@@ -542,7 +571,7 @@ export default function LawyersPage() {
                     value={newTeamName}
                     onChange={(e) => setNewTeamName(e.target.value)}
                     className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold uppercase"
-                    placeholder="e.g. TITAN LITIGATION or PROPERTY TEAM B"
+                    placeholder={newTeamDepartment === 'GENERAL' ? 'e.g. SME ADVISORY TEAM' : 'e.g. TEAM TITAN'}
                     required
                   />
                 </div>

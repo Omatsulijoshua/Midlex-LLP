@@ -218,7 +218,7 @@ export default function LawyerOverview() {
               General & Property Profile
             </h3>
             <p className={`text-xs leading-relaxed ${selectedDept === 'GENERAL' ? 'text-slate-300' : 'text-slate-500'}`}>
-              Manage land title verifications, Certificate of Occupancy searches, Samson Sabbat property auto-allocations, and commercial advisory.
+              Manage retainer claims, land title verifications, Certificate of Occupancy searches, assigned General teams, and commercial advisory.
             </p>
 
             <div className={`mt-6 pt-4 border-t flex items-center justify-between text-xs font-bold ${
@@ -255,7 +255,7 @@ export default function LawyerOverview() {
             <p className="text-xs text-slate-300 mt-0.5">
               {selectedDept === 'LITIGATION'
                 ? 'Managing court trial dates, pleadings, hearing schedules, & litigation counsel briefs.'
-                : 'Managing land title searches, Samson Sabbat property allocations, & corporate advisory.'}
+                : 'Managing retainer claims, land title searches, General team allocations, and corporate advisory.'}
             </p>
           </div>
         </div>

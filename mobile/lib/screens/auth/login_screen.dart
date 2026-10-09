@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/storage_service.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../public/home_screen.dart';
 import 'signup_screen.dart';
@@ -19,10 +20,17 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   String? _errorMessage;
+  String? _selectedDepartment;
 
   Future<void> _handleLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+
+    if (_selectedDepartment == null) {
+      setState(() => _errorMessage =
+          'Choose Litigation or General & Property before signing in.');
+      return;
+    }
 
     if (email.isEmpty || password.isEmpty) {
       setState(() => _errorMessage = 'Please enter both email and password.');
@@ -34,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await auth.login(email, password);
+      await StorageService.saveDepartment(_selectedDepartment!);
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -41,7 +50,8 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
-      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+      setState(
+          () => _errorMessage = e.toString().replaceAll('Exception: ', ''));
     }
   }
 
@@ -60,7 +70,8 @@ class _LoginScreenState extends State<LoginScreen> {
               // Client App Header Badge
               Container(
                 margin: const EdgeInsets.only(bottom: 20),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0C2B18),
                   borderRadius: BorderRadius.circular(20),
@@ -93,7 +104,10 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 14),
               const Text(
                 'Client Portal Sign In',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.primary),
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primary),
               ),
               const Text(
                 'Sign in with your client email to monitor cases, communicate with counsel, and track legal progress.',
@@ -112,17 +126,61 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                      const Icon(Icons.error_outline,
+                          color: Colors.red, size: 20),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           _errorMessage!,
-                          style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
                   ),
                 ),
+
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Choose Client Workspace',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primary),
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Sign out to change workspace later.',
+                  style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildWorkspaceOption(
+                      department: 'LITIGATION',
+                      icon: '⚖️',
+                      label: 'Litigation',
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _buildWorkspaceOption(
+                      department: 'GENERAL',
+                      icon: '🏢',
+                      label: 'General & Property',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
 
               TextField(
                 controller: _emailController,
@@ -143,8 +201,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: 'Password',
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(_obscurePassword
+                        ? Icons.visibility_off
+                        : Icons.visibility),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
               ),
@@ -156,10 +217,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => const ForgotPasswordScreen()),
                     );
                   },
-                  child: const Text('Forgot password?', style: TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.bold)),
+                  child: const Text('Forgot password?',
+                      style: TextStyle(
+                          color: AppTheme.secondary,
+                          fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 18),
@@ -178,15 +243,20 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Don't have an account? ", style: TextStyle(color: AppTheme.textMuted)),
+                  const Text("Don't have an account? ",
+                      style: TextStyle(color: AppTheme.textMuted)),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const SignupScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => const SignupScreen()),
                       );
                     },
-                    child: const Text('Create one', style: TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.bold)),
+                    child: const Text('Create one',
+                        style: TextStyle(
+                            color: AppTheme.secondary,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -200,14 +270,57 @@ class _LoginScreenState extends State<LoginScreen> {
                     MaterialPageRoute(builder: (context) => const HomeScreen()),
                   );
                 },
-                icon: const Icon(Icons.explore_outlined, color: AppTheme.secondary, size: 18),
+                icon: const Icon(Icons.explore_outlined,
+                    color: AppTheme.secondary, size: 18),
                 label: const Text(
                   'Browse Public App & Practice Areas →',
-                  style: TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: TextStyle(
+                      color: AppTheme.secondary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWorkspaceOption({
+    required String department,
+    required String icon,
+    required String label,
+  }) {
+    final isSelected = _selectedDepartment == department;
+
+    return InkWell(
+      onTap: () => setState(() => _selectedDepartment = department),
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primary : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? AppTheme.secondary : AppTheme.border,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(icon, style: const TextStyle(fontSize: 22)),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : AppTheme.textDark,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
       ),
     );

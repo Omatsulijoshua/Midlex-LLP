@@ -27,17 +27,39 @@ interface Case {
   litigationTeam?: string;
   stage?: string;
   pendingTask?: string;
+  category?: 'LITIGATION' | 'GENERAL';
   timeline?: { status?: string; title?: string }[];
   createdAt: string;
 }
 
-const defaultTeams = [
+const litigationTeams = [
   'TEAM ANCHOR',
   'TEAM ALPHA',
   'TITAN LITIGATION',
   'MARITIME PRACTICE GROUP',
   'CORPORATE DISPUTE TEAM',
 ];
+
+const generalTeams = [
+  'RETAINER ADVISORY TEAM',
+  'CORPORATE RETAINER TEAM',
+  'FAMILY & PRIVATE CLIENT TEAM',
+  'PROPERTY ADVISORY GROUP',
+  'REALTY CONVEYANCING TEAM',
+];
+
+const defaultTeams = [...litigationTeams, ...generalTeams];
+
+const teamsForWorkspace = (teams: string[], workspace: 'LITIGATION' | 'GENERAL') => {
+  const defaults = workspace === 'GENERAL' ? generalTeams : litigationTeams;
+  const generalMarkers = ['GENERAL', 'RETAINER', 'PROPERTY', 'REALTY', 'FAMILY', 'PRIVATE CLIENT'];
+  const litigationMarkers = ['LITIGATION', 'ANCHOR', 'ALPHA', 'MARITIME', 'DISPUTE'];
+  return Array.from(new Set([...defaults, ...teams.filter((team) => {
+    const isGeneral = generalMarkers.some((marker) => team.includes(marker));
+    const isLitigation = litigationMarkers.some((marker) => team.includes(marker));
+    return workspace === 'GENERAL' ? isGeneral || !isLitigation : isLitigation || !isGeneral;
+  })]));
+};
 
 const defaultCourts = [
   'HIGH COURT BENIN CITY',
@@ -126,6 +148,10 @@ export default function CasesPage() {
 
     // Load saved case overrides from localStorage if present
     if (typeof window !== 'undefined') {
+      const savedDepartment = localStorage.getItem('midlex_admin_dept');
+      if (user?.role === 'ADMIN' && (savedDepartment === 'LITIGATION' || savedDepartment === 'GENERAL')) {
+        setCategoryFilter(savedDepartment);
+      }
       const savedOverrides = localStorage.getItem('midlex_case_overrides');
       if (savedOverrides) {
         try { setOverrides(JSON.parse(savedOverrides)); } catch (e) {}
@@ -134,8 +160,11 @@ export default function CasesPage() {
   }, [user]);
 
   const handleAddTeam = async () => {
-    const clean = newTeamInput.trim().toUpperCase();
-    if (!clean) return;
+    const enteredName = newTeamInput.trim().toUpperCase();
+    if (!enteredName) return;
+    const workspace = categoryFilter === 'GENERAL' ? 'GENERAL' : 'LITIGATION';
+    const prefix = workspace === 'GENERAL' ? 'GENERAL RETAINER' : 'LITIGATION';
+    const clean = enteredName.startsWith(prefix) ? enteredName : `${prefix} - ${enteredName}`;
     try {
       const updated = await apiFetch<string[]>('/directory/teams', {
         method: 'POST',
@@ -241,6 +270,12 @@ export default function CasesPage() {
         method: 'PATCH',
         body: JSON.stringify(payload),
       });
+      if (editTeam) {
+        await apiFetch(`/cases/${editingCase.id}/assign`, {
+          method: 'PATCH',
+          body: JSON.stringify({ litigationTeam: editTeam }),
+        });
+      }
       setCases(prev => prev.map(c => c.id === editingCase.id ? { ...c, ...updatedCase } : c));
     } catch (err) {
       console.error('Failed to update case in backend:', err);
@@ -429,7 +464,7 @@ export default function CasesPage() {
                 </h3>
                 <p className="text-xs text-amber-200/80 font-medium">
                   {categoryFilter === 'GENERAL'
-                    ? 'General & Realty Access: Land title verification, C of O searches, & Samson Sabbat property conveyancing registers.'
+                    ? 'General Retainer Access: Midlex Royalty claims, property work, corporate advisory, and assigned team registers.'
                     : user?.role === 'ADMIN'
                     ? 'Super Admin Access: Open any practice team or court case directory register below.'
                     : 'Counsel Access: Open your assigned litigation team case directory.'}
@@ -593,7 +628,7 @@ export default function CasesPage() {
                 const ov = overrides[c.id] || {};
                 const suitNo = ov.suitNumber || c.suitNumber || (isGeneral ? `MATTER REF: GENERAL-${c.id.slice(-4).toUpperCase()}` : '');
                 const courtName = ov.court || c.court || (isGeneral ? '🏢 PROPERTY & REALTY CONVEYANCING' : '');
-                const teamName = ov.litigationTeam || c.litigationTeam || (isGeneral ? '👨‍⚖️ Samson Sabbat (Lead Counsel)' : '');
+                const teamName = ov.litigationTeam || c.litigationTeam || (isGeneral ? 'Unassigned Retainer Team' : '');
 
                 const latestTimeline = c.timeline && c.timeline.length > 0 ? c.timeline[c.timeline.length - 1] : null;
                 const realStatus = (latestTimeline?.status || c.status || 'OPEN').toUpperCase();
@@ -724,8 +759,8 @@ export default function CasesPage() {
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <div>
-                <h3 className="text-xl font-bold text-primary">Litigation Teams Directory</h3>
-                <p className="text-xs text-gray-400">Add or remove legal litigation teams</p>
+                <h3 className="text-xl font-bold text-primary">{categoryFilter === 'GENERAL' ? 'General Retainer' : 'Litigation'} Teams Directory</h3>
+                <p className="text-xs text-gray-400">Manage teams for this workspace separately</p>
               </div>
               <button onClick={() => setIsTeamsModalOpen(false)} className="text-gray-400 hover:text-gray-600 font-bold">✕</button>
             </div>
@@ -735,7 +770,7 @@ export default function CasesPage() {
                 type="text"
                 value={newTeamInput}
                 onChange={(e) => setNewTeamInput(e.target.value)}
-                placeholder="e.g. TEAM TITAN"
+                placeholder={categoryFilter === 'GENERAL' ? 'e.g. SME ADVISORY TEAM' : 'e.g. TEAM TITAN'}
                 className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-800"
               />
               <button
@@ -747,7 +782,7 @@ export default function CasesPage() {
             </div>
 
             <div className="max-h-60 overflow-y-auto space-y-2">
-              {teams.map((team) => (
+              {teamsForWorkspace(teams, categoryFilter === 'GENERAL' ? 'GENERAL' : 'LITIGATION').map((team) => (
                 <div key={team} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
                   <span className="font-bold text-sm text-primary">{team}</span>
                   <button
@@ -888,14 +923,16 @@ export default function CasesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 mb-1">Assigned Litigation Team</label>
+                <label className="block text-xs font-bold text-gray-500 mb-1">
+                  Assigned {editingCase.category === 'GENERAL' ? 'General Retainer' : 'Litigation'} Team
+                </label>
                 <select
                   value={editTeam}
                   onChange={(e) => setEditTeam(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-800 bg-white"
                 >
-                  <option value="">-- Unassigned / Select Litigation Team --</option>
-                  {teams.map(t => (
+                  <option value="">-- Unassigned / Select {editingCase.category === 'GENERAL' ? 'Retainer' : 'Litigation'} Team --</option>
+                  {teamsForWorkspace(teams, editingCase.category === 'GENERAL' ? 'GENERAL' : 'LITIGATION').map(t => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </select>

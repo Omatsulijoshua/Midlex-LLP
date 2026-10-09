@@ -8,18 +8,39 @@ import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 
+type ClientPracticeDept = "LITIGATION" | "GENERAL";
+type LoginUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: "ADMIN" | "LAWYER" | "CLIENT" | "ACCOUNTANT";
+  litigationTeam?: string;
+};
+
 export default function LoginClient() {
-  const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isWakingUp, setIsWakingUp] = useState(false);
+  const [clientDepartment, setClientDepartment] = useState<ClientPracticeDept | null>(null);
   const { login } = useAuth();
 
+  const completeLogin = (token: string, user: LoginUser) => {
+    if (user.role === "CLIENT") {
+      if (!clientDepartment) {
+        setError("Choose Litigation or General & Property before signing in.");
+        return false;
+      }
+      localStorage.setItem("midlex_client_dept", clientDepartment);
+    }
+
+    login(token, user);
+    return true;
+  };
+
   useEffect(() => {
-    setMounted(true);
     // Ping backend immediately when visiting the login page
     try {
       apiFetch("/health").catch(() => {});
@@ -43,7 +64,7 @@ export default function LoginClient() {
         method: "POST",
         body: JSON.stringify({ email: cleanEmail, password }),
       });
-      login(data.access_token, data.user);
+      if (!completeLogin(data.access_token, data.user)) return;
     } catch (err: any) {
       // Check if user registered in browser local backup
       if (typeof window !== 'undefined') {
@@ -52,11 +73,11 @@ export default function LoginClient() {
           try {
             const localUser = JSON.parse(savedReg);
             if (localUser.password === password) {
-              login(`token-local-${Date.now()}`, {
+              completeLogin(`token-local-${Date.now()}`, {
                 id: localUser.id || `client-${Date.now()}`,
                 email: cleanEmail,
                 name: localUser.name || cleanEmail,
-                role: (localUser.role as any) || 'CLIENT',
+                role: (localUser.role as LoginUser["role"]) || 'CLIENT',
               });
               return;
             }
@@ -70,12 +91,6 @@ export default function LoginClient() {
       setIsWakingUp(false);
     }
   };
-
-  if (!mounted) {
-    return (
-      <main suppressHydrationWarning className="min-h-screen bg-[#fafafa] flex items-center justify-center p-3 sm:p-6 py-6 sm:py-12 w-full max-w-full overflow-x-hidden relative" />
-    );
-  }
 
   return (
     <main className="min-h-screen bg-[#fafafa] flex items-center justify-center p-3 sm:p-6 py-6 sm:py-12 w-full max-w-full overflow-x-hidden relative">
@@ -125,6 +140,40 @@ export default function LoginClient() {
               {error}
             </div>
           )}
+          <div>
+            <label className="block text-sm font-bold text-primary mb-2">Client Workspace</label>
+            <p className="text-xs text-gray-500 mb-3">
+              Clients must choose a workspace when signing in. Sign out to change it later.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setClientDepartment("LITIGATION")}
+                aria-pressed={clientDepartment === "LITIGATION"}
+                className={`rounded-2xl border-2 px-3 py-4 text-left transition-all ${
+                  clientDepartment === "LITIGATION"
+                    ? "border-primary bg-primary text-white"
+                    : "border-gray-200 bg-white text-primary hover:border-primary/50"
+                }`}
+              >
+                <span className="block text-lg">⚖️</span>
+                <span className="block text-xs font-black mt-1">Litigation</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setClientDepartment("GENERAL")}
+                aria-pressed={clientDepartment === "GENERAL"}
+                className={`rounded-2xl border-2 px-3 py-4 text-left transition-all ${
+                  clientDepartment === "GENERAL"
+                    ? "border-secondary bg-amber-950 text-white"
+                    : "border-gray-200 bg-white text-primary hover:border-secondary/50"
+                }`}
+              >
+                <span className="block text-lg">🏢</span>
+                <span className="block text-xs font-black mt-1">General &amp; Property</span>
+              </button>
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-bold text-primary mb-2">Email Address</label>
             <div className="relative">

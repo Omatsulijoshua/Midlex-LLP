@@ -4,7 +4,9 @@ import '../../config/theme.dart';
 import '../../providers/dashboard_provider.dart';
 
 class NewCaseScreen extends StatefulWidget {
-  const NewCaseScreen({super.key});
+  final String? initialCategory;
+
+  const NewCaseScreen({super.key, this.initialCategory});
 
   @override
   State<NewCaseScreen> createState() => _NewCaseScreenState();
@@ -16,6 +18,7 @@ class _NewCaseScreenState extends State<NewCaseScreen> {
   String _category = 'LITIGATION';
   String _subCategory = 'Commercial Litigation';
   bool _isSubmitting = false;
+  bool _workspaceInitialized = false;
 
   final Map<String, List<String>> _subCategories = const {
     'LITIGATION': [
@@ -32,6 +35,17 @@ class _NewCaseScreenState extends State<NewCaseScreen> {
       'General Legal Advisory',
     ],
   };
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_workspaceInitialized) return;
+    final provider = Provider.of<DashboardProvider>(context, listen: false);
+    final selected = widget.initialCategory ?? provider.selectedDepartment;
+    _category = selected == 'GENERAL' ? 'GENERAL' : 'LITIGATION';
+    _subCategory = _subCategories[_category]!.first;
+    _workspaceInitialized = true;
+  }
 
   Future<void> _handleCreate() async {
     final title = _titleController.text.trim();
@@ -81,98 +95,41 @@ class _NewCaseScreenState extends State<NewCaseScreen> {
           children: [
             const Text(
               'Matter Classification',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.primary),
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primary),
             ),
             const SizedBox(height: 6),
             const Text(
-              'Select whether this is a Litigation court issue or a General / Retainer client matter.',
+              'This request is filed in the workspace selected when you signed in.',
               style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
             ),
             const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _category = 'LITIGATION';
-                        _subCategory = _subCategories['LITIGATION']!.first;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: _category == 'LITIGATION' ? AppTheme.primary : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: _category == 'LITIGATION' ? AppTheme.primary : Colors.grey.shade300,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.gavel,
-                            color: _category == 'LITIGATION' ? Colors.white : AppTheme.primary,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Litigation Issue',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: _category == 'LITIGATION' ? Colors.white : AppTheme.textDark,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _category = 'GENERAL';
-                        _subCategory = _subCategories['GENERAL']!.first;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: _category == 'GENERAL' ? AppTheme.secondary : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: _category == 'GENERAL' ? AppTheme.secondary : Colors.grey.shade300,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.business_center,
-                            color: _category == 'GENERAL' ? Colors.white : AppTheme.secondary,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'General / Retainer',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: _category == 'GENERAL' ? Colors.white : AppTheme.textDark,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _category == 'GENERAL'
+                    ? const Color(0xFFFFF8E8)
+                    : const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                    color: _category == 'GENERAL'
+                        ? AppTheme.secondary
+                        : AppTheme.primary),
+              ),
+              child: Text(
+                _category == 'GENERAL'
+                    ? '🏢 General Retainer Matter'
+                    : '⚖️ Litigation Issue',
+                style: const TextStyle(
+                    fontWeight: FontWeight.w800, color: AppTheme.primary),
+              ),
             ),
-
             const SizedBox(height: 20),
             DropdownButtonFormField<String>(
-              value: _subCategory,
+              initialValue: _subCategory,
               decoration: const InputDecoration(labelText: 'Practice Sub-Type'),
               items: _subCategories[_category]!
                   .map((sub) => DropdownMenuItem(value: sub, child: Text(sub)))
@@ -181,19 +138,21 @@ class _NewCaseScreenState extends State<NewCaseScreen> {
                 if (val != null) setState(() => _subCategory = val);
               },
             ),
-
             const SizedBox(height: 16),
             TextField(
               controller: _titleController,
               decoration: InputDecoration(
-                labelText: _category == 'LITIGATION' ? 'Case Title (e.g. Land Dispute)' : 'Matter Title (e.g. Monthly Tax Advisory)',
+                labelText: _category == 'LITIGATION'
+                    ? 'Case Title (e.g. Land Dispute)'
+                    : 'Matter Title (e.g. Monthly Tax Advisory)',
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _descriptionController,
               maxLines: 4,
-              decoration: const InputDecoration(labelText: 'Matter Overview & Instructions'),
+              decoration: const InputDecoration(
+                  labelText: 'Matter Overview & Instructions'),
             ),
             const SizedBox(height: 24),
             SizedBox(

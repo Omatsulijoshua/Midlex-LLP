@@ -37,13 +37,16 @@ class StorageService {
     return prefs.getBool(onboardingKey) ?? false;
   }
 
-  static Future<void> saveRegisteredUser(String email, String password, Map<String, dynamic> userData) async {
+  static Future<void> saveRegisteredUser(
+      String email, String password, Map<String, dynamic> userData) async {
     final prefs = await SharedPreferences.getInstance();
     final cleanEmail = email.trim().toLowerCase();
-    await prefs.setString('midlex_reg_$cleanEmail', jsonEncode({
-      'password': password,
-      'user': userData,
-    }));
+    await prefs.setString(
+        'midlex_reg_$cleanEmail',
+        jsonEncode({
+          'password': password,
+          'user': userData,
+        }));
   }
 
   static Future<Map<String, dynamic>?> getRegisteredUser(String email) async {
@@ -57,6 +60,17 @@ class StorageService {
   }
 
   static const String departmentKey = 'midlex_dept';
+  static const String retainerPlanKey = 'midlex_retainer_plan';
+
+  static Future<void> saveRetainerPlan(String plan) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(retainerPlanKey, plan);
+  }
+
+  static Future<String?> getRetainerPlan() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(retainerPlanKey);
+  }
 
   static Future<void> saveDepartment(String dept) async {
     final prefs = await SharedPreferences.getInstance();
@@ -72,5 +86,7 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(tokenKey);
     await prefs.remove(userKey);
+    await prefs.remove(departmentKey);
+    await prefs.remove(retainerPlanKey);
   }
 }

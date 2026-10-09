@@ -52,6 +52,8 @@ model User {
   otherInfo     String?
   profileImage  String?
   litigationTeam String?
+  department    String    @default("LITIGATION") // "LITIGATION" or "GENERAL"
+  status        String    @default("ACTIVE") // "ACTIVE" or "DEACTIVATED"
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -222,4 +224,24 @@ model Inquiry {
 
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+}
+
+model Property {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  title       String
+  description String
+  price       Float
+  location    String
+  category    String
+  offerTypes  String[] @default(["SALE"])
+  bedrooms    Int      @default(0)
+  bathrooms   Int      @default(0)
+  sizeSqm     Float?
+  images      String[]
+  features    String[]
+  status      String   @default("AVAILABLE")
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

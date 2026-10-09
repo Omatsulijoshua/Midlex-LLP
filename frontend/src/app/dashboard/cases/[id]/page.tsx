@@ -17,6 +17,7 @@ interface Case {
   status: string;
   client: { name: string; email: string };
   lawyer?: { name: string };
+  category?: 'LITIGATION' | 'GENERAL';
   createdAt: string;
 }
 
@@ -224,6 +225,7 @@ export default function CaseDetailsPage({ params }: { params: Promise<{ id: stri
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
         onAssigned={fetchCase}
+        workspace={caseData.category === 'GENERAL' ? 'GENERAL' : 'LITIGATION'}
       />
       <CourtDateModal 
         caseId={caseData.id}

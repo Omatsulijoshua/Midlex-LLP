@@ -6,13 +6,11 @@ import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../services/api_service.dart';
 
-import 'accountant_dashboard_screen.dart';
-import 'cases_list_screen.dart';
 import 'cases_title_list_screen.dart';
 import 'case_detail_screen.dart';
 import 'payments_screen.dart';
+import 'general_retainer_dashboard.dart';
 import 'schedule_screen.dart';
-import 'inquiries_screen.dart';
 import 'notifications_screen.dart';
 import 'team_chat_screen.dart';
 import 'profile_screen.dart';
@@ -53,11 +51,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // Client-Only Navigation Items
   List<SidebarMenuItem> _getRoleSidebarItems(dynamic user) {
     return [
-      SidebarMenuItem(name: 'My Case', icon: Icons.dashboard_outlined, screen: _buildOverviewTab(context, user)),
-      const SidebarMenuItem(name: 'Messages', icon: Icons.chat_bubble_outline, screen: TeamChatScreen()),
-      const SidebarMenuItem(name: 'Profile & Request', icon: Icons.person_outline, screen: ProfileScreen()),
-      const SidebarMenuItem(name: 'Payments', icon: Icons.payment_outlined, screen: PaymentsScreen()),
-      const SidebarMenuItem(name: 'Schedule', icon: Icons.calendar_today_outlined, screen: ScheduleScreen()),
+      SidebarMenuItem(
+          name: 'My Case',
+          icon: Icons.dashboard_outlined,
+          screen: _buildOverviewTab(context, user)),
+      const SidebarMenuItem(
+          name: 'Messages',
+          icon: Icons.chat_bubble_outline,
+          screen: TeamChatScreen()),
+      const SidebarMenuItem(
+          name: 'Profile & Request',
+          icon: Icons.person_outline,
+          screen: ProfileScreen()),
+      const SidebarMenuItem(
+          name: 'Payments',
+          icon: Icons.payment_outlined,
+          screen: PaymentsScreen()),
+      const SidebarMenuItem(
+          name: 'Schedule',
+          icon: Icons.calendar_today_outlined,
+          screen: ScheduleScreen()),
     ];
   }
 
@@ -79,7 +92,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
                   );
                 },
                 child: const Text('Go to Sign In'),
@@ -100,16 +114,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: const Text('Midlex Client Portal'),
         actions: [
-          // Quick Header Profile Switcher Pill
+          // Current client workspace (chosen at sign in)
           Padding(
             padding: const EdgeInsets.only(right: 4),
-            child: ActionChip(
+            child: Chip(
               avatar: Text(
                 dashboard.selectedDepartment == 'GENERAL' ? '🏢' : '⚖️',
                 style: const TextStyle(fontSize: 12),
               ),
               label: Text(
-                dashboard.selectedDepartment == 'GENERAL' ? 'GENERAL' : 'LITIGATION',
+                dashboard.selectedDepartment == 'GENERAL'
+                    ? 'GENERAL'
+                    : 'LITIGATION',
                 style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -121,7 +137,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ? const Color(0xFFC69A59)
                   : const Color(0xFF0C2B18),
               side: const BorderSide(color: Color(0xFFC69A59), width: 1.5),
-              onPressed: () => _showDepartmentSwitcherModal(context, dashboard),
             ),
           ),
           IconButton(
@@ -138,10 +153,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: Colors.red,
                         shape: BoxShape.circle,
                       ),
-                      constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                      constraints:
+                          const BoxConstraints(minWidth: 14, minHeight: 14),
                       child: Text(
                         '${dashboard.unreadNotificationCount}',
-                        style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -152,7 +171,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const NotificationsScreen()),
               );
             },
           ),
@@ -167,23 +187,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: currentItem.screen,
       bottomNavigationBar: BottomNavigationBar(
-              currentIndex: activeIndex,
-              selectedItemColor: AppTheme.primary,
-              unselectedItemColor: Colors.grey,
-              type: BottomNavigationBarType.fixed,
-              onTap: (index) => setState(() => _activeNavIndex = index),
-              items: items
-                  .map((item) => BottomNavigationBarItem(
-                        icon: Icon(item.icon),
-                        label: item.name,
-                      ))
-                  .toList(),
-            ),
+        currentIndex: activeIndex,
+        selectedItemColor: AppTheme.primary,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        onTap: (index) => setState(() => _activeNavIndex = index),
+        items: items
+            .map((item) => BottomNavigationBarItem(
+                  icon: Icon(item.icon),
+                  label: item.name,
+                ))
+            .toList(),
+      ),
     );
   }
 
   // Sidebar Drawer matching Web Sidebar Menu per role
-  Widget _buildStaffSidebar(BuildContext context, dynamic user, List<SidebarMenuItem> items) {
+  Widget _buildStaffSidebar(
+      BuildContext context, dynamic user, List<SidebarMenuItem> items) {
     return Drawer(
       child: Container(
         color: const Color(0xFF1B4D2E), // Dark Green matching Web Sidebar
@@ -194,37 +215,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
               decoration: const BoxDecoration(color: Color(0xFF0C2B18)),
               accountName: Text(
                 user.name,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.white),
               ),
               accountEmail: Text(
                 '${user.role} • ${user.email}',
-                style: const TextStyle(color: AppTheme.secondary, fontSize: 12, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: AppTheme.secondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold),
               ),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: AppTheme.secondary,
                 child: Text(
                   user.name.substring(0, 1).toUpperCase(),
-                  style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ),
-
             ...List.generate(items.length, (index) {
               final item = items[index];
               final isSelected = _activeNavIndex == index;
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFFC69A59) : Colors.transparent, // Gold highlight for active item
+                  color: isSelected
+                      ? const Color(0xFFC69A59)
+                      : Colors.transparent, // Gold highlight for active item
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  leading: Icon(item.icon, color: isSelected ? Colors.white : Colors.white70, size: 20),
+                  leading: Icon(item.icon,
+                      color: isSelected ? Colors.white : Colors.white70,
+                      size: 20),
                   title: Text(
                     item.name,
                     style: TextStyle(
                       color: isSelected ? Colors.white : Colors.white70,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.w600,
                       fontSize: 13,
                     ),
                   ),
@@ -237,19 +271,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               );
             }),
-
             const Divider(color: Colors.white24, height: 24),
-
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.redAccent),
-              title: const Text('Sign Out', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+              title: const Text('Sign Out',
+                  style: TextStyle(
+                      color: Colors.redAccent, fontWeight: FontWeight.bold)),
               onTap: () async {
                 final auth = Provider.of<AuthProvider>(context, listen: false);
                 await auth.logout();
                 if (context.mounted) {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
                   );
                 }
               },
@@ -260,151 +295,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  void _showDepartmentSwitcherModal(BuildContext context, DashboardProvider dashboard) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF0C2B18),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        final currentDept = dashboard.selectedDepartment;
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'CHOOSE PRACTICE PROFILE',
-                    style: TextStyle(
-                      color: AppTheme.secondary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Switch your monitoring workspace between Litigation matters and General / Property matters.',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  // LITIGATION PROFILE CARD
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        dashboard.setDepartment('LITIGATION');
-                        Navigator.pop(ctx);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: currentDept == 'LITIGATION' ? const Color(0xFF1B4D2E) : const Color(0xFF121212),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: currentDept == 'LITIGATION' ? AppTheme.secondary : Colors.white24,
-                            width: currentDept == 'LITIGATION' ? 2 : 1,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('⚖️', style: TextStyle(fontSize: 28)),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Litigation Profile',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Trial suits & court dates',
-                              style: TextStyle(color: Colors.white70, fontSize: 10),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              currentDept == 'LITIGATION' ? '● CURRENT PROFILE' : 'Tap to Switch',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: currentDept == 'LITIGATION' ? Colors.greenAccent : AppTheme.secondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // GENERAL & PROPERTY PROFILE CARD
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        dashboard.setDepartment('GENERAL');
-                        Navigator.pop(ctx);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: currentDept == 'GENERAL' ? const Color(0xFF3D2706) : const Color(0xFF121212),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: currentDept == 'GENERAL' ? AppTheme.secondary : Colors.white24,
-                            width: currentDept == 'GENERAL' ? 2 : 1,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('🏢', style: TextStyle(fontSize: 28)),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'General / Realty',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Land titles & property',
-                              style: TextStyle(color: Colors.white70, fontSize: 10),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              currentDept == 'GENERAL' ? '● CURRENT PROFILE' : 'Tap to Switch',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: currentDept == 'GENERAL' ? Colors.greenAccent : AppTheme.secondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildOverviewTab(BuildContext context, dynamic user) {
     final dashboard = Provider.of<DashboardProvider>(context);
     final selectedDept = dashboard.selectedDepartment;
+    if (selectedDept == 'GENERAL') {
+      return const GeneralRetainerDashboard();
+    }
+    final workspaceCases = dashboard.cases.where((caseItem) {
+      final isLitigation = caseItem.category == 'LITIGATION';
+      return selectedDept == 'LITIGATION'
+          ? isLitigation
+          : caseItem.category == 'GENERAL';
+    }).toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -424,7 +326,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   backgroundColor: AppTheme.secondary,
                   child: Text(
                     user.name.substring(0, 1).toUpperCase(),
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -434,16 +339,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       Text(
                         user.name,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Role: ${user.role}',
-                        style: const TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: AppTheme.secondary,
+                            fontWeight: FontWeight.bold),
                       ),
                       Text(
                         user.email,
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        style: const TextStyle(
+                            color: Colors.white70, fontSize: 12),
                       ),
                     ],
                   ),
@@ -451,174 +362,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
-
           const SizedBox(height: 16),
           const SizedBox(height: 16),
-          const Text(
-            'LAW FIRM PRACTICE PROFILE WORKSPACE',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textMuted, letterSpacing: 0.8),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              // LITIGATION PROFILE BUTTON
-              Expanded(
-                child: InkWell(
-                  onTap: () => dashboard.setDepartment('LITIGATION'),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: selectedDept == 'LITIGATION' ? const Color(0xFF0C2B18) : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: selectedDept == 'LITIGATION' ? AppTheme.secondary : Colors.grey.shade300,
-                        width: selectedDept == 'LITIGATION' ? 2 : 1,
-                      ),
-                      boxShadow: [
-                        if (selectedDept == 'LITIGATION')
-                          BoxShadow(color: AppTheme.secondary.withValues(alpha: 0.3), blurRadius: 10, spreadRadius: 1),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('⚖️', style: TextStyle(fontSize: 22)),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: selectedDept == 'LITIGATION' ? AppTheme.secondary : Colors.blue.shade50,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                'LITIGATION',
-                                style: TextStyle(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold,
-                                  color: selectedDept == 'LITIGATION' ? Colors.white : Colors.blue.shade900,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Litigation Profile',
-                          style: TextStyle(
-                            fontSize: 14,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: selectedDept == 'GENERAL'
+                  ? const Color(0xFF3D2706)
+                  : const Color(0xFF0C2B18),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.secondary, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                Text(selectedDept == 'GENERAL' ? '🏢' : '⚖️',
+                    style: const TextStyle(fontSize: 28)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        selectedDept == 'GENERAL'
+                            ? 'General & Property Workspace'
+                            : 'Litigation Workspace',
+                        style: const TextStyle(
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            color: selectedDept == 'LITIGATION' ? Colors.white : AppTheme.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'High Court suits, trial dates & counsel',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: selectedDept == 'LITIGATION' ? Colors.white70 : Colors.grey.shade600,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Text(
-                              selectedDept == 'LITIGATION' ? '● ACTIVE' : 'Select ➔',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: selectedDept == 'LITIGATION' ? Colors.greenAccent : AppTheme.secondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                            fontSize: 15),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'This workspace was selected at sign in. Sign out to change it.',
+                        style: TextStyle(color: Colors.white70, fontSize: 11),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              // GENERAL & PROPERTY PROFILE BUTTON
-              Expanded(
-                child: InkWell(
-                  onTap: () => dashboard.setDepartment('GENERAL'),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: selectedDept == 'GENERAL' ? const Color(0xFF3D2706) : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: selectedDept == 'GENERAL' ? AppTheme.secondary : Colors.grey.shade300,
-                        width: selectedDept == 'GENERAL' ? 2 : 1,
-                      ),
-                      boxShadow: [
-                        if (selectedDept == 'GENERAL')
-                          BoxShadow(color: AppTheme.secondary.withValues(alpha: 0.3), blurRadius: 10, spreadRadius: 1),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('🏢', style: TextStyle(fontSize: 22)),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: selectedDept == 'GENERAL' ? AppTheme.secondary : Colors.amber.shade50,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                'REALTY',
-                                style: TextStyle(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold,
-                                  color: selectedDept == 'GENERAL' ? Colors.white : Colors.amber.shade900,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'General / Realty',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: selectedDept == 'GENERAL' ? Colors.white : AppTheme.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Land title, C of O, Samson Sabbat property',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: selectedDept == 'GENERAL' ? Colors.white70 : Colors.grey.shade600,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Text(
-                              selectedDept == 'GENERAL' ? '● ACTIVE' : 'Select ➔',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: selectedDept == 'GENERAL' ? Colors.greenAccent : AppTheme.secondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-
           if (user.isLawyer) ...[
             const SizedBox(height: 16),
             Container(
@@ -633,7 +417,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.shield_outlined, color: AppTheme.secondary, size: 20),
+                      const Icon(Icons.shield_outlined,
+                          color: AppTheme.secondary, size: 20),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -661,10 +446,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           _activeNavIndex = 1; // Open Case Directory for lawyer
                         });
                       },
-                      icon: const Icon(Icons.folder_open, size: 16, color: Colors.white),
+                      icon: const Icon(Icons.folder_open,
+                          size: 16, color: Colors.white),
                       label: Text(
                         "OPEN ${(user.litigationTeam ?? 'TEAM ANCHOR').toUpperCase()} CASE DIRECTORY",
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.secondary,
@@ -679,7 +468,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 24),
           const Text(
             'Activity Summary',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textDark),
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textDark),
           ),
           const SizedBox(height: 14),
           Row(
@@ -687,13 +479,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _buildMetricCard(
                   'Total Cases',
-                  '${dashboard.cases.length}',
+                  '${workspaceCases.length}',
                   Icons.folder,
                   Colors.blue,
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const CasesTitleListScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => const CasesTitleListScreen()),
                     );
                   },
                 ),
@@ -708,7 +501,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ScheduleScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => const ScheduleScreen()),
                     );
                   },
                 ),
@@ -727,7 +521,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const PaymentsScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => const PaymentsScreen()),
                     );
                   },
                 ),
@@ -735,7 +530,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (user.isAdmin) ...[
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildMetricCard('Inquiries', '${dashboard.inquiries.length}', Icons.inbox, Colors.purple),
+                  child: _buildMetricCard(
+                      'Inquiries',
+                      '${dashboard.inquiries.length}',
+                      Icons.inbox,
+                      Colors.purple),
                 ),
               ],
             ],
@@ -746,22 +545,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               const Text(
                 'Recent Cases',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textDark),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textDark),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CasesTitleListScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const CasesTitleListScreen()),
                   );
                 },
-                child: const Text('View All', style: TextStyle(color: AppTheme.secondary)),
+                child: const Text('View All',
+                    style: TextStyle(color: AppTheme.secondary)),
               ),
             ],
           ),
           if (dashboard.isLoading)
             const Center(child: CircularProgressIndicator())
-          else if (dashboard.cases.isEmpty)
+          else if (workspaceCases.isEmpty)
             const Card(
               child: Padding(
                 padding: EdgeInsets.all(20),
@@ -769,17 +573,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             )
           else
-            ...dashboard.cases.take(3).map((c) => Card(
+            ...workspaceCases.take(3).map((c) => Card(
                   margin: const EdgeInsets.only(bottom: 10),
                   child: ListTile(
                     leading: const Icon(Icons.folder, color: AppTheme.primary),
-                    title: Text(c.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text(c.title,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text('Status: ${c.status}'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => CaseDetailScreen(caseModel: c)),
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                CaseDetailScreen(caseModel: c)),
                       );
                     },
                   ),
@@ -789,7 +596,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildMetricCard(String title, String count, IconData icon, Color color, {VoidCallback? onTap}) {
+  Widget _buildMetricCard(
+      String title, String count, IconData icon, Color color,
+      {VoidCallback? onTap}) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -806,21 +615,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Icon(icon, color: color, size: 28),
                   if (onTap != null)
-                    Icon(Icons.arrow_forward_ios, color: color.withValues(alpha: 0.6), size: 12),
+                    Icon(Icons.arrow_forward_ios,
+                        color: color.withValues(alpha: 0.6), size: 12),
                 ],
               ),
               const SizedBox(height: 12),
               Text(
                 count,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
+                style: TextStyle(
+                    fontSize: 22, fontWeight: FontWeight.bold, color: color),
               ),
               const SizedBox(height: 4),
               Row(
                 children: [
-                  Text(title, style: const TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                  Text(title,
+                      style: const TextStyle(
+                          color: AppTheme.textMuted, fontSize: 13)),
                   if (onTap != null) ...[
                     const SizedBox(width: 4),
-                    Text('(Open ➔)', style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text('(Open ➔)',
+                        style: TextStyle(
+                            color: color,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold)),
                   ],
                 ],
               ),
@@ -842,7 +659,8 @@ class _UserDirectoryListWidget extends StatefulWidget {
   const _UserDirectoryListWidget({required this.roleType});
 
   @override
-  State<_UserDirectoryListWidget> createState() => _UserDirectoryListWidgetState();
+  State<_UserDirectoryListWidget> createState() =>
+      _UserDirectoryListWidgetState();
 }
 
 class _UserDirectoryListWidgetState extends State<_UserDirectoryListWidget> {
@@ -887,7 +705,8 @@ class _UserDirectoryListWidgetState extends State<_UserDirectoryListWidget> {
       final q = _searchQuery.toLowerCase();
       final name = (u['name'] ?? '').toString().toLowerCase();
       final email = (u['email'] ?? '').toString().toLowerCase();
-      final phone = (u['phone'] ?? u['secondaryPhone'] ?? '').toString().toLowerCase();
+      final phone =
+          (u['phone'] ?? u['secondaryPhone'] ?? '').toString().toLowerCase();
       return name.contains(q) || email.contains(q) || phone.contains(q);
     }).toList();
 
@@ -899,15 +718,22 @@ class _UserDirectoryListWidgetState extends State<_UserDirectoryListWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primary)),
               const SizedBox(height: 10),
               TextField(
                 onChanged: (v) => setState(() => _searchQuery = v),
                 decoration: InputDecoration(
                   hintText: 'Search $title by name, email, phone...',
-                  prefixIcon: const Icon(Icons.search, color: AppTheme.secondary),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon:
+                      const Icon(Icons.search, color: AppTheme.secondary),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ],
@@ -918,7 +744,8 @@ class _UserDirectoryListWidgetState extends State<_UserDirectoryListWidget> {
               ? const Center(child: CircularProgressIndicator())
               : filtered.isEmpty
                   ? Center(
-                      child: Text('No ${widget.roleType.toLowerCase()} records found.'),
+                      child: Text(
+                          'No ${widget.roleType.toLowerCase()} records found.'),
                     )
                   : ListView.builder(
                       padding: const EdgeInsets.all(16),
@@ -927,30 +754,49 @@ class _UserDirectoryListWidgetState extends State<_UserDirectoryListWidget> {
                         final userItem = filtered[idx];
                         final name = userItem['name'] ?? 'N/A';
                         final email = userItem['email'] ?? 'N/A';
-                        final phone = [userItem['phone'], userItem['secondaryPhone']].where((p) => p != null && p.toString().isNotEmpty).join(', ');
+                        final phone = [
+                          userItem['phone'],
+                          userItem['secondaryPhone']
+                        ]
+                            .where((p) => p != null && p.toString().isNotEmpty)
+                            .join(', ');
 
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
                           child: ListTile(
                             contentPadding: const EdgeInsets.all(16),
                             leading: CircleAvatar(
                               backgroundColor: AppTheme.primary,
                               child: Text(
                                 name.substring(0, 1).toUpperCase(),
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
-                            title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.primary)),
+                            title: Text(name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: AppTheme.primary)),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const SizedBox(height: 4),
-                                Text('✉️ $email', style: const TextStyle(fontSize: 12, color: AppTheme.textDark)),
+                                Text('✉️ $email',
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppTheme.textDark)),
                                 if (phone.isNotEmpty)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 2),
-                                    child: Text('📞 $phone', style: const TextStyle(fontSize: 12, color: AppTheme.secondary, fontWeight: FontWeight.bold)),
+                                    child: Text('📞 $phone',
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            color: AppTheme.secondary,
+                                            fontWeight: FontWeight.bold)),
                                   ),
                               ],
                             ),

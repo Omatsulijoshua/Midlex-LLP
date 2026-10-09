@@ -11,32 +11,6 @@ export class CasesService {
   ) {}
 
   async create(data: Prisma.CaseUncheckedCreateInput): Promise<Case> {
-    const cat = String((data as any).category || '').toUpperCase();
-    const sub = String((data as any).subCategory || '').toLowerCase();
-
-    // Auto-allocate Samson Sabbat for General / Property / Realty matters if no lawyer explicitly set
-    if ((cat === 'GENERAL' || sub.includes('property') || sub.includes('realty') || sub.includes('real estate')) && !data.lawyerId) {
-      try {
-        const lawyers = await this.prisma.user.findMany({
-          where: { role: 'LAWYER' },
-        });
-        const samson = lawyers.find(
-          (u: any) =>
-            u.email === 'samson@midlex.com' ||
-            u.email === 'samson.sabbat@midlex.com' ||
-            String(u.name || '').toLowerCase().includes('samson'),
-        );
-        if (samson) {
-          data.lawyerId = samson.id;
-          if (!(data as any).litigationTeam) {
-            (data as any).litigationTeam = 'REAL ESTATE & PROPERTY LAW';
-          }
-        }
-      } catch (e) {
-        console.warn('[cases] Failed to auto-allocate Samson Sabbat:', e);
-      }
-    }
-
     const createdCase = await this.prisma.case.create({ data });
     // Automatically seed initial timeline event
     try {
@@ -234,6 +208,11 @@ export class CasesService {
 
   async assignTeam(caseId: string, data: { litigationTeam?: string; lawyerId?: string }): Promise<Case> {
     const teamName = data.litigationTeam?.trim() || '';
+    const existingCase = await this.prisma.case.findUnique({ where: { id: caseId } });
+    const workspace =
+      String(existingCase?.category || 'LITIGATION').toUpperCase() === 'GENERAL'
+        ? 'GENERAL'
+        : 'LITIGATION';
     const updated = await this.prisma.case.update({
       where: { id: caseId },
       data: {
@@ -247,15 +226,20 @@ export class CasesService {
     if (teamName) {
       try {
         const teamLawyers = await this.prisma.user.findMany({
-          where: { litigationTeam: teamName, role: 'LAWYER' },
+          where: {
+            litigationTeam: teamName,
+            role: 'LAWYER',
+            department: workspace,
+            status: 'ACTIVE',
+          },
         });
 
         await Promise.all(
           teamLawyers.map((lawyer: any) =>
             this.notificationsService.create({
               recipientId: lawyer.id,
-              title: `New Case Allocated to ${teamName}`,
-              message: `Case "${updated.title}" has been allocated to your Litigation Team (${teamName}).`,
+              title: `New ${workspace === 'GENERAL' ? 'General Retainer Matter' : 'Litigation Case'} Allocated to ${teamName}`,
+              message: `"${updated.title}" has been allocated to your ${workspace === 'GENERAL' ? 'General Retainer' : 'Litigation'} Team (${teamName}).`,
               link: `/dashboard/cases/${caseId}`,
               type: 'CLIENT_ASSIGNED',
             }),
@@ -279,8 +263,8 @@ export class CasesService {
       try {
         await this.notificationsService.create({
           recipientId: updated.clientId,
-          title: `Litigation Team Assigned`,
-          message: `Your case "${updated.title}" has been allocated to Midlex Litigation Team: ${teamName || updated.lawyer?.name || 'Legal Counsel'}.`,
+          title: `${workspace === 'GENERAL' ? 'General Retainer' : 'Litigation'} Team Assigned`,
+          message: `Your matter "${updated.title}" has been allocated to Midlex ${workspace === 'GENERAL' ? 'General Retainer' : 'Litigation'} Team: ${teamName || updated.lawyer?.name || 'Legal Counsel'}.`,
           link: `/dashboard/cases/${caseId}`,
           type: 'TEAM_ASSIGNED',
         });

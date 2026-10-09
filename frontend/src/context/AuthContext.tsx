@@ -52,6 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem('midlex_token');
     localStorage.removeItem('midlex_user');
+    localStorage.removeItem('midlex_client_dept');
     setToken(null);
     setUser(null);
     router.push('/login');
